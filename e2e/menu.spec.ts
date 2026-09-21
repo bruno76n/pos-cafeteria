@@ -58,7 +58,9 @@ test('crear categoría, grupo y producto con imagen y venderlo', async ({ page, 
     /^data:image\/webp/,
   );
   await page.getByRole('button', { name: 'Temperatura' }).click();
-  await expect(page.getByRole('complementary', { name: 'Vista previa' })).toContainText('Ponche de frutas$55.00');
+  await expect(page.getByRole('complementary', { name: 'Vista previa' })).toContainText(
+    'Ponche de frutas$55.00',
+  );
   await page.getByRole('button', { name: 'Guardar' }).click();
   await expect(page.getByRole('listitem').filter({ hasText: 'Ponche de frutas' })).toContainText('$55.00');
 

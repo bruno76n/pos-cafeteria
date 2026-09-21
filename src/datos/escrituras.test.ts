@@ -8,12 +8,14 @@ import {
   alEscribir,
   abrirTurno,
   anularMovimiento,
+  cancelarVenta,
   cerrarTurno,
   borrar,
   configurarDispositivo,
   crear,
   inicializarNegocio,
   guardar,
+  registrarDevolucion,
   registrarMovimiento,
   registrarVenta,
 } from './escrituras';
@@ -266,5 +268,103 @@ describe('movimientos y cierre de caja', () => {
     const ultima = (await bd.outbox.orderBy('orden').toArray()).at(-1)!;
     expect(ultima).toMatchObject({ tabla: 'turnos', tipo: 'actualizar' });
     expect(ultima.datos).toHaveProperty('resumen.diferencia', -1350);
+  });
+});
+
+describe('cancelaciones y devoluciones', () => {
+  const ana = { id: 'u', nombre: 'Ana' };
+  const encargada = { id: 'e', nombre: 'Encargada' };
+
+  async function ventaEnTurnoAbierto() {
+    await configurarDispositivo({ nombre: 'Caja 1', tipo: 'caja', prefijo: 'A' });
+    const turno = await abrirTurno({ fondoInicial: 50000, usuario: ana });
+    const venta = ventaPrueba({ id: crypto.randomUUID(), turnoId: turno.id });
+    await bd.ventas.put(venta);
+    await bd.outbox.clear();
+    return { turno, venta };
+  }
+
+  test('cancelar marca la venta y deja de contar', async () => {
+    const { venta, turno } = await ventaEnTurnoAbierto();
+    await expect(
+      cancelarVenta({ ventaId: venta.id, motivo: ' ', usuario: ana, autorizadoPor: null }),
+    ).rejects.toThrow();
+    await cancelarVenta({
+      ventaId: venta.id,
+      motivo: 'Se arrepintió',
+      usuario: ana,
+      autorizadoPor: encargada,
+    });
+    expect(await bd.ventas.get(venta.id)).toMatchObject({
+      estado: 'cancelada',
+      cancelacion: { motivo: 'Se arrepintió', usuario: ana, autorizadoPor: encargada },
+    });
+    const [op] = await bd.outbox.toArray();
+    expect(Object.keys(op!.datos).sort()).toEqual(['actualizadoEn', 'cancelacion', 'estado']);
+    await expect(
+      cancelarVenta({ ventaId: venta.id, motivo: 'otra vez', usuario: ana, autorizadoPor: null }),
+    ).rejects.toThrow();
+    const cerrado = await cerrarTurno({ turnoId: turno.id, usuario: ana, efectivoContado: 50000 });
+    expect(cerrado.resumen).toMatchObject({
+      ventas: 0,
+      cancelaciones: { cantidad: 1 },
+      efectivoEsperado: 50000,
+    });
+  });
+
+  test('no se cancela una venta de un turno cerrado', async () => {
+    const { venta, turno } = await ventaEnTurnoAbierto();
+    await cerrarTurno({ turnoId: turno.id, usuario: ana, efectivoContado: 0 });
+    await expect(
+      cancelarVenta({ ventaId: venta.id, motivo: 'x', usuario: ana, autorizadoPor: null }),
+    ).rejects.toThrow('turno que sigue abierto');
+  });
+
+  test('caso I: devolver 1 Brownie en efectivo reembolsa $40.50 y ajusta el esperado', async () => {
+    const { venta, turno } = await ventaEnTurnoAbierto();
+    const d = await registrarDevolucion({
+      ventaId: venta.id,
+      seleccion: [{ lineaId: 'l-brownie', cantidad: 1 }],
+      metodo: 'efectivo',
+      motivo: 'Frío',
+      usuario: ana,
+      autorizadoPor: null,
+    });
+    expect(d).toMatchObject({ monto: 4050, turnoId: turno.id, folioVenta: venta.folio, metodo: 'efectivo' });
+    expect(await bd.ventas.get(venta.id)).toMatchObject({ estado: 'devuelta_parcial', devuelto: 4050 });
+    expect((await bd.outbox.toArray()).map((o) => `${o.tabla}:${o.tipo}`)).toEqual([
+      'devoluciones:crear',
+      'ventas:actualizar',
+    ]);
+    const cerrado = await cerrarTurno({ turnoId: turno.id, usuario: ana, efectivoContado: 0 });
+    expect(cerrado.resumen?.efectivoEsperado).toBe(50000 + 19350 - 4050);
+
+    // lo que queda de la venta se devuelve con tarjeta (sin caja abierta)
+    const resto = await registrarDevolucion({
+      ventaId: venta.id,
+      seleccion: [{ lineaId: 'l-latte', cantidad: 2 }],
+      metodo: 'tarjeta',
+      motivo: 'Todo',
+      usuario: ana,
+      autorizadoPor: null,
+    });
+    expect(resto).toMatchObject({ monto: 19350 - 4050, turnoId: null });
+    expect(await bd.ventas.get(venta.id)).toMatchObject({ estado: 'devuelta', devuelto: 19350 });
+  });
+
+  test('en efectivo requiere caja abierta en este dispositivo', async () => {
+    const { venta, turno } = await ventaEnTurnoAbierto();
+    await cerrarTurno({ turnoId: turno.id, usuario: ana, efectivoContado: 0 });
+    await expect(
+      registrarDevolucion({
+        ventaId: venta.id,
+        seleccion: [{ lineaId: 'l-brownie', cantidad: 1 }],
+        metodo: 'efectivo',
+        motivo: 'x',
+        usuario: ana,
+        autorizadoPor: null,
+      }),
+    ).rejects.toThrow('abre la caja');
+    expect(await bd.devoluciones.count()).toBe(0);
   });
 });

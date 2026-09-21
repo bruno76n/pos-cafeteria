@@ -92,9 +92,9 @@ Cada tarea incluye su criterio de terminado después de "→".
 ## Fase 8: Historial, cancelaciones y devoluciones
 
 - [x] 8.1 Historial con filtros (fechas, método, cajero, estado, folio) e insignias de estado y "Por subir". → Según `docs/03-interfaz.md`.
-- [ ] 8.2 Detalle con vista del ticket, reimprimir (marca de reimpresión) y compartir. → Funciona.
-- [ ] 8.3 Cancelar venta (turno abierto, motivo, permiso o autorización). → La venta deja de contar en la caja.
-- [ ] 8.4 Devolución total o parcial (reembolso proporcional, método, turno) y lista de Devoluciones. → Caso I; el efectivo esperado se ajusta.
+- [x] 8.2 Detalle con vista del ticket, reimprimir (marca de reimpresión) y compartir. → Funciona.
+- [x] 8.3 Cancelar venta (turno abierto, motivo, permiso o autorización). → La venta deja de contar en la caja.
+- [x] 8.4 Devolución total o parcial (reembolso proporcional, método, turno) y lista de Devoluciones. → Caso I; el efectivo esperado se ajusta.
 - [ ] 8.5 e2e: cancelar y devolver. → Pasa.
 
 ## Fase 9: Usuarios y permisos

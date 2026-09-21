@@ -6,6 +6,8 @@ import { configNueva, menuDeEjemplo, type MenuEjemplo } from '@/dominio/menuEjem
 import { crearPin } from '@/dominio/pin';
 import { TABLAS_ULTIMO_GANA } from '@/dominio/reglasServidor';
 import type {
+  Devolucion,
+  MetodoPago,
   Movimiento,
   Operacion,
   RefUsuario,
@@ -16,6 +18,13 @@ import type {
   Venta,
 } from '@/dominio/tipos';
 import { bd, guardarMeta, leerMeta, type OperacionOutbox } from './bd';
+import {
+  aplicarDevolucion,
+  calcularReembolso,
+  puedeCancelar,
+  puedeDevolver,
+  type LineaADevolver,
+} from '@/dominio/devoluciones';
 
 // Toda escritura pasa por aquí: guarda el registro y agrega su operación a la outbox
 // en UNA sola transacción de Dexie. Nada de fetch: la red la toca solo el motor de sync.
@@ -314,4 +323,84 @@ export async function cerrarTurno(datos: {
   };
   await actualizar('turnos', turno.id, cambios);
   return { ...turno, ...cambios };
+}
+
+/** Cancela una venta pagada cuyo turno sigue abierto (el dinero se devolvió en el momento). */
+export async function cancelarVenta(datos: {
+  ventaId: string;
+  motivo: string;
+  usuario: RefUsuario;
+  autorizadoPor: RefUsuario | null;
+}) {
+  const venta = await bd.ventas.get(datos.ventaId);
+  const turno = venta ? await bd.turnos.get(venta.turnoId) : undefined;
+  if (!venta || !puedeCancelar(venta, turno)) {
+    throw new Error('Solo se cancelan ventas pagadas de un turno que sigue abierto.');
+  }
+  if (!datos.motivo.trim()) throw new Error('Escribe el motivo.');
+  await actualizar('ventas', venta.id, {
+    estado: 'cancelada',
+    cancelacion: {
+      motivo: datos.motivo.trim(),
+      usuario: datos.usuario,
+      autorizadoPor: datos.autorizadoPor,
+      fecha: ahoraISO(),
+    },
+  });
+}
+
+/**
+ * Devolución total o parcial: calcula el reembolso proporcional, guarda la devolución y actualiza
+ * `devuelto` y el estado de la venta, en una transacción. En efectivo requiere la caja abierta en
+ * este dispositivo (resta del efectivo esperado de ese turno).
+ */
+export async function registrarDevolucion(datos: {
+  ventaId: string;
+  seleccion: LineaADevolver[];
+  metodo: MetodoPago;
+  motivo: string;
+  usuario: RefUsuario;
+  autorizadoPor: RefUsuario | null;
+}): Promise<Devolucion> {
+  if (!datos.motivo.trim()) throw new Error('Escribe el motivo.');
+  const dispositivoId = await leerMeta('dispositivoId');
+  if (!dispositivoId) throw new Error('Este dispositivo no está configurado.');
+  let devolucion: Devolucion | undefined;
+  await bd.transaction('rw', [bd.ventas, bd.devoluciones, bd.turnos, bd.outbox], async () => {
+    const venta = await bd.ventas.get(datos.ventaId);
+    if (!venta || !puedeDevolver(venta)) throw new Error('Esta venta ya no admite devoluciones.');
+    const turno = await bd.turnos.where('[dispositivoId+estado]').equals([dispositivoId, 'abierto']).first();
+    if (datos.metodo === 'efectivo' && !turno) {
+      throw new Error('Para devolver en efectivo abre la caja de este dispositivo.');
+    }
+    const previas = await bd.devoluciones.where('ventaId').equals(venta.id).toArray();
+    const reembolso = calcularReembolso(venta, datos.seleccion, previas);
+    if (!reembolso.ok) throw new Error(reembolso.error);
+    const fecha = ahoraISO();
+    devolucion = {
+      id: crypto.randomUUID(),
+      ventaId: venta.id,
+      folioVenta: venta.folio,
+      turnoId: turno?.id ?? null,
+      dispositivoId,
+      lineas: reembolso.lineas,
+      monto: reembolso.monto,
+      metodo: datos.metodo,
+      motivo: datos.motivo.trim(),
+      usuario: datos.usuario,
+      autorizadoPor: datos.autorizadoPor,
+      fecha,
+      dia: diaLocal(fecha),
+      actualizadoEn: fecha,
+    };
+    const cambios = { ...aplicarDevolucion(venta, devolucion, previas), actualizadoEn: fecha };
+    await bd.devoluciones.add(devolucion);
+    await bd.ventas.update(venta.id, cambios);
+    await bd.outbox.bulkAdd([
+      operacion('devoluciones', 'crear', devolucion.id, devolucion),
+      operacion('ventas', 'actualizar', venta.id, cambios),
+    ]);
+  });
+  avisar();
+  return devolucion!;
 }

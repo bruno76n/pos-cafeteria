@@ -74,6 +74,9 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 7.3 | hecho | Productos: lista con buscador, filtro por categoría, disponible directo, subir/bajar dentro de su categoría; crear/editar con vista previa del botón, categoría, precio (solo con modificarPrecios o autorización), descripción, imagen recortada 256×256 WebP ≤60 KB (JPEG si el navegador no codifica WebP), disponible y grupos en orden; eliminar con confirmación; estado vacío con 'Cargar menú de ejemplo' (escribirMenu compartido con el asistente).
 7.4 | hecho | e2e: crear categoría (color), grupo obligatorio con opción por defecto y precio extra, producto con imagen (queda en WebP) y el grupo; se vende al instante ($60) y la línea llega a la base con su copia; encargada con precio bloqueado hasta autorización.
 8.1 | hecho | Historial (datos locales, hoy por defecto): SelectorRango reutilizable (Hoy/Ayer/Semana/Mes/Personalizado con tope), filtros por folio, método, cajero y estado (dominio/historial.ts con pruebas); tabla con folio, hora, productos, total, pago, cajero, insignias de estado y 'Por subir'; estado vacío con 'Nueva venta'.
+8.2 | hecho | Detalle de venta: vista del ticket, Reimprimir (con marca de reimpresión), Compartir, insignias de estado y 'Por subir', cancelación y devoluciones registradas.
+8.3 | hecho | Cancelar venta: solo pagadas con su turno abierto, motivo obligatorio, cancelarVentas o autorización (guarda autorizadoPor); deja de contar en la caja; ticket con '*** VENTA CANCELADA ***'.
+8.4 | hecho | Devolución total o parcial (Todo/Nada y cantidades por línea), reembolso proporcional en vivo (caso I), método de reembolso (efectivo exige caja abierta en este dispositivo), registrarDevolucion en una transacción (devolución + devuelto/estado); lista de Devoluciones por fechas con enlace a la venta.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

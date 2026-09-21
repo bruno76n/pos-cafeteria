@@ -110,3 +110,15 @@ export function useCortes() {
     ),
   );
 }
+
+export function useDevolucionesDeVenta(ventaId: string | undefined) {
+  return useLiveQuery(
+    async () =>
+      ventaId
+        ? (await bd.devoluciones.where('ventaId').equals(ventaId).toArray()).sort((a, b) =>
+            a.fecha.localeCompare(b.fecha),
+          )
+        : [],
+    [ventaId],
+  );
+}
