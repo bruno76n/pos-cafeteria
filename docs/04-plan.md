@@ -132,7 +132,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 13.1 Revisión responsive: 1280×800, 1180×820, 1024×768, vertical y celular (Inicio y Reportes). Toma capturas con Playwright y corrige. → Sin desbordes ni textos cortados.
 - [x] 13.2 Estados vacíos, de error y de carga con los textos de `docs/03-interfaz.md` §5. → Revisados en todas las pantallas.
 - [x] 13.3 Accesibilidad básica: foco visible, contraste, etiquetas, `prefers-reduced-motion`. → Revisado.
-- [ ] 13.4 `README.md` del repo: requisitos, cómo correr, cuentas y PINs demo, pruebas, despliegue en Neon y Vercel (`docs/02-arquitectura.md` §15) y limitaciones conocidas (permisos por rol solo en la app; depende del reloj del dispositivo; impresión directa solo en Android/Chrome). → Completo.
+- [x] 13.4 `README.md` del repo: requisitos, cómo correr, cuentas y PINs demo, pruebas, despliegue en Neon y Vercel (`docs/02-arquitectura.md` §15) y limitaciones conocidas (permisos por rol solo en la app; depende del reloj del dispositivo; impresión directa solo en Android/Chrome). → Completo.
 - [ ] 13.5 Resumen final en la bitácora para Bruno. → Escrito.
 
 ## Fase 14: Opcionales (solo si todo lo anterior está completo)

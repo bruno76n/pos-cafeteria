@@ -100,6 +100,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 13.1 | hecho | Capturas en 1280×800, 1180×820, 1024×768, 800×1280 y 390×844; correcciones: acciones de línea sin texto en carritos angostos, buscador en su renglón en celular, pestañas de cobro apiladas, indicador de conexión corto en celular; e2e que verifica que nada se desborda a lo ancho en cuatro tamaños.
 13.2 | hecho | Revisados los textos de §5 en todas las pantallas (sin caja, sin conexión, por subir, error de subida, sin permiso, impresora, historial vacío, confirmar vaciar, cancelar, caja cerrada, actualización); agregado 'Aún no hay productos.' con 'Agregar producto'/'Cargar menú de ejemplo' en Nueva venta y el diálogo de autorización ahora dice 'Tu usuario no puede …'. Las pantallas no muestran 'Cargando' mientras leen Dexie (tarda milisegundos) para no parpadear.
 13.3 | hecho | Campos con anillo de foco Cafeto de 3 px (se quitó focus:outline-none), placeholders con contraste suficiente; contrastes de la paleta ≥ 5.2:1; prefers-reduced-motion global; e2e que recorre todas las pantallas y verifica que cada campo y botón visible tenga nombre accesible y que el foco con teclado se vea.
+13.4 | hecho | README.md: requisitos, cómo correrlo, cuenta y PINs demo, comandos, resumen técnico, producción en Neon y Vercel (§15) y limitaciones conocidas (permisos solo en la app, reloj del dispositivo, impresión directa solo Android/Chrome, último gana, reportes >35 días con internet).
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
