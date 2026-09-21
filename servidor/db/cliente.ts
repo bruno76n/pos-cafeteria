@@ -1,6 +1,9 @@
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
+import * as esquema from './esquema';
 
-export type BaseDatos = PgDatabase<PgQueryResultHKT>;
+export type BaseDatos = PgDatabase<PgQueryResultHKT, typeof esquema>;
+
+const opcionesDrizzle = { schema: esquema, casing: 'snake_case' } as const;
 
 export interface ConexionBaseDatos {
   db: BaseDatos;
@@ -20,12 +23,12 @@ export async function conectarBaseDatos(opciones: {
   if (opciones.databaseUrl) {
     const { neon } = await import('@neondatabase/serverless');
     const { drizzle } = await import('drizzle-orm/neon-http');
-    const db = drizzle(neon(opciones.databaseUrl)) as unknown as BaseDatos;
+    const db = drizzle(neon(opciones.databaseUrl), opcionesDrizzle) as unknown as BaseDatos;
     return { db, tipo: 'neon', cerrar: async () => {} };
   }
   const { PGlite } = await import('@electric-sql/pglite');
   const { drizzle } = await import('drizzle-orm/pglite');
   const cliente = new PGlite(opciones.dirPglite);
-  const db = drizzle(cliente) as unknown as BaseDatos;
+  const db = drizzle(cliente, opcionesDrizzle) as unknown as BaseDatos;
   return { db, tipo: 'pglite', cerrar: () => cliente.close() };
 }

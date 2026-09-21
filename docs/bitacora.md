@@ -30,6 +30,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 1.6 | hecho | cobro.ts: pagos combinados, pendiente, cambio solo del efectivo, un pago por método, referencia obligatoria, billetes sugeridos; casos D, E, F y G.
 1.7 | hecho | caja.ts (resumen de turno, efectivo esperado, diferencia, denominaciones, agregados por producto/categoría/cajero) y devoluciones.ts (reembolso proporcional con tope, estado resultante); casos H e I.
 1.8 | hecho | folios.ts (formato, siguiente, contador inicial, prefijo en uso), permisos.ts (roles por defecto, puede, nombres) y pin.ts (SHA-256 con sal, Web Crypto, búsqueda por PIN, PIN en uso).
+1.9 | hecho | esquema.ts con todas las tablas (rev de la secuencia rev_global, actualizado_en, índices, folio único), cuentas y operaciones_aplicadas; migración 0000_inicial; migrar.ts para PGlite/Neon; dev-api migra al arrancar; pruebas desde cero.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -38,6 +39,8 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - IDs como texto (no uuid): el menú demo usa ids legibles ('latte', 'cafes'); los nuevos registros siguen usando crypto.randomUUID().
 - Todo registro sincronizable lleva actualizadoEn; config se guarda como { id: 'general', datos }.
 - Tope de descuento en monto: no puede pasar de descuentoMaximoPorcentaje % del subtotal (mismo tope que en porcentaje).
+- Tabla extra operaciones_aplicadas: guarda el id de cada operación para que reenviarla sea idempotente también en 'actualizar'.
+- Categorías, grupos y productos se borran con borrado=true (lápida) para que el borrado llegue a los otros dispositivos por el pull.
 
 ## Para probar a mano (Bruno)
 
