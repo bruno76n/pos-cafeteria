@@ -8,7 +8,12 @@ export default mergeConfig(
       projects: [
         {
           extends: true,
-          test: { name: 'app', environment: 'jsdom', include: ['src/**/*.test.{ts,tsx}'] },
+          test: {
+            name: 'app',
+            environment: 'jsdom',
+            include: ['src/**/*.test.{ts,tsx}'],
+            setupFiles: ['src/pruebas.setup.ts'],
+          },
         },
         {
           extends: true,
