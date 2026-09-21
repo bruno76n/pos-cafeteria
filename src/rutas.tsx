@@ -86,7 +86,8 @@ function Descargando() {
 
 function Guardian() {
   const estado = useEstadoAcceso();
-  const { pathname } = useLocation();
+  const { pathname, state } = useLocation();
+  const desde = (state as { desde?: string } | null)?.desde;
   const conSesion = estado !== 'cargando' && estado !== 'acceso';
 
   useEffect(() => {
@@ -98,9 +99,12 @@ function Guardian() {
   if (estado === 'cargando') return <Cargando />;
   if (estado === 'descargando') return <Descargando />;
   const puerta = PUERTAS[estado];
-  if (puerta && pathname !== puerta) return <Navigate to={puerta} replace />;
-  if (estado === 'listo' && Object.values(PUERTAS).includes(pathname))
-    return <Navigate to="/inicio" replace />;
+  const enPuerta = Object.values(PUERTAS).includes(pathname);
+  if (puerta && pathname !== puerta) {
+    // Recuerda a dónde iba para volver ahí después del PIN.
+    return <Navigate to={puerta} replace state={{ desde: enPuerta ? desde : pathname }} />;
+  }
+  if (estado === 'listo' && enPuerta) return <Navigate to={desde ?? '/inicio'} replace />;
   return <Outlet />;
 }
 

@@ -43,6 +43,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 2.5 | hecho | TecladoPin propio (teclas de 72 px, prueba al llegar a 4–6 dígitos, tecla Entrar, espera de 30 s tras 5 fallos, teclado físico), pantalla /bloqueo, bloqueo por inactividad (meta bloqueoMinutos, 0 = nunca); e2e: PIN, recarga pide PIN, espera tras 5 fallos.
 2.6 | hecho | autorizarConPin() en dominio/permisos (probado con cajero y encargada), pedirAutorizacion(permiso) con store y DialogoAutorizacion (TecladoPin; mensaje si el PIN es de alguien sin permiso), useAutorizar() que regresa usuario y autorizadoPor, y <RequierePermiso>. La prueba de UI con cajero va en el e2e de 3.5.
 2.7 | hecho | IndicadorConexion (En línea / Sin conexión: N ventas por subir), AvisosSync (franja sin conexión y, para el Administrador, cada escritura rechazada con su folio, motivo y Reintentar); e2e con context.setOffline.
+2.8 | hecho | e2e: acceso + PIN + cambiar usuario + bloquear; el cajero no ve Reportes, Configuración ni Usuarios y en /reportes ve 'No tienes acceso'; el guardián regresa a la ruta pedida después del PIN; ayudas e2e compartidas.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
