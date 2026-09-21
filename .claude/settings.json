@@ -1,6 +1,11 @@
 {
   "permissions": {
-    "deny": ["Bash(git push *)", "Bash(vercel *)", "Bash(npx vercel *)", "Bash(npx drizzle-kit push *)"]
+    "deny": [
+      "Bash(git push *)",
+      "Bash(vercel *)",
+      "Bash(npx vercel *)",
+      "Bash(npx drizzle-kit push *)"
+    ]
   },
   "hooks": {
     "SessionStart": [

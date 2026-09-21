@@ -9,3 +9,4 @@ docs
 seed
 *.md
 package-lock.json
+.claude
