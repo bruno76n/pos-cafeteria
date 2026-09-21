@@ -79,7 +79,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 6.2 Movimientos: entradas, retiros y gastos con categoría; anular. → Suman o restan correctamente.
 - [x] 6.3 Cerrar caja: conteo por denominaciones o total, corte ciego, diferencia, nota, resumen guardado. → Turno cerrado con `resumen`.
 - [x] 6.4 Imprimir corte. → Vista previa correcta.
-- [ ] 6.5 Cortes de caja: historial y detalle con reimpresión. → Lista los cortes.
+- [x] 6.5 Cortes de caja: historial y detalle con reimpresión. → Lista los cortes.
 - [ ] 6.6 e2e: abrir, vender, registrar gasto, cerrar con faltante; el corte muestra la diferencia correcta. → Pasa.
 
 ## Fase 7: Menú

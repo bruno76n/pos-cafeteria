@@ -101,3 +101,12 @@ export function useErroresSync() {
     (await bd.erroresSync.toArray()).sort((a, b) => a.fecha.localeCompare(b.fecha)),
   );
 }
+
+/** Turnos cerrados (cortes), del más reciente al más antiguo. */
+export function useCortes() {
+  return useLiveQuery(async () =>
+    (await bd.turnos.where('estado').equals('cerrado').toArray()).sort((a, b) =>
+      (b.cerradoEn ?? '').localeCompare(a.cerradoEn ?? ''),
+    ),
+  );
+}
