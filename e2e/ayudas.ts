@@ -1,4 +1,4 @@
-import { expect, type Page } from '@playwright/test';
+import { expect, type APIRequestContext, type Page } from '@playwright/test';
 
 export const PIN = { dueno: '1234', encargada: '2222', cajero: '1111' } as const;
 
@@ -23,4 +23,29 @@ export async function entrarCon(page: Page, pin: string) {
   await expect(page.getByRole('heading', { name: 'Escribe tu PIN' })).toBeVisible();
   await escribirPin(page, pin);
   await expect(page.getByRole('heading', { name: 'Escribe tu PIN' })).toBeHidden();
+}
+
+/** Lee todo lo que tiene el servidor (con la cuenta demo) para comprobar que algo llegó a la base. */
+export async function leerServidor(request: APIRequestContext) {
+  const acceso = await request.post('/api/acceso', {
+    data: { correo: 'caja@demo.test', contrasena: 'demo1234' },
+  });
+  const { token } = (await acceso.json()) as { token: string };
+  const filas: { tabla: string; registro: Record<string, unknown> }[] = [];
+  let desde = 0;
+  for (;;) {
+    const res = await request.get(`/api/sync/pull?desde=${desde}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const pagina = (await res.json()) as { filas: typeof filas; rev: number; hayMas: boolean };
+    filas.push(...pagina.filas);
+    desde = pagina.rev;
+    if (!pagina.hayMas) break;
+  }
+  return (tabla: string) => filas.filter((f) => f.tabla === tabla).map((f) => f.registro);
+}
+
+/** Espera a que el indicador diga que no hay ventas por subir. */
+export async function esperarSubida(page: Page) {
+  await expect(page.getByRole('status').filter({ hasText: /^En línea$/ })).toBeVisible({ timeout: 15_000 });
 }

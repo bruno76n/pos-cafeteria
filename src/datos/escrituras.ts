@@ -1,9 +1,17 @@
-import { ahoraISO } from '@/dominio/fechas';
+import { ahoraISO, diaLocal } from '@/dominio/fechas';
 import { contadorInicial, siguienteFolio } from '@/dominio/folios';
 import { configNueva, menuDeEjemplo } from '@/dominio/menuEjemplo';
 import { crearPin } from '@/dominio/pin';
 import { TABLAS_ULTIMO_GANA } from '@/dominio/reglasServidor';
-import type { Operacion, RegistrosPorTabla, TablaSync, Usuario, Venta } from '@/dominio/tipos';
+import type {
+  Operacion,
+  RefUsuario,
+  RegistrosPorTabla,
+  TablaSync,
+  Turno,
+  Usuario,
+  Venta,
+} from '@/dominio/tipos';
 import { bd, guardarMeta, leerMeta, type OperacionOutbox } from './bd';
 
 // Toda escritura pasa por aquí: guarda el registro y agrega su operación a la outbox
@@ -187,4 +195,34 @@ export async function inicializarNegocio(datos: {
   );
   avisar();
   return admin;
+}
+
+/** Abre la caja del dispositivo. Solo puede haber un turno abierto por dispositivo. */
+export async function abrirTurno(datos: { fondoInicial: number; usuario: RefUsuario }): Promise<Turno> {
+  const dispositivoId = await leerMeta('dispositivoId');
+  const dispositivo = dispositivoId ? await bd.dispositivos.get(dispositivoId) : undefined;
+  if (!dispositivo) throw new Error('Este dispositivo no está configurado.');
+  const ahora = ahoraISO();
+  const turno: Turno = {
+    id: crypto.randomUUID(),
+    dispositivoId: dispositivo.id,
+    dispositivoNombre: dispositivo.nombre,
+    estado: 'abierto',
+    abiertoPor: datos.usuario,
+    abiertoEn: ahora,
+    dia: diaLocal(ahora),
+    fondoInicial: datos.fondoInicial,
+    actualizadoEn: ahora,
+  };
+  await bd.transaction('rw', bd.turnos, bd.outbox, async () => {
+    const abierto = await bd.turnos
+      .where('[dispositivoId+estado]')
+      .equals([dispositivo.id, 'abierto'])
+      .first();
+    if (abierto) throw new Error('La caja ya está abierta.');
+    await bd.turnos.add(turno);
+    await bd.outbox.add(operacion('turnos', 'crear', turno.id, turno));
+  });
+  avisar();
+  return turno;
 }

@@ -5,6 +5,7 @@ import { bd, leerMeta } from './bd';
 import {
   actualizar,
   alEscribir,
+  abrirTurno,
   borrar,
   configurarDispositivo,
   crear,
@@ -180,5 +181,22 @@ describe('inicializarNegocio', () => {
     });
     expect(await bd.productos.count()).toBe(0);
     expect(await bd.outbox.count()).toBe(2);
+  });
+});
+
+describe('abrirTurno', () => {
+  test('abre un solo turno por dispositivo', async () => {
+    await configurarDispositivo({ nombre: 'Caja 1', tipo: 'caja', prefijo: 'A' });
+    const ana = { id: 'u', nombre: 'Ana' };
+    const t = await abrirTurno({ fondoInicial: 50000, usuario: ana });
+    expect(t).toMatchObject({
+      estado: 'abierto',
+      fondoInicial: 50000,
+      dispositivoNombre: 'Caja 1',
+      abiertoPor: ana,
+    });
+    await expect(abrirTurno({ fondoInicial: 0, usuario: ana })).rejects.toThrow('La caja ya está abierta.');
+    expect(await bd.turnos.count()).toBe(1);
+    expect((await bd.outbox.toArray()).map((o) => o.tabla)).toEqual(['dispositivos', 'turnos']);
   });
 });
