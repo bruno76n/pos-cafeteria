@@ -25,6 +25,8 @@ import { DialogoDescuento } from './DialogoDescuento';
 import { HojaPersonalizacion } from './HojaPersonalizacion';
 import { PanelVenta } from './PanelVenta';
 import { ResultadoVenta } from './ResultadoVenta';
+import { construirTicketVenta } from '@/impresion/ticket';
+import { useImpresora } from '@/impresion/usarImpresora';
 
 type Personalizacion = { producto: Producto; linea?: LineaCarrito };
 
@@ -44,6 +46,7 @@ export function NuevaVenta() {
   const [ventaAbierta, setVentaAbierta] = useState(false);
   const [descontando, setDescontando] = useState(false);
   const [cobrando, setCobrando] = useState(false);
+  const impresora = useImpresora();
 
   if (turno === undefined || !config || !categorias || !productos || !grupos || !dispositivo || !usuario) {
     return null;
@@ -87,6 +90,7 @@ export function NuevaVenta() {
     );
     terminarVenta({ ventaId: venta.id, folio: venta.folio, cambio: venta.cambio, total: venta.total });
     setCobrando(false);
+    if (config!.ticket.imprimirAlCobrar) void impresora.imprimir(construirTicketVenta(venta, config!));
     setVentaAbierta(false);
   }
 
@@ -101,7 +105,7 @@ export function NuevaVenta() {
       totales={totales}
       etiquetaDescuento={etiquetaDescuento}
       mostrarIVA={config.ventas.tasaIVA > 0}
-      resultado={ultimaVenta && <ResultadoVenta ultima={ultimaVenta} />}
+      resultado={ultimaVenta && <ResultadoVenta ultima={ultimaVenta} impresora={impresora} />}
       acciones={
         config.ventas.descuentosPermitidos && (
           <Boton className="flex-1" onClick={() => setDescontando(true)}>

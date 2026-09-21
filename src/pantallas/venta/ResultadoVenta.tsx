@@ -4,13 +4,20 @@ import type { UltimaVenta } from '@/datos/bd';
 import { useConfig, useVenta } from '@/datos/consultas';
 import { formatearDinero } from '@/dominio/dinero';
 import { construirTicketVenta } from '@/impresion/ticket';
-import { useImpresora } from '@/impresion/usarImpresora';
+import type { useImpresora } from '@/impresion/usarImpresora';
 
 /** Resultado de la última venta en el carrito vacío: folio, cambio en grande e imprimir. */
-export function ResultadoVenta({ ultima }: { ultima: UltimaVenta }) {
+export function ResultadoVenta({
+  ultima,
+  impresora,
+}: {
+  ultima: UltimaVenta;
+  /** La misma impresora que imprimió al cobrar (para mostrar su error y reintentar). */
+  impresora: ReturnType<typeof useImpresora>;
+}) {
   const venta = useVenta(ultima.ventaId);
   const config = useConfig();
-  const { imprimir, error, imprimiendo } = useImpresora();
+  const { imprimir, error, imprimiendo } = impresora;
 
   return (
     <div className="flex flex-col items-center gap-2 p-6 text-center">
