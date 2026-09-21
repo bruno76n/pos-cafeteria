@@ -19,7 +19,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 
 ## Fase 1: Dominio, datos y sincronización
 
-- [ ] 1.1 `dominio/dinero.ts`: centavos, redondeo, formato MXN, lectura de captura ("12.5" → 1250). → Pruebas.
+- [x] 1.1 `dominio/dinero.ts`: centavos, redondeo, formato MXN, lectura de captura ("12.5" → 1250). → Pruebas.
 - [ ] 1.2 `dominio/tipos.ts` y `dominio/esquemas.ts` (Zod) para todas las entidades de `docs/02-arquitectura.md` §5. → Pruebas con documentos válidos e inválidos.
 - [ ] 1.3 `dominio/fechas.ts`: `diaLocal()` en America/Mexico_City, inicio y fin de día, rangos Hoy/Ayer/Esta semana/Este mes, formato `dd/mm/aaaa HH:mm`. → Pruebas, incluido el cruce de medianoche UTC.
 - [ ] 1.4 `dominio/modificadores.ts`: opciones por defecto, validación (obligatorio, mín., máx.), precio unitario, resumen legible. → Pruebas (caso J).
