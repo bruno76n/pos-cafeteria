@@ -128,7 +128,7 @@ export function CapaCobro({
                       setMetodo(m);
                       setError(null);
                     }}
-                    className={`flex min-h-16 items-center justify-center gap-2 rounded-boton border text-producto font-semibold disabled:opacity-40 ${
+                    className={`flex min-h-16 items-center justify-center gap-2 rounded-boton border text-producto font-semibold disabled:opacity-40 max-sm:flex-col max-sm:gap-0 max-sm:text-etiqueta ${
                       metodo === m ? 'border-grafito bg-grafito text-papel' : 'border-linea bg-papel'
                     }`}
                   >

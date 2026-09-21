@@ -67,7 +67,7 @@ export function Catalogo({
 
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col" aria-label="Productos">
-      <div className="flex items-center gap-2 px-4 pt-4 pb-3">
+      <div className="flex items-center gap-2 px-4 pt-4 pb-3 max-sm:flex-col max-sm:items-stretch">
         <div role="tablist" aria-label="Categorías" className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
           {activas.map((c) => {
             const actual = !busqueda.trim() && c.id === categoriaId;
@@ -90,7 +90,7 @@ export function Catalogo({
             );
           })}
         </div>
-        <label className="relative flex w-52 shrink-0 items-center">
+        <label className="relative flex w-52 shrink-0 items-center max-sm:order-first max-sm:w-full">
           <Search aria-hidden size={20} className="pointer-events-none absolute left-3 text-grafito-suave" />
           <input
             type="search"

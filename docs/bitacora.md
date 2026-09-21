@@ -97,6 +97,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 12.4 | hecho | e2e PWA: tercer webServer (vite build + preview con proxy a la API); con el service worker controlando la página, sin red se recarga, pide PIN, abre caja y vende (1 venta por subir).
 12.4 | hecho | corrección: el commit anterior se hizo con la e2e de Reportes fallando; con mucho contenido la barra de pestañas (overflow-x) se aplastaba a 0 de alto. Pantalla y Pestanas ya no encogen a sus hijos; 30/30 e2e pasan.
 12.5 | hecho | Revisión contra el código: campos que manda la app (cancelar, devolver, anular, cerrar turno, catálogo completo) = los que permite reglasServidor; índices por rev, dia, turno_id, venta_id, (dispositivo_id, estado) y folio único; lotes ahora limitados también por tamaño (~1.5 MB < 2 MB del servidor) y un 400/413 ya no atora la cola (se manda una por una y solo se aparta la mala); e2e verifica que /api no se sirve del caché sin red.
+13.1 | hecho | Capturas en 1280×800, 1180×820, 1024×768, 800×1280 y 390×844; correcciones: acciones de línea sin texto en carritos angostos, buscador en su renglón en celular, pestañas de cobro apiladas, indicador de conexión corto en celular; e2e que verifica que nada se desborda a lo ancho en cuatro tamaños.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

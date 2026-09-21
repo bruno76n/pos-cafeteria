@@ -69,11 +69,13 @@ function Linea({
             aria-label={`Editar ${linea.nombre}`}
             onClick={alEditar}
           >
-            <Pencil aria-hidden size={18} /> Editar
+            <Pencil aria-hidden size={18} />{' '}
+            <span className="max-[1100px]:hidden portrait:inline">Editar</span>
           </Boton>
         )}
         <Boton variante="fantasma" className="px-3" aria-label={`Nota de ${linea.nombre}`} onClick={alNota}>
-          <StickyNote aria-hidden size={18} /> Nota
+          <StickyNote aria-hidden size={18} />{' '}
+          <span className="max-[1100px]:hidden portrait:inline">Nota</span>
         </Boton>
         <Boton
           variante="fantasma"
