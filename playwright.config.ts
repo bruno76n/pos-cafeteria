@@ -17,6 +17,7 @@ export default defineConfig({
     locale: 'es-MX',
     timezoneId: 'America/Mexico_City',
     trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
   webServer: [
     {

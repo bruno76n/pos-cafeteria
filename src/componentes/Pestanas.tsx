@@ -10,7 +10,7 @@ export interface Pestana {
 /** Subsecciones como pestañas arriba del contenido. */
 export function Pestanas({ pestanas }: { pestanas: Pestana[] }) {
   return (
-    <nav aria-label="Subsecciones" className="flex gap-1 overflow-x-auto border-b border-linea px-4">
+    <nav aria-label="Subsecciones" className="flex shrink-0 gap-1 overflow-x-auto border-b border-linea px-4">
       {pestanas.map((p) => (
         <NavLink
           key={p.a}
