@@ -113,7 +113,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 
 ## Fase 11: Inicio y reportes
 
-- [ ] 11.1 Inicio según permisos (`docs/01-especificacion.md` §5.1). → Cifras correctas en vivo.
+- [x] 11.1 Inicio según permisos (`docs/01-especificacion.md` §5.1). → Cifras correctas en vivo.
 - [ ] 11.2 Reportes: selector de rango y pestaña Resumen con barras por hora o día. → Cifras correctas.
 - [ ] 11.3 Pestañas Productos, Categorías, Cajeros y Cortes. → Cifras correctas.
 - [ ] 11.4 Exportar CSV (UTF-8 con BOM). → Abre bien con acentos.

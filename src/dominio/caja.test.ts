@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { DENOMINACIONES, resumirTurno, tipoDiferencia, totalConteo } from './caja';
+import { avisoCajaAbierta, DENOMINACIONES, resumirTurno, tipoDiferencia, totalConteo } from './caja';
 import { ventaPrueba } from './datosPrueba';
 import type { Devolucion, Movimiento, Venta } from './tipos';
 
@@ -150,4 +150,12 @@ describe('conteo por denominaciones', () => {
     expect(totalConteo({})).toBe(0);
     expect(new Set(DENOMINACIONES.map((d) => d.clave)).size).toBe(DENOMINACIONES.length);
   });
+});
+
+test('aviso de caja abierta desde otro día', () => {
+  expect(avisoCajaAbierta('2026-09-19', '2026-09-19')).toBeNull();
+  expect(avisoCajaAbierta('2026-09-18', '2026-09-19')).toBe(
+    'La caja está abierta desde ayer. Ciérrala para empezar el día con cuentas claras.',
+  );
+  expect(avisoCajaAbierta('2026-09-15', '2026-09-19')).toContain('desde el 15/09/2026');
 });

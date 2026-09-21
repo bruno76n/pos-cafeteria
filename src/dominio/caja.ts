@@ -1,4 +1,5 @@
 import type { Centavos } from './dinero';
+import { formatearFecha, sumarDias } from './fechas';
 import type { Devolucion, MetodoPago, Movimiento, ResumenTurno, Turno, Venta } from './tipos';
 
 export type { ResumenTurno } from './tipos';
@@ -168,4 +169,11 @@ export function resumirTurno(datos: DatosTurno): ResumenTurno {
 /** "Faltan $15.00" / "Sobran $20.00" / "Cuadra exacto" según la diferencia. */
 export function tipoDiferencia(diferencia: Centavos): 'faltante' | 'sobrante' | 'exacto' {
   return diferencia < 0 ? 'faltante' : diferencia > 0 ? 'sobrante' : 'exacto';
+}
+
+/** Aviso cuando la caja sigue abierta desde un día anterior (null si es de hoy). */
+export function avisoCajaAbierta(diaTurno: string, hoy: string): string | null {
+  if (diaTurno >= hoy) return null;
+  const desde = diaTurno === sumarDias(hoy, -1) ? 'ayer' : `el ${formatearFecha(diaTurno)}`;
+  return `La caja está abierta desde ${desde}. Ciérrala para empezar el día con cuentas claras.`;
 }

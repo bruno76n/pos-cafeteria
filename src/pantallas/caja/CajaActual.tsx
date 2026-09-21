@@ -4,7 +4,7 @@ import { Boton } from '@/componentes/Boton';
 import { Pantalla } from '@/componentes/Pantalla';
 import { TablaCifras } from '@/componentes/TablaCifras';
 import { useDatosDelTurno, useTurnoAbierto } from '@/datos/consultas';
-import { resumirTurno } from '@/dominio/caja';
+import { avisoCajaAbierta, resumirTurno } from '@/dominio/caja';
 import { formatearDinero } from '@/dominio/dinero';
 import { diaLocal, formatearFecha, formatearHora } from '@/dominio/fechas';
 import type { Movimiento } from '@/dominio/tipos';
@@ -45,7 +45,7 @@ export function CajaActual() {
   }
 
   const resumen = resumirTurno({ turno, ...datos! });
-  const deOtroDia = turno.dia !== diaLocal();
+  const aviso = avisoCajaAbierta(turno.dia, diaLocal());
 
   return (
     <Pantalla
@@ -61,15 +61,14 @@ export function CajaActual() {
         </>
       }
     >
-      {deOtroDia && (
+      {aviso && (
         <p className="rounded-boton bg-ambar-fondo p-3 text-ambar" role="alert">
-          La caja está abierta desde el {formatearFecha(turno.dia)}. Ciérrala para empezar el día con cuentas
-          claras.
+          {aviso}
         </p>
       )}
       <p className="text-producto">
         Abierta por <strong>{turno.abiertoPor.nombre}</strong> desde las {formatearHora(turno.abiertoEn)}
-        {deOtroDia && ` del ${formatearFecha(turno.abiertoEn)}`}
+        {aviso && ` del ${formatearFecha(turno.abiertoEn)}`}
       </p>
       <div className="max-w-xl rounded-hoja bg-papel px-5 py-3">
         <TablaCifras

@@ -86,6 +86,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 10.3 | hecho | Pagos: tarjeta/transferencia, cuentas bancarias (alias, banco, titular, CLABE de 18, cuenta) y referencia obligatoria; e2e: selector de cuenta en cobro y referencia exigida.
 10.4 | hecho | Ticket: ancho 58/80, mostrar logo/dirección/teléfono/RFC/cajero, mensaje final, imprimir al cobrar, con vista previa en vivo; e2e (48 columnas, sin cajero, mensaje).
 10.5 | hecho | Dispositivo: nombre/tipo/prefijo (mismo formulario del alta), bloqueo automático (Nunca/1/5/15/30 min), estado del almacenamiento persistente e impresora; e2e.
+11.1 | hecho | Inicio: con verReportes, cifras de hoy (total, ventas, ticket promedio, por método) de todos los dispositivos, caja actual con efectivo esperado, 5 más vendidos y cancelaciones/devoluciones/gastos; sin verReportes, estado de la caja, ventas del turno y 'Nueva venta'/'Abrir caja' sin montos; aviso de caja abierta desde otro día (avisoCajaAbierta en dominio); dominio/reportes.ts y csv.ts con pruebas.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
