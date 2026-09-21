@@ -16,6 +16,7 @@ import { useCarrito } from '@/estado/carrito';
 import { useDispositivoActual } from '@/estado/dispositivo';
 import { FormularioAbrirCaja } from '@/pantallas/caja/FormularioAbrirCaja';
 import { Catalogo } from './Catalogo';
+import { DialogoDescuento } from './DialogoDescuento';
 import { HojaPersonalizacion } from './HojaPersonalizacion';
 import { PanelVenta } from './PanelVenta';
 
@@ -33,6 +34,7 @@ export function NuevaVenta() {
   const [abriendo, setAbriendo] = useState(false);
   const [personalizando, setPersonalizando] = useState<Personalizacion | null>(null);
   const [ventaAbierta, setVentaAbierta] = useState(false);
+  const [descontando, setDescontando] = useState(false);
 
   if (turno === undefined || !config || !categorias || !productos || !grupos) return null;
 
@@ -69,7 +71,13 @@ export function NuevaVenta() {
       etiquetaDescuento={etiquetaDescuento}
       mostrarIVA={config.ventas.tasaIVA > 0}
       resultado={null}
-      acciones={null}
+      acciones={
+        config.ventas.descuentosPermitidos && (
+          <Boton className="flex-1" onClick={() => setDescontando(true)}>
+            Descuento
+          </Boton>
+        )
+      }
       puedeEditar={(l) => {
         const p = productoDe(l);
         return Boolean(p && gruposDelProducto(p, grupos).length > 0);
@@ -106,6 +114,13 @@ export function NuevaVenta() {
         <Hoja titulo="Venta actual" alCerrar={() => setVentaAbierta(false)}>
           <div className="-m-4 flex h-[70vh] flex-col">{panel}</div>
         </Hoja>
+      )}
+      {descontando && (
+        <DialogoDescuento
+          subtotal={totales.subtotal}
+          config={config.ventas}
+          alCerrar={() => setDescontando(false)}
+        />
       )}
       {personalizando && (
         <HojaPersonalizacion

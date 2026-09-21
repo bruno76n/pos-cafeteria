@@ -48,14 +48,27 @@ function Linea({
         {linea.nota && <span className="text-grafito">Nota: {linea.nota}</span>}
       </div>
       <div className="mt-2 flex gap-1">
-        <Boton className="w-12 px-0" aria-label={`Quitar uno de ${linea.nombre}`} onClick={() => cambiarCantidad(linea.id, -1)}>
+        <Boton
+          className="w-12 px-0"
+          aria-label={`Quitar uno de ${linea.nombre}`}
+          onClick={() => cambiarCantidad(linea.id, -1)}
+        >
           <Minus aria-hidden size={20} />
         </Boton>
-        <Boton className="w-12 px-0" aria-label={`Agregar uno de ${linea.nombre}`} onClick={() => cambiarCantidad(linea.id, 1)}>
+        <Boton
+          className="w-12 px-0"
+          aria-label={`Agregar uno de ${linea.nombre}`}
+          onClick={() => cambiarCantidad(linea.id, 1)}
+        >
           <Plus aria-hidden size={20} />
         </Boton>
         {alEditar && (
-          <Boton variante="fantasma" className="px-3" aria-label={`Editar ${linea.nombre}`} onClick={alEditar}>
+          <Boton
+            variante="fantasma"
+            className="px-3"
+            aria-label={`Editar ${linea.nombre}`}
+            onClick={alEditar}
+          >
             <Pencil aria-hidden size={18} /> Editar
           </Boton>
         )}

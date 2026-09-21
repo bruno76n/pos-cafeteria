@@ -49,3 +49,22 @@ export async function leerServidor(request: APIRequestContext) {
 export async function esperarSubida(page: Page) {
   await expect(page.getByRole('status').filter({ hasText: /^En línea$/ })).toBeVisible({ timeout: 15_000 });
 }
+
+/** Abre la caja desde Nueva venta si está cerrada. */
+export async function irAVentaConCajaAbierta(page: Page, fondo = '500') {
+  await page
+    .getByRole('navigation', { name: 'Secciones' })
+    .getByRole('link', { name: 'Venta', exact: true })
+    .click();
+  const abrir = page.getByRole('button', { name: 'Abrir caja' });
+  const catalogo = page.getByRole('tablist', { name: 'Categorías' });
+  await expect(abrir.or(catalogo)).toBeVisible();
+  if (await abrir.isVisible()) {
+    await abrir.click();
+    await page.getByLabel('Fondo inicial').fill(fondo);
+    await page.getByRole('dialog').getByRole('button', { name: 'Abrir caja' }).click();
+  }
+  await expect(catalogo).toBeVisible();
+}
+
+export const panelVenta = (page: Page) => page.getByRole('complementary', { name: 'Venta actual' });
