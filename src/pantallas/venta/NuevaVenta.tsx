@@ -1,15 +1,25 @@
 import { useState } from 'react';
 import { Boton } from '@/componentes/Boton';
 import { Hoja } from '@/componentes/Hoja';
-import { useTurnoAbierto } from '@/datos/consultas';
+import { useCategorias, useGruposModificadores, useProductos, useTurnoAbierto } from '@/datos/consultas';
+import { crearLinea } from '@/dominio/carrito';
+import { gruposDelProducto } from '@/dominio/modificadores';
+import type { Producto } from '@/dominio/tipos';
+import { useCarrito } from '@/estado/carrito';
 import { useDispositivoActual } from '@/estado/dispositivo';
 import { FormularioAbrirCaja } from '@/pantallas/caja/FormularioAbrirCaja';
+import { Catalogo } from './Catalogo';
 
 export function NuevaVenta() {
   const dispositivo = useDispositivoActual();
   const turno = useTurnoAbierto(dispositivo?.id);
+  const categorias = useCategorias();
+  const productos = useProductos();
+  const grupos = useGruposModificadores();
+  const agregar = useCarrito((s) => s.agregar);
   const [abriendo, setAbriendo] = useState(false);
-  if (turno === undefined) return null;
+
+  if (turno === undefined || !categorias || !productos || !grupos) return null;
 
   if (!turno) {
     return (
@@ -27,5 +37,15 @@ export function NuevaVenta() {
     );
   }
 
-  return null;
+  function tocarProducto(producto: Producto) {
+    if (gruposDelProducto(producto, grupos!).length > 0) return;
+    const categoria = categorias!.find((c) => c.id === producto.categoriaId);
+    agregar(crearLinea({ producto, categoria, grupos: grupos! }));
+  }
+
+  return (
+    <div className="flex min-h-0 flex-1">
+      <Catalogo categorias={categorias} productos={productos} alTocarProducto={tocarProducto} />
+    </div>
+  );
 }

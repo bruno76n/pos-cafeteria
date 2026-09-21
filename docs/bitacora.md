@@ -45,6 +45,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 2.7 | hecho | IndicadorConexion (En línea / Sin conexión: N ventas por subir), AvisosSync (franja sin conexión y, para el Administrador, cada escritura rechazada con su folio, motivo y Reintentar); e2e con context.setOffline.
 2.8 | hecho | e2e: acceso + PIN + cambiar usuario + bloquear; el cajero no ve Reportes, Configuración ni Usuarios y en /reportes ve 'No tienes acceso'; el guardián regresa a la ruta pedida después del PIN; ayudas e2e compartidas.
 3.1 | hecho | abrirTurno() (un turno abierto por dispositivo, en transacción), FormularioAbrirCaja con CampoDinero y autorización, Caja actual cerrada/abierta, Nueva venta bloqueada sin caja con 'Abrir caja'; e2e verifica el turno en la base; ayudas leerServidor/esperarSubida.
+3.2 | hecho | Catalogo: pestañas de categorías activas en orden, cuadrícula auto-fill 140 px con botones de 104 px (franja de color, precio, imagen opcional), no disponibles apagados, buscador sin acentos en todas las categorías (dominio/texto.ts); store del carrito (estado/carrito.ts) guardado en Dexie en cada cambio.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

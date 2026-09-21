@@ -48,7 +48,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 ## Fase 3: Abrir caja y nueva venta
 
 - [x] 3.1 Abrir caja (fondo inicial, un turno abierto por dispositivo) y bloqueo de la venta sin caja abierta. → El turno llega a la base tras el push.
-- [ ] 3.2 Nueva venta: pestañas de categoría, cuadrícula de productos, no disponibles apagados, buscador sin acentos. → Según `docs/03-interfaz.md`.
+- [x] 3.2 Nueva venta: pestañas de categoría, cuadrícula de productos, no disponibles apagados, buscador sin acentos. → Según `docs/03-interfaz.md`.
 - [ ] 3.3 Hoja de personalización: opciones por defecto, validación, nota, cantidad, precio en el botón. → Caso J en la UI.
 - [ ] 3.4 Carrito: líneas, + / −, eliminar, editar línea, nota, "Para:", vaciar con confirmación, guardado local. → Sobrevive a recargar.
 - [ ] 3.5 Descuento a la venta con permiso o autorización y tope de configuración. → Probado con cajero y encargado.
