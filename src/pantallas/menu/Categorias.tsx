@@ -138,7 +138,7 @@ export function Categorias() {
                   disabled={i === 0}
                   onClick={() => void guardarVarios('categorias', mover(categorias, c.id, -1))}
                 >
-                  <ChevronUp aria-hidden />
+                  <ChevronUp aria-hidden size={28} />
                 </Boton>
                 <Boton
                   className="w-12 px-0"
@@ -146,7 +146,7 @@ export function Categorias() {
                   disabled={i === categorias.length - 1}
                   onClick={() => void guardarVarios('categorias', mover(categorias, c.id, 1))}
                 >
-                  <ChevronDown aria-hidden />
+                  <ChevronDown aria-hidden size={28} />
                 </Boton>
                 <Boton variante="fantasma" aria-label={`Editar ${c.nombre}`} onClick={() => setEditando(c)}>
                   <Pencil aria-hidden size={18} /> Editar

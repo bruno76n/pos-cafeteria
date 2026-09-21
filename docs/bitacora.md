@@ -70,6 +70,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 6.5 | hecho | Cortes de caja: tabla de turnos cerrados (cierre, dispositivo, abrió/cerró, total, diferencia en color) y detalle con totales, esperado/contado/diferencia, nota, vista del ticket con marca de reimpresión y 'Reimprimir'.
 6.6 | hecho | e2e: cajero abre con $500, vende $45, gasta $80, cuenta $450 por denominaciones sin ver el esperado; resultado 'Faltan $15.00'; corte en historial y detalle con reimpresión; el turno cerrado llega a la base con resumen.diferencia = −1500.
 7.1 | hecho | Categorías: lista con color, número de productos, interruptor activa, subir/bajar (dominio/orden.ts + guardarVarios en una transacción), crear/editar nombre y color (paleta de 8), eliminar solo sin productos ('Mueve o elimina sus productos primero'); requiere crearProductos.
+7.2 | hecho | Modificadores: lista con indicación y opciones, número de productos que lo usan, orden, crear/editar (tipo una/varias, obligatorio, mín./máx., opciones con precio extra, por defecto único en 'una opción', disponible) validado con Zod; eliminar quita el grupo de los productos (guardarVarios) y deja lápida.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
