@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push *)",
+      "Bash(vercel *)",
+      "Bash(npx vercel *)",
+      "Bash(npx drizzle-kit push *)"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "rm -f \"${CLAUDE_PROJECT_DIR}/.claude/.hook-estado\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/seguir-si-hay-pendientes.sh\"",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
