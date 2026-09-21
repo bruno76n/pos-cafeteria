@@ -1,0 +1,118 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ticket de corte > resumen con diferencia 1`] = `
+"         CAFETERÍA DEMO
+ Corte de caja
+--------------------------------
+Caja 1
+Abrió: Ana 19/09/2026 07:02
+Cerró: Ana 19/09/2026 15:10
+--------------------------------
+Ventas (1)               $193.50
+  Efectivo               $193.50
+  Tarjeta                  $0.00
+  Transferencia            $0.00
+Descuentos                $21.50
+Cancelaciones (0)          $0.00
+Devoluciones (0)           $0.00
+--------------------------------
+Fondo inicial            $500.00
++ Ventas en efectivo     $193.50
++ Entradas                 $0.00
+- Retiros                  $0.00
+- Gastos                  $80.00
+- Devoluciones efectivo    $0.00
+Efectivo esperado        $613.50
+Efectivo contado         $680.00
+Diferencia: Sobran        $66.50
+--------------------------------
+Gastos por categoría
+  Hielo                   $80.00
+--------------------------------
+Nota: Faltó cambio"
+`;
+
+exports[`ticket de venta > 58 mm (32 columnas) como el ejemplo de la especificación 1`] = `
+"         CAFETERÍA DEMO
+  Av. Juárez 123, Guadalajara
+       Tel. 33 1234 5678
+--------------------------------
+Folio: A-000123
+19/09/2026 08:42          Caja 1
+Cajero: Ana
+Para: Luis
+--------------------------------
+2 Latte                  $170.00
+  2 x $85.00
+  Mediano 16 oz, Almendra
+1 Brownie                 $45.00
+  Nota: calientito
+--------------------------------
+Subtotal                 $215.00
+Descuento 10%            -$21.50
+TOTAL                    $193.50
+IVA incluido 16%          $26.69
+--------------------------------
+Efectivo recibido        $200.00
+Cambio                     $6.50
+--------------------------------
+    ¡Gracias por tu visita!"
+`;
+
+exports[`ticket de venta > 80 mm (48 columnas) 1`] = `
+"                 CAFETERÍA DEMO
+          Av. Juárez 123, Guadalajara
+               Tel. 33 1234 5678
+------------------------------------------------
+Folio: A-000123
+19/09/2026 08:42                          Caja 1
+Cajero: Ana
+Para: Luis
+------------------------------------------------
+2 Latte                                  $170.00
+  2 x $85.00
+  Mediano 16 oz, Almendra
+1 Brownie                                 $45.00
+  Nota: calientito
+------------------------------------------------
+Subtotal                                 $215.00
+Descuento 10%                            -$21.50
+TOTAL                                    $193.50
+IVA incluido 16%                          $26.69
+------------------------------------------------
+Efectivo recibido                        $200.00
+Cambio                                     $6.50
+------------------------------------------------
+            ¡Gracias por tu visita!"
+`;
+
+exports[`ticket de venta > reimpresión y venta cancelada 1`] = `
+"         CAFETERÍA DEMO
+  Av. Juárez 123, Guadalajara
+       Tel. 33 1234 5678
+--------------------------------
+      *** REIMPRESIÓN ***
+    *** VENTA CANCELADA ***
+Folio: A-000123
+19/09/2026 08:42          Caja 1
+Cajero: Ana
+Para: Luis
+--------------------------------
+2 Latte                  $170.00
+  2 x $85.00
+  Mediano 16 oz, Almendra
+1 Brownie                 $45.00
+  Nota: calientito
+--------------------------------
+Subtotal                 $215.00
+Descuento 10%            -$21.50
+TOTAL                    $193.50
+IVA incluido 16%          $26.69
+--------------------------------
+Efectivo recibido        $200.00
+Cambio                     $6.50
+--------------------------------
+Cancelada: Cliente se arrepintió
+--------------------------------
+    ¡Gracias por tu visita!"
+`;

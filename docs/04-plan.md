@@ -66,7 +66,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 
 ## Fase 5: Ticket e impresión
 
-- [ ] 5.1 `impresion/ticket.ts`: `TicketDocumento`, `construirTicketVenta` y `construirTicketCorte` (32 y 48 columnas, reimpresión, cancelada). → Pruebas de snapshot.
+- [x] 5.1 `impresion/ticket.ts`: `TicketDocumento`, `construirTicketVenta` y `construirTicketCorte` (32 y 48 columnas, reimpresión, cancelada). → Pruebas de snapshot.
 - [ ] 5.2 Vista previa HTML e impresión por navegador (58 y 80 mm). → Se ve como el ejemplo de `docs/01-especificacion.md` §5.4.
 - [ ] 5.3 `impresion/escpos.ts` con `@point-of-sale/receipt-printer-encoder`: acentos, logo, QR opcional, corte. → Pruebas de los bytes clave.
 - [ ] 5.4 Drivers USB y Bluetooth con detección, conectar, reconectar, imprimir y errores claros. → Compila y se ofrece solo donde hay soporte. Anota "Probar con impresora real".

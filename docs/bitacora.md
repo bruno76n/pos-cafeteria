@@ -57,6 +57,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 4.4 | hecho | Pagos combinados con agregarPago (uno por método, solo efectivo excede) y cambio automático a otro método; total en cero muestra 'Nada que cobrar' + 'Confirmar' sin pagos.
 4.5 | hecho | armarVenta() pura (copia completa del carrito, descuento con importe, IVA, pagos, cambio) + registrarVenta() con folio en la misma transacción; resultado en el carrito vacío (folio y cambio a 64 px).
 4.6 | hecho | e2e: presupuesto de toques (Americano exacto 5, Latte mediano almendra $100 7 con cambio $15, Brownie tarjeta 4), casos E y F, Volver a la venta, y las ventas llegan a la base con folios H-000001..3 y J-000001..2.
+5.1 | hecho | impresion/ticket.ts: TicketDocumento (texto, columnas, separador, logo, QR, espacio, corte), construirTicketVenta (32/48 col., reimpresión, cancelada, IVA incluido/no, pagos con referencia, devuelto) y construirTicketCorte; ticketATexto con ajuste de renglones; snapshots (el de 58 mm coincide con el ejemplo de la especificación).
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
