@@ -122,7 +122,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 ## Fase 12: PWA y robustez offline
 
 - [x] 12.1 `vite-plugin-pwa`: manifest, íconos generados desde un SVG propio, precache, aviso de actualización que nunca recarga con el carrito lleno. → `npm run build` genera el service worker.
-- [ ] 12.2 `navigator.storage.persist()` y su estado en Configuración › Dispositivo. → Visible.
+- [x] 12.2 `navigator.storage.persist()` y su estado en Configuración › Dispositivo. → Visible.
 - [ ] 12.3 e2e offline: sin red, vender; con red, verificar que la venta llegó a la base. e2e dos dispositivos: lo que vende uno aparece en el otro tras el pull. → Pasan.
 - [ ] 12.4 e2e PWA: build + preview, cargar, quitar la red, recargar; la app abre y deja vender. → Pasa.
 - [ ] 12.5 Revisión final de las reglas del servidor, índices del esquema y tamaño de lotes contra el código real; `/api` excluido del service worker. → Pruebas de API pasan.
