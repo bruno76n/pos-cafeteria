@@ -14,6 +14,15 @@ test('la app instalada abre y vende sin red', async ({ page, context }) => {
 
   await context.setOffline(true);
   await page.reload();
+  // /api nunca se sirve del caché del service worker
+  expect(
+    await page.evaluate(() =>
+      fetch('/api/salud').then(
+        () => 'respondió',
+        () => 'sin red',
+      ),
+    ),
+  ).toBe('sin red');
   await entrarCon(page, PIN.cajero);
   await expect(page.getByRole('status').filter({ hasText: 'Sin conexión' })).toBeVisible();
   await irAVentaConCajaAbierta(page);

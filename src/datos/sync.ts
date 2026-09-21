@@ -21,6 +21,22 @@ export type ResultadoSync = 'ok' | 'sin-sesion' | 'sesion-expirada' | 'error-red
 
 const clave = (tabla: TablaSync, id: string) => `${tabla}:${id}`;
 
+/** El servidor acepta cuerpos de hasta 2 MB; los lotes se quedan por debajo con margen. */
+export const MAXIMO_BYTES_LOTE = 1_500_000;
+
+/** Operaciones en orden hasta 100 o ~1.5 MB (siempre al menos una). */
+export function armarLote(pendientes: OperacionOutbox[], unaPorUna = false): OperacionOutbox[] {
+  const lote: OperacionOutbox[] = [];
+  let bytes = 0;
+  for (const op of pendientes) {
+    const tamano = JSON.stringify(op.datos).length;
+    if (lote.length > 0 && (unaPorUna || bytes + tamano > MAXIMO_BYTES_LOTE)) break;
+    lote.push(op);
+    bytes += tamano;
+  }
+  return lote;
+}
+
 export class MotorSync {
   private pushEnCurso: Promise<ResultadoSync> | null = null;
   private pullEnCurso: Promise<ResultadoSync> | null = null;
@@ -71,11 +87,16 @@ export class MotorSync {
 
   private async hacerPush(forzar: boolean): Promise<ResultadoSync> {
     if (!forzar && this.ahora() < this.reintentarDesde) return 'en-espera';
+    // Tras un 400/413 se manda una por una para aislar la operación que el servidor no acepta.
+    let unaPorUna = false;
     for (;;) {
       const sesion = await leerMeta('sesion');
       const token = await this.token();
       if (!token) return sesion ? 'sesion-expirada' : 'sin-sesion';
-      const lote = await bd.outbox.orderBy('orden').limit(LIMITE_OPERACIONES_POR_LOTE).toArray();
+      const lote = armarLote(
+        await bd.outbox.orderBy('orden').limit(LIMITE_OPERACIONES_POR_LOTE).toArray(),
+        unaPorUna,
+      );
       if (lote.length === 0) return 'ok';
 
       marcarEstado({ sincronizando: true });
@@ -90,6 +111,17 @@ export class MotorSync {
         if (error.tipo === 'sesion') {
           await this.expirarSesion(sesion);
           return 'sesion-expirada';
+        }
+        if (error.tipo === 'peticion') {
+          // El servidor no acepta el lote (inválido o demasiado grande): no se reintenta igual.
+          if (lote.length > 1) {
+            unaPorUna = true;
+          } else {
+            await this.aplicarResultados(lote, [
+              { id: lote[0]!.id, resultado: 'rechazada', motivo: error.message },
+            ]);
+          }
+          continue;
         }
         await bd.outbox.bulkUpdate(
           lote.map((o) => ({

@@ -96,6 +96,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 12.3 | hecho | e2e offline (context.setOffline): se vende sin red, indicador 'Sin conexión: 1 venta por subir' e insignia 'Por subir'; al volver la red se sube sola y llega a la base. e2e de dos dispositivos (dos contextos): la venta de uno aparece en el historial del otro tras su pull.
 12.4 | hecho | e2e PWA: tercer webServer (vite build + preview con proxy a la API); con el service worker controlando la página, sin red se recarga, pide PIN, abre caja y vende (1 venta por subir).
 12.4 | hecho | corrección: el commit anterior se hizo con la e2e de Reportes fallando; con mucho contenido la barra de pestañas (overflow-x) se aplastaba a 0 de alto. Pantalla y Pestanas ya no encogen a sus hijos; 30/30 e2e pasan.
+12.5 | hecho | Revisión contra el código: campos que manda la app (cancelar, devolver, anular, cerrar turno, catálogo completo) = los que permite reglasServidor; índices por rev, dia, turno_id, venta_id, (dispositivo_id, estado) y folio único; lotes ahora limitados también por tamaño (~1.5 MB < 2 MB del servidor) y un 400/413 ya no atora la cola (se manda una por una y solo se aparta la mala); e2e verifica que /api no se sirve del caché sin red.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -115,6 +116,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - El presupuesto de toques se cuenta con el producto ya a la vista (la especificación no incluye el toque de pestaña de categoría en la secuencia).
 - Las pruebas e2e que cambian la configuración la restauran al terminar empujando la original por la API (la configuración es global y la comparten todas las pruebas).
 - workbox-window se agrega como dependencia de desarrollo: es peer de vite-plugin-pwa y lo usa el registro del service worker.
+- Push: lote de hasta 100 operaciones o ~1.5 MB; si el servidor rechaza un lote completo (400/413), se reenvía una por una y la que no pase va a erroresSync.
 
 ## Para probar a mano (Bruno)
 

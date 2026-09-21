@@ -158,6 +158,45 @@ describe('push', () => {
     expect((await bd.outbox.toArray()).map((o) => o.registroId)).toEqual(['c1']);
   });
 
+  test('lotes por tamaño: nunca más de ~1.5 MB por petición', async () => {
+    const imagen = `data:image/webp;base64,${'A'.repeat(70_000)}`;
+    for (let i = 0; i < 50; i++) {
+      await crear('productos', {
+        id: `p${i}`,
+        nombre: `P${i}`,
+        descripcion: '',
+        categoriaId: 'c',
+        precio: 100,
+        imagen,
+        disponible: true,
+        orden: i,
+        gruposIds: [],
+      });
+    }
+    await motor.push();
+    expect(servidor.lotes.length).toBeGreaterThan(2);
+    expect(servidor.lotes.every((l) => JSON.stringify(l).length < 2 * 1024 * 1024)).toBe(true);
+    expect(servidor.lotes.flat().map((o) => o.registroId)).toEqual(
+      Array.from({ length: 50 }, (_, i) => `p${i}`),
+    );
+  });
+
+  test('un lote que el servidor no acepta (400/413) se manda una por una y solo se aparta la mala', async () => {
+    await crearCategorias(3);
+    const push = servidor.push.bind(servidor);
+    servidor.push = async (token, operaciones) => {
+      if (operaciones.some((o) => o.registroId === 'c1'))
+        throw new ErrorApi('peticion', 'Lote de operaciones inválido.', 400);
+      return push(token, operaciones);
+    };
+    expect(await motor.push()).toBe('ok');
+    expect(await bd.outbox.count()).toBe(0);
+    expect(servidor.lotes.flat().map((o) => o.registroId)).toEqual(['c0', 'c2']);
+    expect(await bd.erroresSync.toArray()).toEqual([
+      expect.objectContaining({ registroId: 'c1', motivo: 'Lote de operaciones inválido.' }),
+    ]);
+  });
+
   test('solo un push a la vez', async () => {
     await crearCategorias(1);
     const [a, b] = await Promise.all([motor.push(), motor.push()]);
