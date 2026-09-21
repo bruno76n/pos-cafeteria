@@ -1,0 +1,11 @@
+dist
+dev-dist
+coverage
+playwright-report
+test-results
+.pglite
+drizzle
+docs
+seed
+*.md
+package-lock.json

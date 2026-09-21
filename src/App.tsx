@@ -1,4 +1,13 @@
-const colores = ['bg-acero', 'bg-papel', 'bg-grafito', 'bg-grafito-suave', 'bg-linea', 'bg-cafeto', 'bg-faltante', 'bg-ambar'];
+const colores = [
+  'bg-acero',
+  'bg-papel',
+  'bg-grafito',
+  'bg-grafito-suave',
+  'bg-linea',
+  'bg-cafeto',
+  'bg-faltante',
+  'bg-ambar',
+];
 
 export function App() {
   return (
