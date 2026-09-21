@@ -22,7 +22,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 1.1 `dominio/dinero.ts`: centavos, redondeo, formato MXN, lectura de captura ("12.5" → 1250). → Pruebas.
 - [x] 1.2 `dominio/tipos.ts` y `dominio/esquemas.ts` (Zod) para todas las entidades de `docs/02-arquitectura.md` §5. → Pruebas con documentos válidos e inválidos.
 - [x] 1.3 `dominio/fechas.ts`: `diaLocal()` en America/Mexico_City, inicio y fin de día, rangos Hoy/Ayer/Esta semana/Este mes, formato `dd/mm/aaaa HH:mm`. → Pruebas, incluido el cruce de medianoche UTC.
-- [ ] 1.4 `dominio/modificadores.ts`: opciones por defecto, validación (obligatorio, mín., máx.), precio unitario, resumen legible. → Pruebas (caso J).
+- [x] 1.4 `dominio/modificadores.ts`: opciones por defecto, validación (obligatorio, mín., máx.), precio unitario, resumen legible. → Pruebas (caso J).
 - [ ] 1.5 `dominio/carrito.ts`: agregar con fusión de líneas idénticas, cantidad, eliminar, nota, cliente, descuento (% y monto, tope), totales con IVA incluido y no incluido. → Pruebas (casos A, B, C, G).
 - [ ] 1.6 `dominio/cobro.ts`: pagos combinados, pendiente, cambio, validaciones (un pago por método, solo efectivo excede). → Pruebas (casos D, E, F).
 - [ ] 1.7 `dominio/caja.ts` y `dominio/devoluciones.ts`: resumen de turno, efectivo esperado, diferencia, reembolso proporcional. → Pruebas (casos H, I).
