@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { entrarCon, PIN } from './ayudas';
 
 test('entra con la cuenta demo y la sesión sobrevive a recargar sin API', async ({ page }) => {
   await page.goto('/');
@@ -21,6 +22,11 @@ test('entra con la cuenta demo y la sesión sobrevive a recargar sin API', async
   await page.getByRole('button', { name: 'A', exact: true }).click();
   await page.getByRole('button', { name: 'Guardar y continuar' }).click();
   await expect(page).toHaveURL(/\/bloqueo$/);
+
+  // El PIN identifica al usuario; recargar vuelve a pedirlo.
+  await entrarCon(page, PIN.dueno);
+  await expect(page).toHaveURL(/\/inicio$/);
+  await expect(page.getByRole('banner')).toContainText('Dueño');
   await page.reload();
   await expect(page).toHaveURL(/\/bloqueo$/);
 });

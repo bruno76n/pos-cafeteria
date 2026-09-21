@@ -40,6 +40,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 2.2 | hecho | Pantalla de acceso con errores claros (credenciales, primer inicio sin internet, sesión expirada con correo precargado); datos/sesion.ts guarda el token en Dexie y dispara el sync; e2e de acceso y de recarga sin API.
 2.3 | hecho | FormularioDispositivo (nombre, tipo caja/consulta, letra A–Z con aviso si otra caja la usa), configurarDispositivo() guarda en Dexie + outbox y arranca el contador con el mayor entre dispositivos con ese prefijo y ventas locales; componente Segmentos; pruebas y e2e.
 2.4 | hecho | Asistente /bienvenida (negocio, Administrador con PIN confirmado, menú de ejemplo opcional sin usuarios demo); inicializarNegocio() en una transacción; componente Interruptor; e2e con servidor vacío simulado (pull vacío, push bloqueado).
+2.5 | hecho | TecladoPin propio (teclas de 72 px, prueba al llegar a 4–6 dígitos, tecla Entrar, espera de 30 s tras 5 fallos, teclado físico), pantalla /bloqueo, bloqueo por inactividad (meta bloqueoMinutos, 0 = nunca); e2e: PIN, recarga pide PIN, espera tras 5 fallos.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -54,6 +55,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - El guardián espera el primer pull antes de configurar el dispositivo: así el prefijo y el contador de folios se validan con lo que hay en el servidor.
 - Dispositivos de consulta no muestran Nueva venta.
 - Prefijo repetido: se advierte pero se permite (caso de una tablet que reemplaza a otra); el contador continúa desde el mayor folio conocido.
+- El teclado de PIN lleva una tecla Entrar (✓) en el hueco de la última fila: sin ella, un PIN de 4 dígitos equivocado no se podría rechazar hasta escribir 6.
 
 ## Para probar a mano (Bruno)
 

@@ -1,9 +1,11 @@
 import { Outlet } from 'react-router';
+import { useBloqueoPorInactividad } from '@/estado/inactividad';
 import { BarraSuperior } from './BarraSuperior';
 import { BarraInferior, Riel } from './Navegacion';
 
 /** Estructura general: barra superior, riel lateral (o barra inferior en vertical) y contenido. */
 export function Shell() {
+  useBloqueoPorInactividad();
   return (
     <div className="flex h-full flex-col">
       <BarraSuperior />
