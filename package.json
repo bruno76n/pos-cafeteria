@@ -30,6 +30,7 @@
     "drizzle-orm": "^0.45.3",
     "hono": "^4.13.8",
     "jose": "^6.2.12",
+    "lucide-react": "^1.47.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router": "^8.4.0",

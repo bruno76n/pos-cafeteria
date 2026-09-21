@@ -76,3 +76,27 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+@theme {
+  --animate-subir: subir 150ms ease-out;
+  --animate-aparecer: aparecer 150ms ease-out;
+  --animate-resaltar: resaltar 200ms ease-out;
+
+  @keyframes subir {
+    from {
+      transform: translateY(24px);
+      opacity: 0;
+    }
+  }
+  @keyframes aparecer {
+    from {
+      transform: scale(0.97);
+      opacity: 0;
+    }
+  }
+  @keyframes resaltar {
+    from {
+      background-color: var(--color-ambar-fondo);
+    }
+  }
+}
