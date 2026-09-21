@@ -14,8 +14,10 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 
 0.1 | hecho | versiones anotadas en Entorno.
 0.2 | hecho | git init, .gitignore y primer commit con los docs.
+0.3 | hecho | Vite 8 + React 19 + TS 6 strict a mano; alias @/; tsconfig único con src, servidor, api, scripts y e2e.
 
 ## Decisiones
+- TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
 
 ## Para probar a mano (Bruno)
 
