@@ -81,6 +81,11 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 9.1 | hecho | Usuarios: lista (nombre, rol, estado), crear/editar con rol, PIN 4–6 único con confirmación (pinEnUso; en edición el PIN es opcional), activo; validarUltimoAdmin en dominio impide desactivar o degradar al último Administrador activo.
 9.2 | hecho | Roles y permisos: matriz con Administrador fijo y interruptores para Encargado y Cajero que guardan la config (efecto inmediato vía useLiveQuery); useConfigEditable en estado/config.ts.
 9.3 | hecho | e2e: crear usuario (PIN repetido rechazado), último Administrador protegido; quitar 'registrar gastos' al cajero hace que pida autorización (autoriza la encargada) y se restaura el permiso.
+10.1 | hecho | Negocio: nombre, logo (comprimido conservando proporción, 384 px), dirección, teléfono, RFC y categorías de gasto; vista previa del ticket en vivo (venta reciente o de muestra); e2e.
+10.2 | hecho | Impuestos y descuentos: precios con/sin IVA, tasa, desglose, permitir descuentos y tope; e2e: IVA no incluido ($45 → $52.20) y caso G con tope 100 % ('Nada que cobrar').
+10.3 | hecho | Pagos: tarjeta/transferencia, cuentas bancarias (alias, banco, titular, CLABE de 18, cuenta) y referencia obligatoria; e2e: selector de cuenta en cobro y referencia exigida.
+10.4 | hecho | Ticket: ancho 58/80, mostrar logo/dirección/teléfono/RFC/cajero, mensaje final, imprimir al cobrar, con vista previa en vivo; e2e (48 columnas, sin cajero, mensaje).
+10.5 | hecho | Dispositivo: nombre/tipo/prefijo (mismo formulario del alta), bloqueo automático (Nunca/1/5/15/30 min), estado del almacenamiento persistente e impresora; e2e.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -98,6 +103,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - El teclado de PIN lleva una tecla Entrar (✓) en el hueco de la última fila: sin ella, un PIN de 4 dígitos equivocado no se podría rechazar hasta escribir 6.
 - Los cambios de 4.1–4.5 van en un solo commit porque la capa de cobro y sus paneles no funcionan por separado.
 - El presupuesto de toques se cuenta con el producto ya a la vista (la especificación no incluye el toque de pestaña de categoría en la secuencia).
+- Las pruebas e2e que cambian la configuración la restauran al terminar empujando la original por la API (la configuración es global y la comparten todas las pruebas).
 
 ## Para probar a mano (Bruno)
 

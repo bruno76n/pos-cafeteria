@@ -122,3 +122,8 @@ export function useDevolucionesDeVenta(ventaId: string | undefined) {
     [ventaId],
   );
 }
+
+/** Una venta reciente de la tablet (para la vista previa del ticket en Configuración). */
+export function useVentaReciente() {
+  return useLiveQuery(async () => (await bd.ventas.orderBy('dia').reverse().first()) ?? null);
+}

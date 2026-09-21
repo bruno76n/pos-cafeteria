@@ -84,3 +84,30 @@ export function leerMetaLocal(page: Page, clave: string) {
     clave,
   );
 }
+
+/** Guarda la configuración del servidor y regresa una función que la restaura (con fecha nueva para que gane). */
+export async function respaldarConfig(request: APIRequestContext) {
+  const [original] = (await leerServidor(request))('config');
+  return async () => {
+    const acceso = await request.post('/api/acceso', {
+      data: { correo: 'caja@demo.test', contrasena: 'demo1234' },
+    });
+    const { token } = (await acceso.json()) as { token: string };
+    const datos = { ...original, actualizadoEn: new Date().toISOString() };
+    await request.post('/api/sync/push', {
+      headers: { Authorization: `Bearer ${token}` },
+      data: {
+        operaciones: [
+          {
+            id: crypto.randomUUID(),
+            tabla: 'config',
+            tipo: 'actualizar',
+            registroId: 'general',
+            datos,
+            creadaEn: datos.actualizadoEn,
+          },
+        ],
+      },
+    });
+  };
+}

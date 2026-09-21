@@ -105,11 +105,11 @@ Cada tarea incluye su criterio de terminado después de "→".
 
 ## Fase 10: Configuración
 
-- [ ] 10.1 Negocio (logo comprimido, datos, categorías de gasto). → Se ven en el ticket.
-- [ ] 10.2 Impuestos y descuentos. → Totales y ticket cambian según la configuración.
-- [ ] 10.3 Pagos (métodos, cuentas bancarias, referencia obligatoria). → Se reflejan en el cobro.
-- [ ] 10.4 Ticket (ancho, campos visibles, mensaje, imprimir al cobrar) con vista previa en vivo. → Funciona.
-- [ ] 10.5 Dispositivo (nombre, prefijo, tipo, bloqueo automático, estado del almacenamiento persistente). → Funciona.
+- [x] 10.1 Negocio (logo comprimido, datos, categorías de gasto). → Se ven en el ticket.
+- [x] 10.2 Impuestos y descuentos. → Totales y ticket cambian según la configuración.
+- [x] 10.3 Pagos (métodos, cuentas bancarias, referencia obligatoria). → Se reflejan en el cobro.
+- [x] 10.4 Ticket (ancho, campos visibles, mensaje, imprimir al cobrar) con vista previa en vivo. → Funciona.
+- [x] 10.5 Dispositivo (nombre, prefijo, tipo, bloqueo automático, estado del almacenamiento persistente). → Funciona.
 
 ## Fase 11: Inicio y reportes
 
