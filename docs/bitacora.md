@@ -24,6 +24,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 0.10 | hecho | Scripts build, preview, seed (vacío), db:generar (drizzle-kit) y db:migrar (servidor/db/migrar.ts para PGlite y Neon).
 1.1 | hecho | dinero.ts: redondeo mitad arriba, formato MXN, formato corto, lectura de captura y pruebas.
 1.2 | hecho | esquemas.ts (Zod 4) de todas las entidades, operaciones de sync y acceso; tipos.ts derivado con z.infer; pruebas válidas e inválidas.
+1.3 | hecho | fechas.ts solo con Intl: diaLocal, inicio/fin de día (con DST), rangos Hoy/Ayer/Semana (lunes)/Mes, formatos; pruebas con cruce de medianoche UTC.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
