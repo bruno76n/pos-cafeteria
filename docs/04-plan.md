@@ -76,7 +76,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 ## Fase 6: Caja completa
 
 - [x] 6.1 Caja actual: resumen en vivo; efectivo esperado solo con `verReportes`. → Coincide con `dominio/caja.ts`.
-- [ ] 6.2 Movimientos: entradas, retiros y gastos con categoría; anular. → Suman o restan correctamente.
+- [x] 6.2 Movimientos: entradas, retiros y gastos con categoría; anular. → Suman o restan correctamente.
 - [ ] 6.3 Cerrar caja: conteo por denominaciones o total, corte ciego, diferencia, nota, resumen guardado. → Turno cerrado con `resumen`.
 - [ ] 6.4 Imprimir corte. → Vista previa correcta.
 - [ ] 6.5 Cortes de caja: historial y detalle con reimpresión. → Lista los cortes.

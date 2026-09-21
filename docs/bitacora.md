@@ -64,6 +64,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 5.5 | hecho | Configuración › Dispositivo › Impresora (solo conexiones soportadas, Conectar/Cambiar, estado, 'Imprimir prueba' con acentos), guardada en meta local; useImpresora elige el driver, reconecta con los datos guardados y muestra el error con Reintentar; impresión automática al cobrar si imprimirAlCobrar; e2e con el driver de navegador (ticket y prueba).
 5.6 | hecho | BotonCompartir: Web Share con el texto del ticket; sin Web Share, hoja con 'Copiar texto' y 'Abrir WhatsApp' (wa.me con el texto); en el resultado de la venta (en el detalle se agrega en 8.2); e2e de ambos caminos.
 6.1 | hecho | Caja actual en vivo con resumirTurno (fondo, ventas por método, entradas, retiros, gastos, devoluciones, cancelaciones); efectivo esperado solo con verReportes; aviso si viene de otro día; botones de movimientos y Cerrar caja; TablaCifras reutilizable; escrituras registrarMovimiento, anularMovimiento y cerrarTurno con pruebas.
+6.2 | hecho | Movimientos del turno: registrar entrada/retiro/gasto (categorías de configuración, permiso registrarGastos o autorización), lista con hora, tipo, concepto, usuario y monto; Anular con confirmación (queda tachado con 'Anulado por'); componente Insignia; e2e: 500+200−300−80 = 320 y al anular el retiro 620.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
