@@ -93,6 +93,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 11.5 | hecho | e2e: producto propio, 3 ventas (una cancelada); Productos muestra 4 por $120, el CSV trae BOM y la fila; el Resumen coincide con lo calculado desde los datos del servidor (brutas, netas, número, efectivo, tarjeta).
 12.1 | hecho | vite-plugin-pwa (prompt): manifest en español con colores Grafito/Acero, íconos 192/512/maskable/apple generados desde public/icono.svg (taza propia) con scripts/generar-iconos.ts, precache de js/css/html/íconos/fuentes, /api fuera del fallback; AvisoActualizacion ('Hay una versión nueva.' + 'Actualizar') solo con el carrito vacío y sin recargar solo; codificador ESC/POS en carga diferida.
 12.2 | hecho | Al arrancar se pide navigator.storage.persist() (datos/almacenamiento.ts) y el resultado se guarda en meta; Configuración › Dispositivo lo muestra; pruebas con y sin la API.
+12.3 | hecho | e2e offline (context.setOffline): se vende sin red, indicador 'Sin conexión: 1 venta por subir' e insignia 'Por subir'; al volver la red se sube sola y llega a la base. e2e de dos dispositivos (dos contextos): la venta de uno aparece en el historial del otro tras su pull.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
