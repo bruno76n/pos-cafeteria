@@ -1,5 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
-import { PUERTO_API, PUERTO_APP } from './e2e/puertos';
+import { PUERTO_API, PUERTO_APP, PUERTO_PWA } from './e2e/puertos';
 
 const entorno = { API_PUERTO: String(PUERTO_API) };
 
@@ -31,6 +31,14 @@ export default defineConfig({
       url: `http://localhost:${PUERTO_APP}`,
       env: entorno,
       reuseExistingServer: false,
+    },
+    {
+      // Build de producción con service worker, para la prueba de la PWA sin red.
+      command: `vite build && vite preview --port ${PUERTO_PWA} --strictPort`,
+      url: `http://localhost:${PUERTO_PWA}`,
+      env: entorno,
+      reuseExistingServer: false,
+      timeout: 120_000,
     },
   ],
 });
