@@ -1,26 +1,65 @@
 import { Search, X } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { formatearDinero } from '@/dominio/dinero';
 import { coincide } from '@/dominio/texto';
 import type { Categoria, Producto } from '@/dominio/tipos';
 
-/** Botón de producto: nombre, precio y franja del color de su categoría. */
+const PULSACION_LARGA_MS = 600;
+
+/**
+ * Botón de producto: nombre, precio y franja del color de su categoría. Con `alMantener`,
+ * una pulsación larga (o clic secundario) llama a esa acción en lugar de agregar.
+ */
 export function BotonProducto({
   producto,
   color,
   alTocar,
+  alMantener,
 }: {
   producto: Producto;
   color: string;
   alTocar: () => void;
+  alMantener?: () => void;
 }) {
+  const temporizador = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mantenido = useRef(false);
+  const cancelar = () => {
+    if (temporizador.current) clearTimeout(temporizador.current);
+    temporizador.current = null;
+  };
+  const mantener = () => {
+    cancelar();
+    mantenido.current = true;
+    alMantener?.();
+  };
+
   return (
     <button
       type="button"
-      disabled={!producto.disponible}
-      onClick={alTocar}
+      aria-disabled={!producto.disponible}
+      onPointerDown={() => {
+        mantenido.current = false;
+        if (alMantener) temporizador.current = setTimeout(mantener, PULSACION_LARGA_MS);
+      }}
+      onPointerUp={cancelar}
+      onPointerLeave={cancelar}
+      onPointerCancel={cancelar}
+      onContextMenu={(e) => {
+        if (!alMantener) return;
+        e.preventDefault();
+        if (!mantenido.current) mantener();
+      }}
+      onClick={() => {
+        if (mantenido.current) {
+          mantenido.current = false;
+          return;
+        }
+        if (producto.disponible) alTocar();
+      }}
       style={{ borderLeftColor: color }}
-      className="relative flex h-26 select-none flex-col justify-between overflow-hidden rounded-boton border border-l-6 border-linea bg-papel p-3 text-left transition-transform duration-100 active:scale-[0.98] active:bg-acero disabled:opacity-40"
+      className={`relative flex h-26 select-none flex-col justify-between overflow-hidden rounded-boton border border-l-6 border-linea bg-papel p-3 text-left transition-transform duration-100 [-webkit-touch-callout:none] ${
+        producto.disponible ? 'active:scale-[0.98] active:bg-acero' : 'opacity-40'
+      }`}
     >
       <span className="flex gap-2">
         <span className="line-clamp-2 flex-1 text-producto font-semibold leading-tight">
@@ -42,10 +81,13 @@ export function Catalogo({
   categorias,
   productos,
   alTocarProducto,
+  alMantenerProducto,
 }: {
   categorias: Categoria[];
   productos: Producto[];
   alTocarProducto: (producto: Producto) => void;
+  /** Pulsación larga: marcar disponible / no disponible. */
+  alMantenerProducto?: (producto: Producto) => void;
 }) {
   const activas = useMemo(() => categorias.filter((c) => c.activa), [categorias]);
   const [elegida, setElegida] = useState<string | null>(null);
@@ -119,6 +161,7 @@ export function Catalogo({
             producto={p}
             color={porId.get(p.categoriaId)?.color ?? '#5E6B73'}
             alTocar={() => alTocarProducto(p)}
+            alMantener={alMantenerProducto && (() => alMantenerProducto(p))}
           />
         ))}
         {visibles.length === 0 && (

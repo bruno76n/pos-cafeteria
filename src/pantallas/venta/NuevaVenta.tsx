@@ -9,7 +9,7 @@ import {
   useProductos,
   useTurnoAbierto,
 } from '@/datos/consultas';
-import { cargarMenuDeEjemplo, registrarVenta } from '@/datos/escrituras';
+import { cargarMenuDeEjemplo, guardar, registrarVenta } from '@/datos/escrituras';
 import { calcularTotales, cantidadDeProductos, crearLinea, type LineaCarrito } from '@/dominio/carrito';
 import { armarVenta } from '@/dominio/cobro';
 import { formatearDinero } from '@/dominio/dinero';
@@ -28,6 +28,8 @@ import { PanelVenta } from './PanelVenta';
 import { ResultadoVenta } from './ResultadoVenta';
 import { ticketDeVenta } from '@/impresion/ticketVenta';
 import { useImpresora } from '@/impresion/usarImpresora';
+import { Confirmar } from '@/componentes/Confirmar';
+import { useAutorizar } from '@/estado/autorizacion';
 
 type Personalizacion = { producto: Producto; linea?: LineaCarrito };
 
@@ -47,6 +49,8 @@ export function NuevaVenta() {
   const [ventaAbierta, setVentaAbierta] = useState(false);
   const [descontando, setDescontando] = useState(false);
   const [cobrando, setCobrando] = useState(false);
+  const [disponibilidad, setDisponibilidad] = useState<Producto | null>(null);
+  const autorizar = useAutorizar();
   const impresora = useImpresora();
 
   if (turno === undefined || !config || !categorias || !productos || !grupos || !dispositivo || !usuario) {
@@ -146,7 +150,12 @@ export function NuevaVenta() {
 
   return (
     <div className="flex min-h-0 flex-1 portrait:flex-col">
-      <Catalogo categorias={categorias} productos={productos} alTocarProducto={tocarProducto} />
+      <Catalogo
+        categorias={categorias}
+        productos={productos}
+        alTocarProducto={tocarProducto}
+        alMantenerProducto={setDisponibilidad}
+      />
       <div className="flex w-[380px] shrink-0 flex-col border-l border-linea max-[1100px]:w-[340px] portrait:hidden">
         {panel}
       </div>
@@ -168,6 +177,28 @@ export function NuevaVenta() {
         <Hoja titulo="Venta actual" alCerrar={() => setVentaAbierta(false)}>
           <div className="-m-4 flex h-[70vh] flex-col">{panel}</div>
         </Hoja>
+      )}
+      {disponibilidad && (
+        <Confirmar
+          titulo={`¿Marcar ${disponibilidad.nombre} como ${disponibilidad.disponible ? 'no disponible' : 'disponible'}?`}
+          textoAccion={disponibilidad.disponible ? 'Marcar no disponible' : 'Marcar disponible'}
+          textoCancelar="Volver"
+          variante="oscuro"
+          alCancelar={() => setDisponibilidad(null)}
+          alConfirmar={async () => {
+            const producto = disponibilidad;
+            setDisponibilidad(null);
+            if (!(await autorizar('crearProductos'))) return;
+            const { actualizadoEn: _, ...sinFecha } = producto;
+            await guardar('productos', { ...sinFecha, disponible: !producto.disponible });
+          }}
+        >
+          <p>
+            {disponibilidad.disponible
+              ? 'Se verá apagado y no se podrá vender hasta volver a activarlo.'
+              : 'Se podrá vender de nuevo.'}
+          </p>
+        </Confirmar>
       )}
       {cobrando && (
         <CapaCobro

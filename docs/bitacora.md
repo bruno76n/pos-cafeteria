@@ -103,6 +103,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 13.4 | hecho | README.md: requisitos, cómo correrlo, cuenta y PINs demo, comandos, resumen técnico, producción en Neon y Vercel (§15) y limitaciones conocidas (permisos solo en la app, reloj del dispositivo, impresión directa solo Android/Chrome, último gana, reportes >35 días con internet).
 13.5 | hecho | Resumen final y lista de 'Para probar a mano' en la bitácora; limpieza final (estado de sync sin lectores, exports sin uso) y corrección de una carrera en la e2e de Reportes.
 14.1 | hecho | GET /api/tickets/:id sin token (solo esa venta por su UUID + datos del negocio para dibujarla; 404 si no existe) con pruebas; opción 'QR con el ticket digital' en Configuración › Ticket; QR nativo en ESC/POS y SVG en HTML; página pública /t/:id fuera del guardián; e2e con un navegador sin sesión.
+14.2 | hecho | Pulsación larga (600 ms) o clic secundario en un producto de Nueva venta abre 'Marcar como no disponible/disponible'; requiere crearProductos o autorización; los no disponibles ya no usan disabled (aria-disabled) para poder reactivarlos así; e2e con encargada y cajero.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
