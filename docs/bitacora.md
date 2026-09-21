@@ -77,6 +77,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 8.2 | hecho | Detalle de venta: vista del ticket, Reimprimir (con marca de reimpresión), Compartir, insignias de estado y 'Por subir', cancelación y devoluciones registradas.
 8.3 | hecho | Cancelar venta: solo pagadas con su turno abierto, motivo obligatorio, cancelarVentas o autorización (guarda autorizadoPor); deja de contar en la caja; ticket con '*** VENTA CANCELADA ***'.
 8.4 | hecho | Devolución total o parcial (Todo/Nada y cantidades por línea), reembolso proporcional en vivo (caso I), método de reembolso (efectivo exige caja abierta en este dispositivo), registrarDevolucion en una transacción (devolución + devuelto/estado); lista de Devoluciones por fechas con enlace a la venta.
+8.5 | hecho | e2e: el cajero cancela (autoriza la encargada) y devuelve una línea en efectivo; historial y filtros, lista de devoluciones, efectivo esperado 500+75−30 = 545 y los cambios llegan a la base.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
