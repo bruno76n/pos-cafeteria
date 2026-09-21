@@ -62,7 +62,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 4.3 Tarjeta y transferencia (datos bancarios, referencia, confirmación). → Según `docs/01-especificacion.md` §5.3.
 - [x] 4.4 Pago combinado y total en cero. → Casos E, F y G.
 - [x] 4.5 Confirmar: folio y venta en la misma transacción de Dexie (con su operación en la outbox), copia completa del carrito; vuelta a Nueva venta con el resultado (cambio grande). → La venta llega a la base con folio correcto.
-- [ ] 4.6 e2e: presupuesto de toques (`docs/01-especificacion.md` §7), efectivo con cambio y pago combinado. → Pasa.
+- [x] 4.6 e2e: presupuesto de toques (`docs/01-especificacion.md` §7), efectivo con cambio y pago combinado. → Pasa.
 
 ## Fase 5: Ticket e impresión
 

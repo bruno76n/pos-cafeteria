@@ -56,6 +56,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 4.3 | hecho | PanelTarjeta (monto = pendiente, referencia opcional, 'Pagado con tarjeta') y PanelTransferencia (cuentas, CLABE en grupos de 4, referencia obligatoria según config, 'Marcar como pagada').
 4.4 | hecho | Pagos combinados con agregarPago (uno por método, solo efectivo excede) y cambio automático a otro método; total en cero muestra 'Nada que cobrar' + 'Confirmar' sin pagos.
 4.5 | hecho | armarVenta() pura (copia completa del carrito, descuento con importe, IVA, pagos, cambio) + registrarVenta() con folio en la misma transacción; resultado en el carrito vacío (folio y cambio a 64 px).
+4.6 | hecho | e2e: presupuesto de toques (Americano exacto 5, Latte mediano almendra $100 7 con cambio $15, Brownie tarjeta 4), casos E y F, Volver a la venta, y las ventas llegan a la base con folios H-000001..3 y J-000001..2.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -72,6 +73,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - Prefijo repetido: se advierte pero se permite (caso de una tablet que reemplaza a otra); el contador continúa desde el mayor folio conocido.
 - El teclado de PIN lleva una tecla Entrar (✓) en el hueco de la última fila: sin ella, un PIN de 4 dígitos equivocado no se podría rechazar hasta escribir 6.
 - Los cambios de 4.1–4.5 van en un solo commit porque la capa de cobro y sus paneles no funcionan por separado.
+- El presupuesto de toques se cuenta con el producto ya a la vista (la especificación no incluye el toque de pestaña de categoría en la secuencia).
 
 ## Para probar a mano (Bruno)
 
