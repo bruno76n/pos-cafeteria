@@ -87,7 +87,7 @@ export function Productos() {
               </button>
             ))}
           </div>
-          <ul className="flex flex-col rounded-hoja bg-papel">
+          <ul className="flex flex-col rounded-hoja border border-linea bg-papel">
             {visibles.map((p) => {
               const hermanos = deSuCategoria(p.categoriaId).sort((a, b) => a.orden - b.orden);
               const posicion = hermanos.findIndex((x) => x.id === p.id);

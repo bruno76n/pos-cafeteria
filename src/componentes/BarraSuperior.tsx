@@ -14,12 +14,10 @@ export function BarraSuperior() {
   const [menuAbierto, setMenuAbierto] = useState(false);
 
   return (
-    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-linea bg-papel px-4">
+    <header className="flex h-14 shrink-0 items-center gap-3 bg-black px-4 text-white">
       <div className="flex min-w-0 flex-1 items-baseline gap-2">
         <span className="truncate font-semibold">{config?.negocio.nombre}</span>
-        {dispositivo && (
-          <span className="truncate text-etiqueta text-grafito-suave">{dispositivo.nombre}</span>
-        )}
+        {dispositivo && <span className="truncate text-etiqueta text-white/70">{dispositivo.nombre}</span>}
       </div>
       <IndicadorConexion />
       <div className="relative">
@@ -28,7 +26,7 @@ export function BarraSuperior() {
           aria-haspopup="menu"
           aria-expanded={menuAbierto}
           onClick={() => setMenuAbierto((a) => !a)}
-          className="flex min-h-12 items-center gap-2 rounded-boton px-3 font-semibold active:bg-acero"
+          className="flex min-h-12 items-center gap-2 rounded-boton px-3 font-semibold active:bg-white/15"
         >
           <UserRound aria-hidden size={20} />
           <span className="max-w-40 truncate">{usuario?.nombre}</span>
@@ -38,7 +36,7 @@ export function BarraSuperior() {
             <div className="fixed inset-0 z-30" onPointerDown={() => setMenuAbierto(false)} />
             <div
               role="menu"
-              className="absolute right-0 top-full z-40 mt-1 w-56 overflow-hidden rounded-boton border border-linea bg-papel shadow-lg"
+              className="absolute right-0 top-full z-40 mt-1 w-56 overflow-hidden rounded-boton border border-linea bg-papel text-grafito shadow-lg"
             >
               {usuario && (
                 <p className="border-b border-linea px-4 py-3 text-etiqueta text-grafito-suave">

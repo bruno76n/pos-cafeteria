@@ -65,7 +65,7 @@ function TablaReporte({ tabla }: { tabla: Tabla }) {
   if (tabla.filas.length === 0)
     return <p className="p-6 text-center text-grafito-suave">No hay datos en estas fechas.</p>;
   return (
-    <div className="overflow-x-auto rounded-hoja bg-papel">
+    <div className="overflow-x-auto rounded-hoja border border-linea bg-papel">
       <table className="w-full min-w-[560px]">
         <thead>
           <tr className="border-b border-linea text-left text-etiqueta text-grafito-suave">
@@ -281,10 +281,13 @@ export function Reportes() {
 
       {reporte && pestana === 'resumen' && (
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
-          <section className="rounded-hoja bg-papel px-5 py-3" aria-label="Resumen">
+          <section className="rounded-hoja border border-linea bg-papel px-5 py-3" aria-label="Resumen">
             <TablaCifras filas={filasResumen(reporte)} />
           </section>
-          <section className="flex flex-col gap-3 rounded-hoja bg-papel p-5" aria-label="Ventas en el tiempo">
+          <section
+            className="flex flex-col gap-3 rounded-hoja border border-linea bg-papel p-5"
+            aria-label="Ventas en el tiempo"
+          >
             <h2 className="text-seccion font-semibold">
               {rango.rango.desde === rango.rango.hasta ? 'Ventas por hora' : 'Ventas por día'}
             </h2>

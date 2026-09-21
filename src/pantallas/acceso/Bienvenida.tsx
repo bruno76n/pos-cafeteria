@@ -34,7 +34,7 @@ export function Bienvenida() {
     <main className="flex h-full justify-center overflow-y-auto p-4">
       <form
         onSubmit={empezar}
-        className="flex w-full max-w-2xl flex-col gap-5 self-start rounded-hoja bg-papel p-6"
+        className="flex w-full max-w-2xl flex-col gap-5 self-start rounded-hoja border border-linea bg-papel p-6"
       >
         <div>
           <h1 className="text-pantalla font-bold">Bienvenida</h1>

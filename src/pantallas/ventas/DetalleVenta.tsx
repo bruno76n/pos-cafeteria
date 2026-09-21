@@ -284,7 +284,7 @@ export function DetalleVenta() {
             </p>
           )}
           {devoluciones.length > 0 && (
-            <section className="rounded-hoja bg-papel p-4" aria-label="Devoluciones">
+            <section className="rounded-hoja border border-linea bg-papel p-4" aria-label="Devoluciones">
               <h2 className="mb-2 text-seccion font-semibold">Devoluciones</h2>
               <ul className="flex flex-col gap-2">
                 {devoluciones.map((d) => (

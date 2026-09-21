@@ -45,7 +45,7 @@
   }
 
   body {
-    @apply bg-acero font-sans text-normal text-grafito antialiased;
+    @apply bg-papel font-sans text-normal text-grafito antialiased;
     -webkit-tap-highlight-color: transparent;
     overscroll-behavior: none;
   }

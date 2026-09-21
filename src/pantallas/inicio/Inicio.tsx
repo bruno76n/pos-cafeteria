@@ -71,7 +71,7 @@ export function Inicio() {
     return (
       <Pantalla titulo={`Hola, ${usuario.nombre}`}>
         {avisoCaja}
-        <div className="flex max-w-xl flex-col gap-4 rounded-hoja bg-papel p-6">
+        <div className="flex max-w-xl flex-col gap-4 rounded-hoja border border-linea bg-papel p-6">
           <h2 className="text-seccion font-semibold">Caja</h2>
           <EstadoCaja turno={turno} conMontos={false} />
           {accionPrincipal}
@@ -85,7 +85,7 @@ export function Inicio() {
     <Pantalla titulo="Hoy">
       {avisoCaja}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <section className="rounded-hoja bg-papel px-6 py-3" aria-label="Ventas de hoy">
+        <section className="rounded-hoja border border-linea bg-papel px-6 py-3" aria-label="Ventas de hoy">
           <Renglon etiqueta="Total vendido" valor={formatearDinero(r.totalVendido)} grande />
           <Renglon etiqueta="Ventas" valor={String(r.numeroVentas)} />
           <Renglon etiqueta="Ticket promedio" valor={formatearDinero(r.ticketPromedio)} />
@@ -94,12 +94,15 @@ export function Inicio() {
           <Renglon etiqueta="Transferencia" valor={formatearDinero(r.porMetodo.transferencia)} />
         </section>
         <div className="flex flex-col gap-4">
-          <section className="flex flex-col gap-3 rounded-hoja bg-papel p-5" aria-label="Caja actual">
+          <section
+            className="flex flex-col gap-3 rounded-hoja border border-linea bg-papel p-5"
+            aria-label="Caja actual"
+          >
             <h2 className="text-seccion font-semibold">Caja actual</h2>
             <EstadoCaja turno={turno} conMontos />
             {accionPrincipal}
           </section>
-          <section className="rounded-hoja bg-papel p-5" aria-label="Más vendidos hoy">
+          <section className="rounded-hoja border border-linea bg-papel p-5" aria-label="Más vendidos hoy">
             <h2 className="mb-2 text-seccion font-semibold">Más vendidos hoy</h2>
             {r.productos.length === 0 ? (
               <p className="text-grafito-suave">Todavía no hay ventas hoy.</p>
@@ -122,7 +125,10 @@ export function Inicio() {
               </ol>
             )}
           </section>
-          <section className="rounded-hoja bg-papel px-5 py-2" aria-label="Resumen del día">
+          <section
+            className="rounded-hoja border border-linea bg-papel px-5 py-2"
+            aria-label="Resumen del día"
+          >
             <TablaCifras
               filas={[
                 {

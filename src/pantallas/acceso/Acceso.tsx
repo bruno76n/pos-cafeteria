@@ -27,7 +27,10 @@ export function Acceso() {
 
   return (
     <main className="flex h-full items-center justify-center overflow-y-auto p-4">
-      <form onSubmit={entrar} className="flex w-full max-w-md flex-col gap-4 rounded-hoja bg-papel p-6">
+      <form
+        onSubmit={entrar}
+        className="flex w-full max-w-md flex-col gap-4 rounded-hoja border border-linea bg-papel p-6"
+      >
         <div className="flex items-center gap-3">
           <Coffee aria-hidden size={32} />
           <h1 className="text-pantalla font-bold">POS Cafetería</h1>

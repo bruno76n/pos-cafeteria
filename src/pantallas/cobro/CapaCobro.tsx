@@ -74,7 +74,7 @@ export function CapaCobro({
       role="dialog"
       aria-modal="true"
       aria-label="Cobro"
-      className="fixed inset-0 z-30 flex flex-col overflow-y-auto bg-acero"
+      className="fixed inset-0 z-30 flex flex-col overflow-y-auto bg-papel"
     >
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-linea bg-papel px-4 py-3">
         <Boton tamano="grande" onClick={alVolver} disabled={confirmando}>
@@ -107,7 +107,7 @@ export function CapaCobro({
       ) : (
         <div className="grid flex-1 gap-4 p-4 lg:grid-cols-[minmax(0,1fr)_320px] portrait:grid-cols-1">
           <section
-            className="flex min-w-0 flex-col gap-4 rounded-hoja bg-papel p-4"
+            className="flex min-w-0 flex-col gap-4 rounded-hoja border border-linea bg-papel p-4"
             aria-label="Método de pago"
           >
             <div
@@ -155,7 +155,10 @@ export function CapaCobro({
             )}
           </section>
 
-          <aside className="flex flex-col gap-3 rounded-hoja bg-papel p-4" aria-label="Pagos">
+          <aside
+            className="flex flex-col gap-3 rounded-hoja border border-linea bg-papel p-4"
+            aria-label="Pagos"
+          >
             <h2 className="text-seccion font-semibold">Pagos</h2>
             {pagos.length === 0 ? (
               <p className="text-grafito-suave">Ninguno todavía.</p>

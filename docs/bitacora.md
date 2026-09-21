@@ -127,6 +127,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - Push: lote de hasta 100 operaciones o ~1.5 MB; si el servidor rechaza un lote completo (400/413), se reenvía una por una y la que no pase va a erroresSync.
 - Se agrega uqr (MIT, sin dependencias, ~80 KB): hace falta para dibujar el QR en el ticket HTML (impresión por navegador/iPad); en ESC/POS se usa el QR nativo de la impresora.
 - ticket.mostrarQR es opcional en el esquema para que las configuraciones ya guardadas sigan siendo válidas.
+- A pedido de Bruno: marco (barra superior, riel y barra inferior) en negro y fondo de la app blanco; las tarjetas llevan borde fino para separarse del fondo.
 
 ## Para probar a mano (Bruno)
 

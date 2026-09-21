@@ -7,7 +7,7 @@ import { Hoja } from './Hoja';
 
 const claseEnlace = ({ isActive }: { isActive: boolean }) =>
   `flex flex-col items-center justify-center gap-1 rounded-boton px-0.5 py-2 text-[11px] font-semibold leading-tight ${
-    isActive ? 'bg-grafito text-papel' : 'text-grafito-suave active:bg-linea/60'
+    isActive ? 'bg-white text-black' : 'text-white/70 active:bg-white/15'
   }`;
 
 function Enlace({ s, alTocar }: { s: Seccion; alTocar?: () => void }) {
@@ -26,7 +26,7 @@ export function Riel() {
   return (
     <nav
       aria-label="Secciones"
-      className="flex w-20 shrink-0 flex-col gap-1 overflow-y-auto border-r border-linea bg-papel p-1.5 portrait:hidden"
+      className="flex w-20 shrink-0 flex-col gap-1 overflow-y-auto bg-black p-1.5 portrait:hidden"
     >
       {secciones.map((s) => (
         <Enlace key={s.id} s={s} />
@@ -42,7 +42,7 @@ export function BarraInferior() {
   const principales = secciones.filter((s) => SECCIONES_BARRA_INFERIOR.includes(s.id));
   const resto = secciones.filter((s) => !SECCIONES_BARRA_INFERIOR.includes(s.id));
   return (
-    <nav aria-label="Secciones" className="hidden border-t border-linea bg-papel p-1 portrait:flex">
+    <nav aria-label="Secciones" className="hidden bg-black p-1 portrait:flex">
       <div className="grid flex-1 auto-cols-fr grid-flow-col gap-1">
         {principales.map((s) => (
           <Enlace key={s.id} s={s} />
@@ -60,7 +60,7 @@ export function BarraInferior() {
       </div>
       {masAbierto && (
         <Hoja titulo="Más secciones" alCerrar={() => setMasAbierto(false)}>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-3 gap-2 rounded-boton bg-black p-2">
             {resto.map((s) => (
               <Enlace key={s.id} s={s} alTocar={() => setMasAbierto(false)} />
             ))}

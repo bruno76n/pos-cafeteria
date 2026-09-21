@@ -31,7 +31,7 @@ function Formulario({
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
-      <div className="flex flex-col gap-4 rounded-hoja bg-papel p-5">
+      <div className="flex flex-col gap-4 rounded-hoja border border-linea bg-papel p-5">
         <Segmentos
           etiqueta="Ancho del papel"
           valor={String(ticket.ancho) as '58' | '80'}

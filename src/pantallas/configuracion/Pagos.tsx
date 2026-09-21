@@ -30,7 +30,7 @@ function Formulario({
     cambiar({ cuentas: pagos.cuentas.map((c) => (c.id === id ? { ...c, ...cambios } : c)) });
 
   return (
-    <div className="flex max-w-3xl flex-col gap-4 rounded-hoja bg-papel p-5">
+    <div className="flex max-w-3xl flex-col gap-4 rounded-hoja border border-linea bg-papel p-5">
       <p className="text-grafito-suave">El efectivo siempre está activo.</p>
       <Interruptor
         etiqueta="Tarjeta"

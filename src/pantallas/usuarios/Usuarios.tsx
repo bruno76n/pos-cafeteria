@@ -150,7 +150,7 @@ export function Usuarios() {
         </Boton>
       }
     >
-      <ul className="flex flex-col rounded-hoja bg-papel">
+      <ul className="flex flex-col rounded-hoja border border-linea bg-papel">
         {ordenados.map((u) => (
           <li
             key={u.id}

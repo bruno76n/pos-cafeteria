@@ -252,7 +252,7 @@ export function Modificadores() {
         {grupos.length === 0 ? (
           <p className="p-8 text-center text-grafito-suave">Aún no hay grupos de modificadores.</p>
         ) : (
-          <ul className="flex flex-col rounded-hoja bg-papel">
+          <ul className="flex flex-col rounded-hoja border border-linea bg-papel">
             {grupos.map((g, i) => (
               <li
                 key={g.id}

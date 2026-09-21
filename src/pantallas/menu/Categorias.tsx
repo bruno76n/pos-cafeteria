@@ -113,7 +113,7 @@ export function Categorias() {
         {categorias.length === 0 ? (
           <p className="p-8 text-center text-grafito-suave">Aún no hay categorías.</p>
         ) : (
-          <ul className="flex flex-col rounded-hoja bg-papel">
+          <ul className="flex flex-col rounded-hoja border border-linea bg-papel">
             {categorias.map((c, i) => (
               <li
                 key={c.id}

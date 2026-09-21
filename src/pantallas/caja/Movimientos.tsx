@@ -57,7 +57,7 @@ export function Movimientos() {
       {movimientos.length === 0 ? (
         <p className="p-8 text-center text-grafito-suave">Todavía no hay movimientos en este turno.</p>
       ) : (
-        <ul className="flex flex-col rounded-hoja bg-papel">
+        <ul className="flex flex-col rounded-hoja border border-linea bg-papel">
           {movimientos.map((m) => (
             <li
               key={m.id}

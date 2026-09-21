@@ -137,7 +137,7 @@ function Cierre({ turno }: { turno: Turno }) {
             { valor: 'total', texto: 'Capturar total' },
           ]}
         />
-        <div className="rounded-hoja bg-papel p-5">
+        <div className="rounded-hoja border border-linea bg-papel p-5">
           {modo === 'denominaciones' ? (
             <ConteoPorDenominaciones conteo={conteo} alCambiar={setConteo} />
           ) : (
@@ -175,7 +175,10 @@ function Cierre({ turno }: { turno: Turno }) {
   return (
     <Pantalla titulo="Cerrar caja · Resultado">
       <div className="grid gap-4 lg:grid-cols-2">
-        <section className="flex flex-col gap-2 rounded-hoja bg-papel p-5" aria-label="Diferencia">
+        <section
+          className="flex flex-col gap-2 rounded-hoja border border-linea bg-papel p-5"
+          aria-label="Diferencia"
+        >
           <TablaCifras
             filas={[
               { etiqueta: 'Efectivo esperado', valor: formatearDinero(resumen.efectivoEsperado) },
@@ -194,7 +197,10 @@ function Cierre({ turno }: { turno: Turno }) {
             {diferencia.texto}
           </p>
         </section>
-        <section className="rounded-hoja bg-papel px-5 py-3" aria-label="Resumen del turno">
+        <section
+          className="rounded-hoja border border-linea bg-papel px-5 py-3"
+          aria-label="Resumen del turno"
+        >
           <TablaCifras
             filas={[
               {

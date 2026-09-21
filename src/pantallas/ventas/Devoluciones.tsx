@@ -21,7 +21,7 @@ export function Devoluciones() {
       {devoluciones.length === 0 ? (
         <p className="p-8 text-center text-grafito-suave">No hay devoluciones en estas fechas.</p>
       ) : (
-        <div className="overflow-x-auto rounded-hoja bg-papel">
+        <div className="overflow-x-auto rounded-hoja border border-linea bg-papel">
           <table className="w-full min-w-[760px]">
             <thead>
               <tr className="border-b border-linea text-left text-etiqueta text-grafito-suave">

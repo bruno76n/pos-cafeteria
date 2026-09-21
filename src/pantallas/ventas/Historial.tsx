@@ -115,7 +115,7 @@ export function Historial() {
           )}
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-hoja bg-papel">
+        <div className="overflow-x-auto rounded-hoja border border-linea bg-papel">
           <table className="w-full min-w-[860px]">
             <thead>
               <tr className="border-b border-linea text-left text-etiqueta text-grafito-suave">

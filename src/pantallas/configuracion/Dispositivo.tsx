@@ -20,7 +20,7 @@ export function ConfigDispositivo() {
 
   return (
     <Pantalla titulo="Dispositivo">
-      <section className="rounded-hoja bg-papel p-5" aria-label="Este dispositivo">
+      <section className="rounded-hoja border border-linea bg-papel p-5" aria-label="Este dispositivo">
         <FormularioDispositivo
           key={dispositivo.actualizadoEn}
           actual={dispositivo}
@@ -33,7 +33,10 @@ export function ConfigDispositivo() {
           </p>
         )}
       </section>
-      <section className="flex flex-col gap-3 rounded-hoja bg-papel p-5" aria-label="Bloqueo automático">
+      <section
+        className="flex flex-col gap-3 rounded-hoja border border-linea bg-papel p-5"
+        aria-label="Bloqueo automático"
+      >
         <Segmentos
           etiqueta="Bloqueo automático por inactividad"
           valor={String(bloqueo ?? 0) as (typeof MINUTOS)[number]}
@@ -41,7 +44,7 @@ export function ConfigDispositivo() {
           opciones={MINUTOS.map((m) => ({ valor: m, texto: m === '0' ? 'Nunca' : `${m} min` }))}
         />
       </section>
-      <section className="rounded-hoja bg-papel p-5" aria-label="Tema">
+      <section className="rounded-hoja border border-linea bg-papel p-5" aria-label="Tema">
         <Segmentos
           etiqueta="Tema"
           valor={tema ?? 'automatico'}
@@ -53,7 +56,7 @@ export function ConfigDispositivo() {
           ]}
         />
       </section>
-      <section className="rounded-hoja bg-papel p-5" aria-label="Almacenamiento">
+      <section className="rounded-hoja border border-linea bg-papel p-5" aria-label="Almacenamiento">
         <h2 className="mb-1 text-seccion font-semibold">Almacenamiento</h2>
         <p className={persistente ? 'text-cafeto' : 'text-ambar'}>
           {persistente

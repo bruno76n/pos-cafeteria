@@ -33,7 +33,10 @@ export function ConfigImpresora() {
   }
 
   return (
-    <section className="flex flex-col gap-4 rounded-hoja bg-papel p-5" aria-labelledby="titulo-impresora">
+    <section
+      className="flex flex-col gap-4 rounded-hoja border border-linea bg-papel p-5"
+      aria-labelledby="titulo-impresora"
+    >
       <h2 id="titulo-impresora" className="text-seccion font-semibold">
         Impresora
       </h2>

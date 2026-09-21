@@ -14,7 +14,7 @@ export function Cortes() {
       {cortes.length === 0 ? (
         <p className="p-8 text-center text-grafito-suave">Todavía no hay cortes de caja.</p>
       ) : (
-        <div className="overflow-x-auto rounded-hoja bg-papel">
+        <div className="overflow-x-auto rounded-hoja border border-linea bg-papel">
           <table className="w-full min-w-[720px]">
             <thead>
               <tr className="border-b border-linea text-left text-etiqueta text-grafito-suave">

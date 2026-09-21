@@ -91,7 +91,7 @@ function Formulario({
       }
     >
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_260px]">
-        <div className="flex flex-col gap-5 rounded-hoja bg-papel p-5">
+        <div className="flex flex-col gap-5 rounded-hoja border border-linea bg-papel p-5">
           <Campo
             etiqueta="Nombre"
             value={p.nombre}

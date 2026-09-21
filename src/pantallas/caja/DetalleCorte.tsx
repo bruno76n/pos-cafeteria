@@ -55,7 +55,7 @@ export function DetalleCorte() {
             Abrió {turno.abiertoPor.nombre} el {formatearFechaHora(turno.abiertoEn)} · Cerró{' '}
             {turno.cerradoPor?.nombre} el {turno.cerradoEn && formatearFechaHora(turno.cerradoEn)}
           </p>
-          <div className="rounded-hoja bg-papel px-5 py-3">
+          <div className="rounded-hoja border border-linea bg-papel px-5 py-3">
             <TablaCifras
               filas={[
                 ...filasTotalesTurno(r),

@@ -19,7 +19,7 @@ export function Roles() {
   return (
     <Pantalla titulo="Roles y permisos">
       <p className="text-grafito-suave">Los cambios se aplican de inmediato en todas las tablets.</p>
-      <div className="overflow-x-auto rounded-hoja bg-papel">
+      <div className="overflow-x-auto rounded-hoja border border-linea bg-papel">
         <table className="w-full min-w-[640px]">
           <thead>
             <tr className="border-b border-linea text-left text-etiqueta text-grafito-suave">

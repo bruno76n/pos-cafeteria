@@ -25,7 +25,7 @@ export function IndicadorConexion() {
       role="status"
       aria-label={largo}
       className={`flex shrink-0 items-center gap-2 text-etiqueta ${
-        enLinea ? 'text-grafito-suave' : 'rounded-boton bg-ambar-fondo px-3 py-1 font-semibold text-ambar'
+        enLinea ? 'text-white/70' : 'rounded-boton bg-ambar-fondo px-3 py-1 font-semibold text-ambar'
       }`}
     >
       {enLinea ? <Cloud aria-hidden size={18} /> : <CloudOff aria-hidden size={18} />}

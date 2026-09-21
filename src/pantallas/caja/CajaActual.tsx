@@ -36,7 +36,7 @@ export function CajaActual() {
   if (!turno) {
     return (
       <Pantalla titulo="Caja actual">
-        <div className="flex flex-col gap-4 rounded-hoja bg-papel p-6">
+        <div className="flex flex-col gap-4 rounded-hoja border border-linea bg-papel p-6">
           <h2 className="text-seccion font-semibold">La caja está cerrada</h2>
           <FormularioAbrirCaja />
         </div>
@@ -70,7 +70,7 @@ export function CajaActual() {
         Abierta por <strong>{turno.abiertoPor.nombre}</strong> desde las {formatearHora(turno.abiertoEn)}
         {aviso && ` del ${formatearFecha(turno.abiertoEn)}`}
       </p>
-      <div className="max-w-xl rounded-hoja bg-papel px-5 py-3">
+      <div className="max-w-xl rounded-hoja border border-linea bg-papel px-5 py-3">
         <TablaCifras
           filas={[
             ...filasTotalesTurno(resumen),
