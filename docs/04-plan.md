@@ -14,7 +14,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 0.6 Vitest (entornos `jsdom` para la app y `node` para el servidor) con una prueba trivial de cada uno. Script `test`. → `npm test` pasa.
 - [x] 0.7 Servidor mínimo: `servidor/app.ts` (Hono con `GET /api/salud`), `servidor/db/cliente.ts` (PGlite si no hay `DATABASE_URL`, Neon HTTP si hay), `drizzle.config.ts`, `scripts/dev-api.ts` (@hono/node-server en 8787 + PGlite en `./.pglite`), proxy de `/api` en Vite, `.env.development` y `.env.example`. Script `dev` con `concurrently`. → Con `npm run dev`, `http://localhost:5173/api/salud` responde `{ ok: true }`.
 - [x] 0.8 `api/[[...ruta]].ts` con el adaptador de Hono para Vercel y `vercel.json` (`docs/02-arquitectura.md` §12). → Compila (no se despliega).
-- [ ] 0.9 Playwright con Chromium (`npx playwright install chromium`), viewport 1280×800, `webServer` que levanta la API con una base PGlite nueva en carpeta temporal + Vite; una prueba que abre la app y consulta `/api/salud`. Script `test:e2e`. → `npm run test:e2e` pasa.
+- [x] 0.9 Playwright con Chromium (`npx playwright install chromium`), viewport 1280×800, `webServer` que levanta la API con una base PGlite nueva en carpeta temporal + Vite; una prueba que abre la app y consulta `/api/salud`. Script `test:e2e`. → `npm run test:e2e` pasa.
 - [ ] 0.10 Scripts `seed` (vacío por ahora), `db:generar`, `db:migrar`, `build`, `preview`. → `npm run build` y `npm test` pasan. Commit.
 
 ## Fase 1: Dominio, datos y sincronización
