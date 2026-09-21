@@ -65,6 +65,8 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 5.6 | hecho | BotonCompartir: Web Share con el texto del ticket; sin Web Share, hoja con 'Copiar texto' y 'Abrir WhatsApp' (wa.me con el texto); en el resultado de la venta (en el detalle se agrega en 8.2); e2e de ambos caminos.
 6.1 | hecho | Caja actual en vivo con resumirTurno (fondo, ventas por método, entradas, retiros, gastos, devoluciones, cancelaciones); efectivo esperado solo con verReportes; aviso si viene de otro día; botones de movimientos y Cerrar caja; TablaCifras reutilizable; escrituras registrarMovimiento, anularMovimiento y cerrarTurno con pruebas.
 6.2 | hecho | Movimientos del turno: registrar entrada/retiro/gasto (categorías de configuración, permiso registrarGastos o autorización), lista con hora, tipo, concepto, usuario y monto; Anular con confirmación (queda tachado con 'Anulado por'); componente Insignia; e2e: 500+200−300−80 = 320 y al anular el retiro 620.
+6.3 | hecho | Cerrar caja en pasos: contar por denominaciones (tabla con piezas, subtotal y teclado) o total directo sin ver el esperado (corte ciego); resultado con esperado, contado y diferencia grande (Faltan/Sobran/Cuadra exacto), resumen, nota y aviso de ventas por subir; cerrarTurno guarda estado, conteo y resumen; requiere cerrarCaja o autorización.
+6.4 | hecho | CorteCerrado: 'Caja cerrada. Diferencia: faltan $X.' con 'Imprimir corte' (useImpresora + construirTicketCorte) y vista previa del ticket de corte.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
