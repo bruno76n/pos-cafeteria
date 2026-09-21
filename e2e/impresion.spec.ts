@@ -43,3 +43,43 @@ test('imprimir ticket y prueba con el driver del navegador', async ({ page }) =>
   await page.getByRole('button', { name: 'Imprimir prueba' }).click();
   await expect.poll(impresos).toContain('Café, Piña, Año, ¡Gracias!');
 });
+
+test('compartir el ticket digital (hoja del sistema o WhatsApp)', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { compartidos: string[]; conShare: boolean };
+    w.compartidos = [];
+    Object.defineProperty(navigator, 'share', {
+      configurable: true,
+      get: () =>
+        w.conShare === false
+          ? undefined
+          : async (datos: ShareData) => {
+              w.compartidos.push(`${datos.title}\n${datos.text}`);
+            },
+    });
+  });
+  await prepararDispositivo(page, 'L');
+  await entrarCon(page, PIN.cajero);
+  await irAVentaConCajaAbierta(page);
+  await page.getByRole('tab', { name: 'Postres' }).click();
+  await page.getByRole('button', { name: /^Brownie/ }).click();
+  await panelVenta(page)
+    .getByRole('button', { name: /^Cobrar/ })
+    .click();
+  await page.getByRole('dialog', { name: 'Cobro' }).getByRole('button', { name: 'Exacto' }).click();
+  await page.getByRole('dialog', { name: 'Cobro' }).getByRole('button', { name: 'Confirmar cobro' }).click();
+
+  await panelVenta(page).getByRole('button', { name: 'Compartir' }).click();
+  const compartidos = () =>
+    page.evaluate(() => (window as unknown as { compartidos: string[] }).compartidos.join('\n'));
+  await expect.poll(compartidos).toContain('Ticket L-000001');
+  expect(await compartidos()).toContain('1 Brownie                 $45.00');
+
+  // Sin hoja de compartir: copiar o WhatsApp
+  await page.evaluate(() => ((window as unknown as { conShare: boolean }).conShare = false));
+  await panelVenta(page).getByRole('button', { name: 'Compartir' }).click();
+  const whatsapp = page
+    .getByRole('dialog', { name: 'Compartir ticket' })
+    .getByRole('link', { name: 'Abrir WhatsApp' });
+  await expect(whatsapp).toHaveAttribute('href', /^https:\/\/wa\.me\/\?text=.*L-000001/);
+});

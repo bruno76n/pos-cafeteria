@@ -71,7 +71,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 5.3 `impresion/escpos.ts` con `@point-of-sale/receipt-printer-encoder`: acentos, logo, QR opcional, corte. → Pruebas de los bytes clave.
 - [x] 5.4 Drivers USB y Bluetooth con detección, conectar, reconectar, imprimir y errores claros. → Compila y se ofrece solo donde hay soporte. Anota "Probar con impresora real".
 - [x] 5.5 Configuración de impresora por dispositivo, "Imprimir prueba" e impresión automática al cobrar. → Con el driver de navegador funciona de punta a punta.
-- [ ] 5.6 Ticket digital: compartir el texto (Web Share; si no hay, copiar o abrir WhatsApp). → Botón en el resultado de la venta y en el detalle.
+- [x] 5.6 Ticket digital: compartir el texto (Web Share; si no hay, copiar o abrir WhatsApp). → Botón en el resultado de la venta y en el detalle.
 
 ## Fase 6: Caja completa
 

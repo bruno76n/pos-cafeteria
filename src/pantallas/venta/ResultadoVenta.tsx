@@ -3,8 +3,9 @@ import { Boton } from '@/componentes/Boton';
 import type { UltimaVenta } from '@/datos/bd';
 import { useConfig, useVenta } from '@/datos/consultas';
 import { formatearDinero } from '@/dominio/dinero';
-import { construirTicketVenta } from '@/impresion/ticket';
+import { construirTicketVenta, ticketATexto } from '@/impresion/ticket';
 import type { useImpresora } from '@/impresion/usarImpresora';
+import { BotonCompartir } from '@/componentes/BotonCompartir';
 
 /** Resultado de la última venta en el carrito vacío: folio, cambio en grande e imprimir. */
 export function ResultadoVenta({
@@ -28,13 +29,19 @@ export function ResultadoVenta({
       </div>
       {venta && config && (
         <div className="mt-4 flex w-full flex-col gap-2">
-          <Boton
-            tamano="grande"
-            disabled={imprimiendo}
-            onClick={() => imprimir(construirTicketVenta(venta, config))}
-          >
-            <Printer aria-hidden /> {error ? 'Reintentar' : 'Imprimir ticket'}
-          </Boton>
+          <div className="grid grid-cols-2 gap-2">
+            <Boton
+              tamano="grande"
+              disabled={imprimiendo}
+              onClick={() => imprimir(construirTicketVenta(venta, config))}
+            >
+              <Printer aria-hidden /> {error ? 'Reintentar' : 'Imprimir ticket'}
+            </Boton>
+            <BotonCompartir
+              titulo={`Ticket ${venta.folio}`}
+              texto={ticketATexto(construirTicketVenta(venta, config))}
+            />
+          </div>
           {error && (
             <p className="text-etiqueta text-faltante" role="alert">
               {error}
