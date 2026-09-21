@@ -27,6 +27,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 1.3 | hecho | fechas.ts solo con Intl: diaLocal, inicio/fin de día (con DST), rangos Hoy/Ayer/Semana (lunes)/Mes, formatos; pruebas con cruce de medianoche UTC.
 1.4 | hecho | modificadores.ts: selección por defecto, alternar con tope, validación obligatorio/mín./máx., precio unitario, resumen y clave; datosPrueba.ts desde el menú demo; caso J.
 1.5 | hecho | carrito.ts: líneas con copia, fusión de idénticas, cantidad (0 elimina), editar, nota, cliente, descuento con tope, totales con IVA incluido/no incluido; casos A, B, C y G.
+1.6 | hecho | cobro.ts: pagos combinados, pendiente, cambio solo del efectivo, un pago por método, referencia obligatoria, billetes sugeridos; casos D, E, F y G.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
