@@ -42,7 +42,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 2.4 Asistente inicial cuando no existe configuración (ni local ni en el servidor tras el primer pull): nombre del negocio, Administrador con PIN y "Cargar menú de ejemplo" (JSON empaquetado, sin usuarios demo). → Probado con una base vacía.
 - [x] 2.5 Bloqueo con PIN (teclado propio, espera tras 5 fallos), cambiar usuario, bloquear, bloqueo automático por inactividad. → Recargar pide PIN.
 - [x] 2.6 `RequierePermiso` y `pedirAutorizacion(permiso)`. → Probado con un cajero.
-- [ ] 2.7 Indicador de conexión y ventas por subir; aviso persistente de errores de sincronización con "Reintentar". → Visible sin conexión.
+- [x] 2.7 Indicador de conexión y ventas por subir; aviso persistente de errores de sincronización con "Reintentar". → Visible sin conexión.
 - [ ] 2.8 e2e: acceso + PIN + cambio de usuario; el cajero no ve Reportes ni Configuración. → Pasa.
 
 ## Fase 3: Abrir caja y nueva venta
