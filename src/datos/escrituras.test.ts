@@ -7,11 +7,14 @@ import {
   actualizar,
   alEscribir,
   abrirTurno,
+  anularMovimiento,
+  cerrarTurno,
   borrar,
   configurarDispositivo,
   crear,
   inicializarNegocio,
   guardar,
+  registrarMovimiento,
   registrarVenta,
 } from './escrituras';
 
@@ -198,5 +201,70 @@ describe('abrirTurno', () => {
     await expect(abrirTurno({ fondoInicial: 0, usuario: ana })).rejects.toThrow('La caja ya está abierta.');
     expect(await bd.turnos.count()).toBe(1);
     expect((await bd.outbox.toArray()).map((o) => o.tabla)).toEqual(['dispositivos', 'turnos']);
+  });
+});
+
+describe('movimientos y cierre de caja', () => {
+  const ana = { id: 'u', nombre: 'Ana' };
+
+  test('registrar, anular y cerrar con el resumen del turno', async () => {
+    await configurarDispositivo({ nombre: 'Caja 1', tipo: 'caja', prefijo: 'A' });
+    const turno = await abrirTurno({ fondoInicial: 50000, usuario: ana });
+    const venta = ventaPrueba({ id: 'v-cierre', turnoId: turno.id });
+    await bd.ventas.put(venta);
+    await registrarMovimiento({
+      turno,
+      tipo: 'entrada',
+      categoria: 'no aplica',
+      concepto: 'Cambio',
+      monto: 20000,
+      usuario: ana,
+    });
+    const gasto = await registrarMovimiento({
+      turno,
+      tipo: 'gasto',
+      categoria: 'Hielo',
+      concepto: ' Bolsa ',
+      monto: 8000,
+      usuario: ana,
+    });
+    const equivocado = await registrarMovimiento({
+      turno,
+      tipo: 'retiro',
+      categoria: null,
+      concepto: 'Error',
+      monto: 99900,
+      usuario: ana,
+    });
+    expect(gasto).toMatchObject({ concepto: 'Bolsa', categoria: 'Hielo', turnoId: turno.id, anulado: false });
+    await anularMovimiento(equivocado.id, ana);
+    expect(await bd.movimientos.get(equivocado.id)).toMatchObject({ anulado: true, anuladoPor: ana });
+
+    const cerrado = await cerrarTurno({
+      turnoId: turno.id,
+      usuario: ana,
+      efectivoContado: 80000,
+      nota: 'ok',
+    });
+    // 500 + 193.50 + 200 − 80 = 813.50 esperado; contado 800 → faltan 13.50
+    expect(cerrado.resumen).toMatchObject({
+      efectivoEsperado: 81350,
+      efectivoContado: 80000,
+      diferencia: -1350,
+      entradas: 20000,
+      retiros: 0,
+    });
+    expect(await bd.turnos.get(turno.id)).toMatchObject({
+      estado: 'cerrado',
+      cerradoPor: ana,
+      efectivoContado: 80000,
+      nota: 'ok',
+    });
+    await expect(cerrarTurno({ turnoId: turno.id, usuario: ana, efectivoContado: 0 })).rejects.toThrow(
+      'La caja ya está cerrada.',
+    );
+    const ultima = (await bd.outbox.orderBy('orden').toArray()).at(-1)!;
+    expect(ultima).toMatchObject({ tabla: 'turnos', tipo: 'actualizar' });
+    expect(ultima.datos).toHaveProperty('resumen.diferencia', -1350);
   });
 });

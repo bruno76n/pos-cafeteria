@@ -63,6 +63,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 5.4 | hecho | Drivers con interfaz común { soportado, conectar, reconectar, imprimir, estado }: navegador, USB (WebUSB) y Bluetooth (BLE) vía crearDriverDirecto (carga perezosa de la librería, espera el evento connected, codifica en el idioma/codepage que reporta la impresora, logo en canvas); driversDisponibles() solo ofrece lo soportado; tipos .d.ts propios; prueba con impresora simulada. Probar con impresora real.
 5.5 | hecho | Configuración › Dispositivo › Impresora (solo conexiones soportadas, Conectar/Cambiar, estado, 'Imprimir prueba' con acentos), guardada en meta local; useImpresora elige el driver, reconecta con los datos guardados y muestra el error con Reintentar; impresión automática al cobrar si imprimirAlCobrar; e2e con el driver de navegador (ticket y prueba).
 5.6 | hecho | BotonCompartir: Web Share con el texto del ticket; sin Web Share, hoja con 'Copiar texto' y 'Abrir WhatsApp' (wa.me con el texto); en el resultado de la venta (en el detalle se agrega en 8.2); e2e de ambos caminos.
+6.1 | hecho | Caja actual en vivo con resumirTurno (fondo, ventas por método, entradas, retiros, gastos, devoluciones, cancelaciones); efectivo esperado solo con verReportes; aviso si viene de otro día; botones de movimientos y Cerrar caja; TablaCifras reutilizable; escrituras registrarMovimiento, anularMovimiento y cerrarTurno con pruebas.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

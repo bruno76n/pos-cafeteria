@@ -1,3 +1,4 @@
+import { resumirTurno } from '@/dominio/caja';
 import type { VentaNueva } from '@/dominio/cobro';
 import { ahoraISO, diaLocal } from '@/dominio/fechas';
 import { contadorInicial, siguienteFolio } from '@/dominio/folios';
@@ -5,6 +6,7 @@ import { configNueva, menuDeEjemplo } from '@/dominio/menuEjemplo';
 import { crearPin } from '@/dominio/pin';
 import { TABLAS_ULTIMO_GANA } from '@/dominio/reglasServidor';
 import type {
+  Movimiento,
   Operacion,
   RefUsuario,
   RegistrosPorTabla,
@@ -224,4 +226,66 @@ export async function abrirTurno(datos: { fondoInicial: number; usuario: RefUsua
   });
   avisar();
   return turno;
+}
+
+/** Entrada, retiro o gasto de efectivo en el turno abierto. */
+export async function registrarMovimiento(datos: {
+  turno: Pick<Turno, 'id' | 'dispositivoId'>;
+  tipo: Movimiento['tipo'];
+  categoria: string | null;
+  concepto: string;
+  monto: number;
+  usuario: RefUsuario;
+}): Promise<Movimiento> {
+  const fecha = ahoraISO();
+  return crear('movimientos', {
+    id: crypto.randomUUID(),
+    turnoId: datos.turno.id,
+    dispositivoId: datos.turno.dispositivoId,
+    tipo: datos.tipo,
+    categoria: datos.tipo === 'gasto' ? datos.categoria : null,
+    concepto: datos.concepto.trim(),
+    monto: datos.monto,
+    usuario: datos.usuario,
+    fecha,
+    dia: diaLocal(fecha),
+    anulado: false,
+  });
+}
+
+/** Un movimiento equivocado se anula (queda visible y tachado); nunca se borra. */
+export function anularMovimiento(id: string, usuario: RefUsuario) {
+  return actualizar('movimientos', id, { anulado: true, anuladoPor: usuario, anuladoEn: ahoraISO() });
+}
+
+/**
+ * Cierra el turno: calcula el resumen con los datos locales del turno y lo guarda con el conteo.
+ * Después ya no cambia.
+ */
+export async function cerrarTurno(datos: {
+  turnoId: string;
+  usuario: RefUsuario;
+  efectivoContado: number;
+  conteo?: Record<string, number>;
+  nota?: string;
+}): Promise<Turno> {
+  const turno = await bd.turnos.get(datos.turnoId);
+  if (!turno || turno.estado !== 'abierto') throw new Error('La caja ya está cerrada.');
+  const [ventas, movimientos, devoluciones] = await Promise.all([
+    bd.ventas.where('turnoId').equals(turno.id).toArray(),
+    bd.movimientos.where('turnoId').equals(turno.id).toArray(),
+    bd.devoluciones.where('turnoId').equals(turno.id).toArray(),
+  ]);
+  const resumen = resumirTurno({ turno, ventas, movimientos, devoluciones, contado: datos.efectivoContado });
+  const cambios = {
+    estado: 'cerrado' as const,
+    cerradoPor: datos.usuario,
+    cerradoEn: ahoraISO(),
+    efectivoContado: datos.efectivoContado,
+    resumen,
+    ...(datos.conteo ? { conteo: datos.conteo } : {}),
+    ...(datos.nota?.trim() ? { nota: datos.nota.trim() } : {}),
+  };
+  await actualizar('turnos', turno.id, cambios);
+  return { ...turno, ...cambios };
 }
