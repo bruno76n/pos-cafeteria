@@ -88,6 +88,8 @@ export const esquemaConfigGeneral = z.object({
     mostrarCajero: z.boolean(),
     mensajeFinal: z.string(),
     imprimirAlCobrar: z.boolean(),
+    /** QR con enlace al ticket digital (opcional; configuraciones anteriores no lo traen). */
+    mostrarQR: z.boolean().optional(),
   }),
   gastos: z.object({ categorias: z.array(z.string().min(1)) }),
   roles: z.object({ encargado: permisosDeRol, cajero: permisosDeRol }),

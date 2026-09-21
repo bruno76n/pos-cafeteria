@@ -1,8 +1,16 @@
 import type { RangoDias } from '@/dominio/fechas';
 import type { DatosReporte } from '@/dominio/reportes';
-import type { Operacion, RespuestaAcceso, RespuestaPull, RespuestaPush } from '@/dominio/tipos';
+import type {
+  ConfigTicket,
+  Operacion,
+  RespuestaAcceso,
+  RespuestaPull,
+  RespuestaPush,
+  Venta,
+} from '@/dominio/tipos';
 
-// Cliente HTTP de la API. Solo lo usan el motor de sync, el login y Reportes fuera de rango.
+// Cliente HTTP de la API. Solo lo usan el motor de sync, el login, Reportes fuera de rango y el
+// ticket digital público.
 
 const BASE = import.meta.env.VITE_API_URL || '/api';
 
@@ -16,6 +24,12 @@ export class ErrorApi extends Error {
     super(mensaje);
     this.name = 'ErrorApi';
   }
+}
+
+/** Ticket digital público (enlace del QR). */
+export interface TicketPublico {
+  venta: Venta;
+  config: ConfigTicket;
 }
 
 /** Lo que el motor de sync necesita de la red (se reemplaza en pruebas). */
@@ -60,4 +74,5 @@ export const api = {
   reportes: (token: string, rango: RangoDias) =>
     pedir<DatosReporte>(`/reportes?desde=${rango.desde}&hasta=${rango.hasta}`, { token, timeoutMs: 60_000 }),
   salud: () => pedir<{ ok: boolean }>('/salud', { timeoutMs: 5_000 }),
+  ticketPublico: (id: string) => pedir<TicketPublico>(`/tickets/${encodeURIComponent(id)}`),
 } satisfies ClienteApi & Record<string, unknown>;

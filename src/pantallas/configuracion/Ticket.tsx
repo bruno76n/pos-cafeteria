@@ -45,7 +45,7 @@ function Formulario({
           <Interruptor
             key={c.clave}
             etiqueta={c.texto}
-            activo={ticket[c.clave]}
+            activo={ticket[c.clave] ?? false}
             alCambiar={(v) => cambiar({ [c.clave]: v })}
           />
         ))}
@@ -54,6 +54,12 @@ function Formulario({
           value={ticket.mensajeFinal}
           maxLength={80}
           onChange={(e) => cambiar({ mensajeFinal: e.target.value })}
+        />
+        <Interruptor
+          etiqueta="QR con el ticket digital"
+          descripcion="El cliente lo escanea y ve su ticket en el celular."
+          activo={ticket.mostrarQR ?? false}
+          alCambiar={(mostrarQR) => cambiar({ mostrarQR })}
         />
         <Interruptor
           etiqueta="Imprimir al cobrar"

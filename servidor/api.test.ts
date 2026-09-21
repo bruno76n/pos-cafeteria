@@ -1,13 +1,13 @@
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
-import { categoriasPrueba, ventaPrueba } from '../src/dominio/datosPrueba';
+import { categoriasPrueba, configPrueba, ventaPrueba } from '../src/dominio/datosPrueba';
 import { diaLocal, sumarDias } from '../src/dominio/fechas';
 import type { Operacion, RespuestaPull, RespuestaPush, Venta } from '../src/dominio/tipos';
 import { crearApp } from './app';
 import { firmarToken, hashContrasena } from './auth';
 import { crearBasePrueba } from './db/basePrueba';
 import type { ConexionBaseDatos } from './db/cliente';
-import { cuentas, ventas } from './db/esquema';
+import { config, cuentas, ventas } from './db/esquema';
 
 const SECRETO = 'secreto-de-prueba';
 let conexion: ConexionBaseDatos;
@@ -351,5 +351,25 @@ describe('reportes', () => {
     expect((await pedir('desde=2025-01-31&hasta=2025-01-01')).status).toBe(400);
     expect((await pedir('desde=2025-01-01&hasta=2025-06-01')).status).toBe(400);
     expect((await pedir('desde=x&hasta=y')).status).toBe(400);
+  });
+});
+
+describe('ticket público', () => {
+  test('devuelve solo la venta pedida, sin token', async () => {
+    const venta = ventaDeHoy({ folio: 'Q-000001', folioNumero: 1 });
+    await push([op({ tabla: 'ventas', tipo: 'crear', registroId: venta.id, datos: venta })]);
+    await conexion.db
+      .insert(config)
+      .values({ id: 'general', datos: configPrueba, actualizadoEn: new Date() })
+      .onConflictDoNothing();
+    const res = await app.request(`/api/tickets/${venta.id}`);
+    expect(res.status).toBe(200);
+    const cuerpo = (await res.json()) as { venta: Venta; config: Record<string, unknown> };
+    expect(cuerpo.venta).toEqual(venta);
+    expect(Object.keys(cuerpo.config).sort()).toEqual(['negocio', 'ticket', 'ventas', 'zonaHoraria']);
+  });
+
+  test('un id que no existe → 404', async () => {
+    expect((await app.request(`/api/tickets/${crypto.randomUUID()}`)).status).toBe(404);
   });
 });

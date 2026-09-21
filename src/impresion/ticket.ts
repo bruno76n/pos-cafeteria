@@ -3,7 +3,7 @@ import { NOMBRE_METODO } from '@/dominio/cobro';
 import { formatearDinero } from '@/dominio/dinero';
 import { formatearFechaHora } from '@/dominio/fechas';
 import { resumenModificadores } from '@/dominio/modificadores';
-import type { ConfigGeneral, Turno, Venta } from '@/dominio/tipos';
+import type { ConfigGeneral, ConfigTicket, Turno, Venta } from '@/dominio/tipos';
 
 // Ticket como datos puros; los renderizadores (HTML y ESC/POS) solo lo dibujan.
 
@@ -42,7 +42,7 @@ const columnas = (izquierda: string, derecha: string, negrita?: boolean): LineaT
 const SEPARADOR: LineaTicket = { tipo: 'separador' };
 const porcentaje = (tasa: number) => `${Math.round(tasa * 10000) / 100}%`;
 
-function encabezado(config: ConfigGeneral): LineaTicket[] {
+function encabezado(config: Pick<ConfigGeneral, 'negocio' | 'ticket'>): LineaTicket[] {
   const { negocio, ticket } = config;
   const lineas: LineaTicket[] = [];
   if (ticket.mostrarLogo && negocio.logo) lineas.push({ tipo: 'logo', dataUrl: negocio.logo });
@@ -63,7 +63,7 @@ export interface OpcionesTicketVenta {
 
 export function construirTicketVenta(
   venta: Venta,
-  config: ConfigGeneral,
+  config: ConfigTicket,
   opciones: OpcionesTicketVenta = {},
 ): TicketDocumento {
   const { ticket, zonaHoraria } = config;

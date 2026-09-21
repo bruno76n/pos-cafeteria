@@ -137,6 +137,6 @@ Cada tarea incluye su criterio de terminado después de "→".
 
 ## Fase 14: Opcionales (solo si todo lo anterior está completo)
 
-- [ ] 14.1 QR en el ticket con enlace a un ticket público `/t/:id` (ruta `GET /api/tickets/:id` sin token que solo devuelve esa venta por su UUID, con pruebas).
+- [x] 14.1 QR en el ticket con enlace a un ticket público `/t/:id` (ruta `GET /api/tickets/:id` sin token que solo devuelve esa venta por su UUID, con pruebas).
 - [ ] 14.2 Marcar un producto como no disponible desde Nueva venta con pulsación larga (requiere `crearProductos`).
 - [ ] 14.3 Tema oscuro con los mismos tokens.

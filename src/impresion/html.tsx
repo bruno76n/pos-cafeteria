@@ -1,3 +1,4 @@
+import { renderSVG } from 'uqr';
 import { renglonesDe, type TicketDocumento } from './ticket';
 
 // Renderizador HTML: vista previa en pantalla e impresión por el navegador (58 u 80 mm).
@@ -13,7 +14,8 @@ ${selector} { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; 
 ${selector} .r { white-space: pre; min-height: 1.25em; }
 ${selector} .n { font-weight: 700; }
 ${selector} .d { font-size: 2em; line-height: 1.15; font-weight: 700; }
-${selector} .logo { display: block; max-width: 60%; margin: 0 auto 0.5em; filter: grayscale(1) contrast(1.4); }`;
+${selector} .logo { display: block; max-width: 60%; margin: 0 auto 0.5em; filter: grayscale(1) contrast(1.4); }
+${selector} .qr svg { display: block; width: 50%; height: auto; margin: 0.5em auto; }`;
 }
 
 /** Cuerpo del ticket en HTML. */
@@ -21,7 +23,8 @@ export function ticketAHTML(doc: TicketDocumento): string {
   return doc.lineas
     .map((linea) => {
       if (linea.tipo === 'logo') return `<img class="logo" src="${escapar(linea.dataUrl)}" alt="">`;
-      if (linea.tipo === 'qr' || linea.tipo === 'corte') return '';
+      if (linea.tipo === 'qr') return `<div class="qr">${renderSVG(linea.contenido, { border: 1 })}</div>`;
+      if (linea.tipo === 'corte') return '';
       return renglonesDe(linea, doc.columnas)
         .map((r) => {
           const clases = ['r', r.negrita ? 'n' : '', r.doble ? 'd' : ''].filter(Boolean).join(' ');

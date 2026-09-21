@@ -22,3 +22,8 @@ test('@page de 58 y 80 mm', () => {
   expect(documentoImpresion(doc80)).toContain('@page { size: 80mm auto; margin: 0; }');
   expect(documentoImpresion(doc80)).toContain('width: 48ch;');
 });
+
+test('QR como SVG dentro del ticket', () => {
+  const doc = construirTicketVenta(ventaPrueba(), configPrueba, { qr: 'https://pos.example/t/venta-b' });
+  expect(ticketAHTML(doc)).toMatch(/<div class="qr"><svg[^>]*>/);
+});

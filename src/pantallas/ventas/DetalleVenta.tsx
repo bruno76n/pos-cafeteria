@@ -33,7 +33,8 @@ import type { Devolucion, MetodoPago, Venta } from '@/dominio/tipos';
 import { useAutorizar } from '@/estado/autorizacion';
 import { useDispositivoActual } from '@/estado/dispositivo';
 import { VistaTicket } from '@/impresion/html';
-import { construirTicketVenta, ticketATexto } from '@/impresion/ticket';
+import { ticketATexto } from '@/impresion/ticket';
+import { ticketDeVenta } from '@/impresion/ticketVenta';
 import { useImpresora } from '@/impresion/usarImpresora';
 import { InsigniaPorSubir, TONO_ESTADO } from './Historial';
 
@@ -229,7 +230,7 @@ export function DetalleVenta() {
       </Pantalla>
     );
   }
-  const doc = construirTicketVenta(venta, config);
+  const doc = ticketDeVenta(venta, config);
 
   return (
     <Pantalla
@@ -254,7 +255,7 @@ export function DetalleVenta() {
             <Boton
               tamano="grande"
               disabled={imprimiendo}
-              onClick={() => imprimir(construirTicketVenta(venta, config, { reimpresion: true }))}
+              onClick={() => imprimir(ticketDeVenta(venta, config, { reimpresion: true }))}
             >
               <Printer aria-hidden /> {error ? 'Reintentar' : 'Reimprimir'}
             </Boton>

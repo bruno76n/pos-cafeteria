@@ -36,6 +36,7 @@ import { Usuarios } from '@/pantallas/usuarios/Usuarios';
 import { NuevaVenta } from '@/pantallas/venta/NuevaVenta';
 import { DetalleVenta } from '@/pantallas/ventas/DetalleVenta';
 import { Devoluciones } from '@/pantallas/ventas/Devoluciones';
+import { TicketPublico } from '@/pantallas/ticket/TicketPublico';
 import { Historial } from '@/pantallas/ventas/Historial';
 import { seccion, type IdSeccion } from '@/secciones';
 
@@ -125,6 +126,8 @@ function ConPestanas({ pestanas }: { pestanas: Pestana[] }) {
 }
 
 export const router = createBrowserRouter([
+  // Ticket digital público (QR): no pide sesión.
+  { path: '/t/:id', element: <TicketPublico /> },
   {
     element: <Guardian />,
     children: [

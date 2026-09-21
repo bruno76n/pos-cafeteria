@@ -1,7 +1,7 @@
 import { useCategorias, useProductos, useVentaReciente } from '@/datos/consultas';
 import type { ConfigGeneral } from '@/dominio/tipos';
 import { VistaTicket } from '@/impresion/html';
-import { construirTicketVenta } from '@/impresion/ticket';
+import { ticketDeVenta } from '@/impresion/ticketVenta';
 import { ventaDeMuestra } from './muestra';
 
 /** Vista previa en vivo del ticket con la configuración que se está editando. */
@@ -14,7 +14,7 @@ export function VistaPreviaTicket({ config }: { config: ConfigGeneral }) {
   return (
     <aside className="flex flex-col gap-2 self-start" aria-label="Vista previa del ticket">
       <p className="text-etiqueta text-grafito-suave">Vista previa</p>
-      <VistaTicket doc={construirTicketVenta(venta, config)} />
+      <VistaTicket doc={ticketDeVenta(venta, config)} />
     </aside>
   );
 }

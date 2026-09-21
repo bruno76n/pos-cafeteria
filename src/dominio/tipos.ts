@@ -17,6 +17,8 @@ export type ConfigGeneral = z.infer<typeof e.esquemaConfigGeneral>;
 export type Config = z.infer<typeof e.esquemaConfig>;
 export type CuentaBancaria = z.infer<typeof e.esquemaCuentaBancaria>;
 export type PermisosPorRol = ConfigGeneral['roles'];
+/** Lo que el ticket de venta necesita de la configuración (también lo trae el ticket público). */
+export type ConfigTicket = Pick<ConfigGeneral, 'negocio' | 'ticket' | 'ventas' | 'zonaHoraria'>;
 export type Categoria = z.infer<typeof e.esquemaCategoria>;
 export type OpcionModificador = z.infer<typeof e.esquemaOpcionModificador>;
 export type GrupoModificadores = z.infer<typeof e.esquemaGrupoModificadores>;

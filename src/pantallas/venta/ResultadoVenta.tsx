@@ -3,7 +3,8 @@ import { Boton } from '@/componentes/Boton';
 import type { UltimaVenta } from '@/datos/bd';
 import { useConfig, useVenta } from '@/datos/consultas';
 import { formatearDinero } from '@/dominio/dinero';
-import { construirTicketVenta, ticketATexto } from '@/impresion/ticket';
+import { ticketATexto } from '@/impresion/ticket';
+import { ticketDeVenta } from '@/impresion/ticketVenta';
 import type { useImpresora } from '@/impresion/usarImpresora';
 import { BotonCompartir } from '@/componentes/BotonCompartir';
 
@@ -33,13 +34,13 @@ export function ResultadoVenta({
             <Boton
               tamano="grande"
               disabled={imprimiendo}
-              onClick={() => imprimir(construirTicketVenta(venta, config))}
+              onClick={() => imprimir(ticketDeVenta(venta, config))}
             >
               <Printer aria-hidden /> {error ? 'Reintentar' : 'Imprimir ticket'}
             </Boton>
             <BotonCompartir
               titulo={`Ticket ${venta.folio}`}
-              texto={ticketATexto(construirTicketVenta(venta, config))}
+              texto={ticketATexto(ticketDeVenta(venta, config))}
             />
           </div>
           {error && (

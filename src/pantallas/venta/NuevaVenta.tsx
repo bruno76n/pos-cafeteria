@@ -26,7 +26,7 @@ import { DialogoDescuento } from './DialogoDescuento';
 import { HojaPersonalizacion } from './HojaPersonalizacion';
 import { PanelVenta } from './PanelVenta';
 import { ResultadoVenta } from './ResultadoVenta';
-import { construirTicketVenta } from '@/impresion/ticket';
+import { ticketDeVenta } from '@/impresion/ticketVenta';
 import { useImpresora } from '@/impresion/usarImpresora';
 
 type Personalizacion = { producto: Producto; linea?: LineaCarrito };
@@ -109,7 +109,7 @@ export function NuevaVenta() {
     );
     terminarVenta({ ventaId: venta.id, folio: venta.folio, cambio: venta.cambio, total: venta.total });
     setCobrando(false);
-    if (config!.ticket.imprimirAlCobrar) void impresora.imprimir(construirTicketVenta(venta, config!));
+    if (config!.ticket.imprimirAlCobrar) void impresora.imprimir(ticketDeVenta(venta, config!));
     setVentaAbierta(false);
   }
 

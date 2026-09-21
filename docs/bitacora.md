@@ -102,6 +102,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 13.3 | hecho | Campos con anillo de foco Cafeto de 3 px (se quitó focus:outline-none), placeholders con contraste suficiente; contrastes de la paleta ≥ 5.2:1; prefers-reduced-motion global; e2e que recorre todas las pantallas y verifica que cada campo y botón visible tenga nombre accesible y que el foco con teclado se vea.
 13.4 | hecho | README.md: requisitos, cómo correrlo, cuenta y PINs demo, comandos, resumen técnico, producción en Neon y Vercel (§15) y limitaciones conocidas (permisos solo en la app, reloj del dispositivo, impresión directa solo Android/Chrome, último gana, reportes >35 días con internet).
 13.5 | hecho | Resumen final y lista de 'Para probar a mano' en la bitácora; limpieza final (estado de sync sin lectores, exports sin uso) y corrección de una carrera en la e2e de Reportes.
+14.1 | hecho | GET /api/tickets/:id sin token (solo esa venta por su UUID + datos del negocio para dibujarla; 404 si no existe) con pruebas; opción 'QR con el ticket digital' en Configuración › Ticket; QR nativo en ESC/POS y SVG en HTML; página pública /t/:id fuera del guardián; e2e con un navegador sin sesión.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -122,6 +123,8 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - Las pruebas e2e que cambian la configuración la restauran al terminar empujando la original por la API (la configuración es global y la comparten todas las pruebas).
 - workbox-window se agrega como dependencia de desarrollo: es peer de vite-plugin-pwa y lo usa el registro del service worker.
 - Push: lote de hasta 100 operaciones o ~1.5 MB; si el servidor rechaza un lote completo (400/413), se reenvía una por una y la que no pase va a erroresSync.
+- Se agrega uqr (MIT, sin dependencias, ~80 KB): hace falta para dibujar el QR en el ticket HTML (impresión por navegador/iPad); en ESC/POS se usa el QR nativo de la impresora.
+- ticket.mostrarQR es opcional en el esquema para que las configuraciones ya guardadas sigan siendo válidas.
 
 ## Para probar a mano (Bruno)
 
