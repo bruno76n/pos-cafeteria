@@ -87,6 +87,9 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 10.4 | hecho | Ticket: ancho 58/80, mostrar logo/dirección/teléfono/RFC/cajero, mensaje final, imprimir al cobrar, con vista previa en vivo; e2e (48 columnas, sin cajero, mensaje).
 10.5 | hecho | Dispositivo: nombre/tipo/prefijo (mismo formulario del alta), bloqueo automático (Nunca/1/5/15/30 min), estado del almacenamiento persistente e impresora; e2e.
 11.1 | hecho | Inicio: con verReportes, cifras de hoy (total, ventas, ticket promedio, por método) de todos los dispositivos, caja actual con efectivo esperado, 5 más vendidos y cancelaciones/devoluciones/gastos; sin verReportes, estado de la caja, ventas del turno y 'Nueva venta'/'Abrir caja' sin montos; aviso de caja abierta desde otro día (avisoCajaAbierta en dominio); dominio/reportes.ts y csv.ts con pruebas.
+11.2 | hecho | Reportes: selector de rango (máx. 92 días) y Resumen (brutas, cancelaciones, devoluciones, netas, número, ticket promedio, descuentos, por método, gastos por categoría) con barras CSS por hora (un día, solo el horario con ventas) o por día; datos locales si caben en 35 días (aviso sin conexión) o GET /api/reportes (datos/reportes.ts).
+11.3 | hecho | Pestañas Productos (ordenable por importe o cantidad, Top 10 destacado, %), Categorías, Cajeros (ventas, total, ticket promedio, cancelaciones) y Cortes (diferencia en color).
+11.4 | hecho | Exportar CSV de cada pestaña con aCSV (UTF-8 con BOM, comillas escapadas, CRLF, montos decimales).
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

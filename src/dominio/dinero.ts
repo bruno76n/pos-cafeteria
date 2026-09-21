@@ -15,7 +15,7 @@ const formato = new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'M
 
 /** 19350 → "$193.50"; -2150 → "-$21.50". */
 export function formatearDinero(centavos: Centavos): string {
-  return formato.format(centavos / 100);
+  return formato.format((centavos || 0) / 100); // || 0 evita "-$0.00" con -0
 }
 
 /** Formato corto para botones de billetes: 20000 → "$200"; 1250 → "$12.50". */

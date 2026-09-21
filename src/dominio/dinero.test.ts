@@ -28,6 +28,7 @@ describe('formato MXN', () => {
     expect(formatearDinero(0)).toBe('$0.00');
     expect(formatearDinero(123456)).toBe('$1,234.56');
     expect(formatearDinero(-2150)).toBe('-$21.50');
+    expect(formatearDinero(-0)).toBe('$0.00');
   });
   test('corto sin decimales cuando son pesos cerrados', () => {
     expect(formatearDineroCorto(20000)).toBe('$200');

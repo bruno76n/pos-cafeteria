@@ -1,14 +1,6 @@
 import type { RangoDias } from '@/dominio/fechas';
-import type {
-  Devolucion,
-  Movimiento,
-  Operacion,
-  RespuestaAcceso,
-  RespuestaPull,
-  RespuestaPush,
-  Turno,
-  Venta,
-} from '@/dominio/tipos';
+import type { DatosReporte } from '@/dominio/reportes';
+import type { Operacion, RespuestaAcceso, RespuestaPull, RespuestaPush } from '@/dominio/tipos';
 
 // Cliente HTTP de la API. Solo lo usan el motor de sync, el login y Reportes fuera de rango.
 
@@ -24,13 +16,6 @@ export class ErrorApi extends Error {
     super(mensaje);
     this.name = 'ErrorApi';
   }
-}
-
-export interface DatosReporte {
-  ventas: Venta[];
-  movimientos: Movimiento[];
-  devoluciones: Devolucion[];
-  turnos: Turno[];
 }
 
 /** Lo que el motor de sync necesita de la red (se reemplaza en pruebas). */
