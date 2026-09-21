@@ -86,7 +86,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 
 - [x] 7.1 Categorías: crear, editar (nombre y color), orden, activar/desactivar, eliminar solo sin productos. → Cambios visibles al instante en Nueva venta.
 - [x] 7.2 Grupos de modificadores: CRUD con opciones, precio extra, por defecto, disponible, tipo, obligatorio, mín./máx. → Se reflejan en la hoja de personalización.
-- [ ] 7.3 Productos: lista con filtros, crear/editar (imagen comprimida, precio solo con `modificarPrecios`, grupos en orden), disponible, orden, eliminar. → Según `docs/01-especificacion.md` §5.5.
+- [x] 7.3 Productos: lista con filtros, crear/editar (imagen comprimida, precio solo con `modificarPrecios`, grupos en orden), disponible, orden, eliminar. → Según `docs/01-especificacion.md` §5.5.
 - [ ] 7.4 e2e: crear categoría y producto con modificadores y venderlo. → Pasa.
 
 ## Fase 8: Historial, cancelaciones y devoluciones

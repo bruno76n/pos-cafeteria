@@ -2,7 +2,7 @@ import { resumirTurno } from '@/dominio/caja';
 import type { VentaNueva } from '@/dominio/cobro';
 import { ahoraISO, diaLocal } from '@/dominio/fechas';
 import { contadorInicial, siguienteFolio } from '@/dominio/folios';
-import { configNueva, menuDeEjemplo } from '@/dominio/menuEjemplo';
+import { configNueva, menuDeEjemplo, type MenuEjemplo } from '@/dominio/menuEjemplo';
 import { crearPin } from '@/dominio/pin';
 import { TABLAS_ULTIMO_GANA } from '@/dominio/reglasServidor';
 import type {
@@ -168,6 +168,18 @@ export async function configurarDispositivo(datos: {
   return registro;
 }
 
+/** Guarda un menú completo con sus operaciones (llamar dentro de una transacción con esas tablas). */
+async function escribirMenu(menu: MenuEjemplo) {
+  await bd.categorias.bulkPut(menu.categorias);
+  await bd.gruposModificadores.bulkPut(menu.gruposModificadores);
+  await bd.productos.bulkPut(menu.productos);
+  await bd.outbox.bulkAdd([
+    ...menu.categorias.map((c) => operacion('categorias', 'crear', c.id, c)),
+    ...menu.gruposModificadores.map((g) => operacion('gruposModificadores', 'crear', g.id, g)),
+    ...menu.productos.map((p) => operacion('productos', 'crear', p.id, p)),
+  ]);
+}
+
 /**
  * Asistente inicial: configuración del negocio, Administrador y, si se pide, el menú de ejemplo
  * (sin sus usuarios demo). Todo en una transacción.
@@ -187,29 +199,29 @@ export async function inicializarNegocio(datos: {
     activo: true,
     actualizadoEn: ahora,
   };
-  const menu = datos.cargarMenu
-    ? menuDeEjemplo(ahora)
-    : { categorias: [], gruposModificadores: [], productos: [] };
   await bd.transaction(
     'rw',
     [bd.config, bd.usuarios, bd.categorias, bd.gruposModificadores, bd.productos, bd.outbox],
     async () => {
       await bd.config.put(config);
       await bd.usuarios.put(admin);
-      await bd.categorias.bulkPut(menu.categorias);
-      await bd.gruposModificadores.bulkPut(menu.gruposModificadores);
-      await bd.productos.bulkPut(menu.productos);
       await bd.outbox.bulkAdd([
         operacion('config', 'crear', config.id, config),
         operacion('usuarios', 'crear', admin.id, admin),
-        ...menu.categorias.map((c) => operacion('categorias', 'crear', c.id, c)),
-        ...menu.gruposModificadores.map((g) => operacion('gruposModificadores', 'crear', g.id, g)),
-        ...menu.productos.map((p) => operacion('productos', 'crear', p.id, p)),
       ]);
+      if (datos.cargarMenu) await escribirMenu(menuDeEjemplo(ahora));
     },
   );
   avisar();
   return admin;
+}
+
+/** "Cargar menú de ejemplo": categorías, grupos y productos del ejemplo (sin usuarios). */
+export async function cargarMenuDeEjemplo() {
+  await bd.transaction('rw', [bd.categorias, bd.gruposModificadores, bd.productos, bd.outbox], () =>
+    escribirMenu(menuDeEjemplo(ahoraISO())),
+  );
+  avisar();
 }
 
 /** Abre la caja del dispositivo. Solo puede haber un turno abierto por dispositivo. */

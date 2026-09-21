@@ -5,7 +5,7 @@ import { coincide } from '@/dominio/texto';
 import type { Categoria, Producto } from '@/dominio/tipos';
 
 /** Botón de producto: nombre, precio y franja del color de su categoría. */
-function BotonProducto({
+export function BotonProducto({
   producto,
   color,
   alTocar,
