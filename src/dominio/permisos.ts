@@ -1,4 +1,5 @@
 import { PERMISOS } from './esquemas';
+import { buscarUsuarioPorPin } from './pin';
 import type { Permiso, PermisosPorRol, Rol, Usuario } from './tipos';
 
 export const NOMBRE_PERMISO: Record<Permiso, string> = {
@@ -66,3 +67,26 @@ export function puede(
 /** Usuarios y Configuración: solo Administrador. */
 export const esAdmin = (usuario: Pick<Usuario, 'rol' | 'activo'> | null | undefined) =>
   usuario?.rol === 'admin' && usuario.activo;
+
+export type ResultadoAutorizacion =
+  | { ok: true; usuario: Pick<Usuario, 'id' | 'nombre'> }
+  | { ok: false; motivo: 'pin' | 'sin-permiso'; mensaje: string };
+
+/** Autorización con el PIN de otro usuario: debe estar activo y tener el permiso. */
+export async function autorizarConPin<U extends Usuario>(
+  usuarios: U[],
+  roles: PermisosPorRol,
+  permiso: Permiso,
+  pin: string,
+): Promise<ResultadoAutorizacion> {
+  const usuario = await buscarUsuarioPorPin(usuarios, pin);
+  if (!usuario) return { ok: false, motivo: 'pin', mensaje: 'PIN incorrecto.' };
+  if (!puede(usuario, permiso, roles)) {
+    return {
+      ok: false,
+      motivo: 'sin-permiso',
+      mensaje: `${usuario.nombre} tampoco puede ${ACCION_PERMISO[permiso]}.`,
+    };
+  }
+  return { ok: true, usuario: { id: usuario.id, nombre: usuario.nombre } };
+}

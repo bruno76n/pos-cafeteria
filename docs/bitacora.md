@@ -41,6 +41,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 2.3 | hecho | FormularioDispositivo (nombre, tipo caja/consulta, letra A–Z con aviso si otra caja la usa), configurarDispositivo() guarda en Dexie + outbox y arranca el contador con el mayor entre dispositivos con ese prefijo y ventas locales; componente Segmentos; pruebas y e2e.
 2.4 | hecho | Asistente /bienvenida (negocio, Administrador con PIN confirmado, menú de ejemplo opcional sin usuarios demo); inicializarNegocio() en una transacción; componente Interruptor; e2e con servidor vacío simulado (pull vacío, push bloqueado).
 2.5 | hecho | TecladoPin propio (teclas de 72 px, prueba al llegar a 4–6 dígitos, tecla Entrar, espera de 30 s tras 5 fallos, teclado físico), pantalla /bloqueo, bloqueo por inactividad (meta bloqueoMinutos, 0 = nunca); e2e: PIN, recarga pide PIN, espera tras 5 fallos.
+2.6 | hecho | autorizarConPin() en dominio/permisos (probado con cajero y encargada), pedirAutorizacion(permiso) con store y DialogoAutorizacion (TecladoPin; mensaje si el PIN es de alguien sin permiso), useAutorizar() que regresa usuario y autorizadoPor, y <RequierePermiso>. La prueba de UI con cajero va en el e2e de 3.5.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

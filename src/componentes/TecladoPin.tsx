@@ -9,9 +9,10 @@ const clasesTecla =
 /**
  * Teclado de PIN propio. Prueba el PIN al llegar a 4, 5 y 6 dígitos (el PIN identifica al
  * usuario); "Entrar" o el sexto dígito sin coincidencia cuentan como intento fallido.
- * Tras 5 fallos, espera de 30 segundos.
+ * Tras 5 fallos, espera de 30 segundos. Si `verificar` regresa un texto, el PIN existe pero se
+ * rechaza (p. ej. el usuario no tiene el permiso): se muestra el texto sin contar como fallo.
  */
-export function TecladoPin({ verificar }: { verificar: (pin: string) => Promise<boolean> }) {
+export function TecladoPin({ verificar }: { verificar: (pin: string) => Promise<boolean | string> }) {
   const [pin, setPin] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [fallos, setFallos] = useState(0);
@@ -47,7 +48,10 @@ export function TecladoPin({ verificar }: { verificar: (pin: string) => Promise<
       setOcupado(true);
       const ok = candidato.length >= 4 && (await verificar(candidato));
       setOcupado(false);
-      if (ok) {
+      if (typeof ok === 'string') {
+        setPin('');
+        setError(ok);
+      } else if (ok) {
         setPin('');
         setFallos(0);
         setError(null);

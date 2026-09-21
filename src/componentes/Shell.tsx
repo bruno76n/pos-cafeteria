@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router';
 import { useBloqueoPorInactividad } from '@/estado/inactividad';
 import { BarraSuperior } from './BarraSuperior';
+import { DialogoAutorizacion } from './DialogoAutorizacion';
 import { BarraInferior, Riel } from './Navegacion';
 
 /** Estructura general: barra superior, riel lateral (o barra inferior en vertical) y contenido. */
@@ -16,6 +17,7 @@ export function Shell() {
         </main>
       </div>
       <BarraInferior />
+      <DialogoAutorizacion />
     </div>
   );
 }
