@@ -99,8 +99,8 @@ Cada tarea incluye su criterio de terminado después de "→".
 
 ## Fase 9: Usuarios y permisos
 
-- [ ] 9.1 Usuarios: crear, editar, rol, PIN único con confirmación, activar/desactivar, protección del último Administrador. → Reglas de `docs/01-especificacion.md` §5.11.
-- [ ] 9.2 Roles y permisos: matriz editable para Encargado y Cajero. → Cambios efectivos de inmediato.
+- [x] 9.1 Usuarios: crear, editar, rol, PIN único con confirmación, activar/desactivar, protección del último Administrador. → Reglas de `docs/01-especificacion.md` §5.11.
+- [x] 9.2 Roles y permisos: matriz editable para Encargado y Cajero. → Cambios efectivos de inmediato.
 - [ ] 9.3 e2e: quitar un permiso al cajero y comprobar que pide autorización. → Pasa.
 
 ## Fase 10: Configuración

@@ -90,3 +90,21 @@ export async function autorizarConPin<U extends Usuario>(
   }
   return { ok: true, usuario: { id: usuario.id, nombre: usuario.nombre } };
 }
+
+/**
+ * Error si el cambio deja al negocio sin Administrador activo (no se puede desactivar ni cambiar
+ * de rol al último), o null si se puede guardar.
+ */
+export function validarUltimoAdmin(
+  usuarios: Pick<Usuario, 'id' | 'rol' | 'activo'>[],
+  editado: Pick<Usuario, 'id' | 'rol' | 'activo'>,
+): string | null {
+  const antes = usuarios.find((u) => u.id === editado.id);
+  const eraAdminActivo = antes?.rol === 'admin' && antes.activo;
+  const siguePudiendo = editado.rol === 'admin' && editado.activo;
+  if (!eraAdminActivo || siguePudiendo) return null;
+  const otros = usuarios.filter((u) => u.id !== editado.id && u.rol === 'admin' && u.activo);
+  return otros.length === 0
+    ? 'Es el último Administrador activo: no se puede desactivar ni cambiar de rol.'
+    : null;
+}

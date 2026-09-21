@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { autorizarConPin, esAdmin, puede, ROLES_POR_DEFECTO } from './permisos';
+import { autorizarConPin, esAdmin, puede, ROLES_POR_DEFECTO, validarUltimoAdmin } from './permisos';
 import { crearPin } from './pin';
 
 const usuario = (rol: 'admin' | 'encargado' | 'cajero', activo = true) => ({ rol, activo });
@@ -86,5 +86,28 @@ describe('autorizarConPin', () => {
   test('PIN incorrecto o de usuario inactivo', async () => {
     expect((await autorizarConPin(await usuarios(), ROLES_POR_DEFECTO, 'vender', '3333')).ok).toBe(false);
     expect((await autorizarConPin(await usuarios(), ROLES_POR_DEFECTO, 'vender', '0000')).ok).toBe(false);
+  });
+});
+
+describe('último Administrador', () => {
+  const usuarios = [
+    { id: 'a', rol: 'admin' as const, activo: true },
+    { id: 'b', rol: 'cajero' as const, activo: true },
+    { id: 'c', rol: 'admin' as const, activo: false },
+  ];
+  test('no se desactiva ni se degrada al último admin activo', () => {
+    expect(validarUltimoAdmin(usuarios, { id: 'a', rol: 'admin', activo: false })).toMatch(
+      /último Administrador/,
+    );
+    expect(validarUltimoAdmin(usuarios, { id: 'a', rol: 'encargado', activo: true })).toMatch(
+      /último Administrador/,
+    );
+  });
+  test('sí se puede si hay otro admin activo o si no era admin', () => {
+    const conOtro = [...usuarios, { id: 'd', rol: 'admin' as const, activo: true }];
+    expect(validarUltimoAdmin(conOtro, { id: 'a', rol: 'cajero', activo: true })).toBeNull();
+    expect(validarUltimoAdmin(usuarios, { id: 'b', rol: 'cajero', activo: false })).toBeNull();
+    expect(validarUltimoAdmin(usuarios, { id: 'a', rol: 'admin', activo: true })).toBeNull();
+    expect(validarUltimoAdmin(usuarios, { id: 'nuevo', rol: 'cajero', activo: true })).toBeNull();
   });
 });
