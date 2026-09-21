@@ -26,7 +26,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 1.5 `dominio/carrito.ts`: agregar con fusión de líneas idénticas, cantidad, eliminar, nota, cliente, descuento (% y monto, tope), totales con IVA incluido y no incluido. → Pruebas (casos A, B, C, G).
 - [x] 1.6 `dominio/cobro.ts`: pagos combinados, pendiente, cambio, validaciones (un pago por método, solo efectivo excede). → Pruebas (casos D, E, F).
 - [x] 1.7 `dominio/caja.ts` y `dominio/devoluciones.ts`: resumen de turno, efectivo esperado, diferencia, reembolso proporcional. → Pruebas (casos H, I).
-- [ ] 1.8 `dominio/folios.ts`, `dominio/permisos.ts` (roles por defecto, `puede`) y `dominio/pin.ts` (hash con sal, Web Crypto). → Pruebas.
+- [x] 1.8 `dominio/folios.ts`, `dominio/permisos.ts` (roles por defecto, `puede`) y `dominio/pin.ts` (hash con sal, Web Crypto). → Pruebas.
 - [ ] 1.9 `servidor/db/esquema.ts` (Drizzle: todas las tablas de §5 con `rev`, `actualizado_en`, índices y secuencia `rev_global`), primera migración con `db:generar` y `servidor/db/migrar.ts` para PGlite y Neon. → Migración aplicada en PGlite desde cero.
 - [ ] 1.10 `dominio/reglasServidor.ts` (qué operación se permite en qué tabla, §6) y rutas `POST /api/acceso`, `POST /api/sync/push`, `GET /api/sync/pull` y `GET /api/reportes`, con JWT (`jose`) y bcrypt. → Pruebas de API con PGlite en memoria (casos de §11).
 - [ ] 1.11 `scripts/seed.ts` (idempotente) y `scripts/crear-cuenta.ts`: cuenta `caja@demo.test`/`demo1234`, configuración (armada con `negocio` y `configInicial` del JSON más los roles por defecto de `dominio/permisos.ts`), usuarios demo con PIN, categorías, grupos y productos de `seed/menu-demo.json`. → `npm run seed` dos veces seguidas sin duplicar nada.

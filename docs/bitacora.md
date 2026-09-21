@@ -29,6 +29,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 1.5 | hecho | carrito.ts: líneas con copia, fusión de idénticas, cantidad (0 elimina), editar, nota, cliente, descuento con tope, totales con IVA incluido/no incluido; casos A, B, C y G.
 1.6 | hecho | cobro.ts: pagos combinados, pendiente, cambio solo del efectivo, un pago por método, referencia obligatoria, billetes sugeridos; casos D, E, F y G.
 1.7 | hecho | caja.ts (resumen de turno, efectivo esperado, diferencia, denominaciones, agregados por producto/categoría/cajero) y devoluciones.ts (reembolso proporcional con tope, estado resultante); casos H e I.
+1.8 | hecho | folios.ts (formato, siguiente, contador inicial, prefijo en uso), permisos.ts (roles por defecto, puede, nombres) y pin.ts (SHA-256 con sal, Web Crypto, búsqueda por PIN, PIN en uso).
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
