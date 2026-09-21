@@ -1,8 +1,8 @@
 import { ahoraISO } from '@/dominio/fechas';
-import { siguienteFolio } from '@/dominio/folios';
+import { contadorInicial, siguienteFolio } from '@/dominio/folios';
 import { TABLAS_ULTIMO_GANA } from '@/dominio/reglasServidor';
 import type { Operacion, RegistrosPorTabla, TablaSync, Venta } from '@/dominio/tipos';
-import { bd, type OperacionOutbox } from './bd';
+import { bd, guardarMeta, leerMeta, type OperacionOutbox } from './bd';
 
 // Toda escritura pasa por aquí: guarda el registro y agrega su operación a la outbox
 // en UNA sola transacción de Dexie. Nada de fetch: la red la toca solo el motor de sync.
@@ -113,4 +113,32 @@ export async function registrarVenta(venta: VentaSinFolio): Promise<Venta> {
   });
   avisar();
   return guardada!;
+}
+
+/**
+ * Configura (o reconfigura) este dispositivo. El contador de folios arranca en el mayor entre
+ * el de los dispositivos que usaban ese prefijo y el folio más alto de las ventas locales con él.
+ */
+export async function configurarDispositivo(datos: {
+  nombre: string;
+  tipo: 'caja' | 'consulta';
+  prefijo: string | null;
+}) {
+  const id = (await leerMeta('dispositivoId')) ?? crypto.randomUUID();
+  const actual = await bd.dispositivos.get(id);
+  let ultimoFolio = actual?.ultimoFolio ?? 0;
+  if (datos.prefijo && datos.prefijo !== actual?.prefijo) {
+    const conPrefijo = await bd.dispositivos.filter((d) => d.prefijo === datos.prefijo).toArray();
+    const folios = (await bd.ventas.where('folio').startsWith(`${datos.prefijo}-`).toArray()).map(
+      (v) => v.folio,
+    );
+    ultimoFolio = contadorInicial(
+      datos.prefijo,
+      Math.max(0, ...conPrefijo.map((d) => d.ultimoFolio)),
+      folios,
+    );
+  }
+  const registro = await guardar('dispositivos', { id, ...datos, nombre: datos.nombre.trim(), ultimoFolio });
+  await guardarMeta('dispositivoId', id);
+  return registro;
 }

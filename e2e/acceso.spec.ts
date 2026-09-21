@@ -15,6 +15,14 @@ test('entra con la cuenta demo y la sesión sobrevive a recargar sin API', async
   await page.route('**/api/**', (ruta) => ruta.abort());
   await page.reload();
   await expect(page).toHaveURL(/\/dispositivo$/);
+  await page.unroute('**/api/**');
+
+  await page.getByLabel('Nombre').fill('Caja 1');
+  await page.getByRole('button', { name: 'A', exact: true }).click();
+  await page.getByRole('button', { name: 'Guardar y continuar' }).click();
+  await expect(page).toHaveURL(/\/bloqueo$/);
+  await page.reload();
+  await expect(page).toHaveURL(/\/bloqueo$/);
 });
 
 test('primer inicio sin internet', async ({ page }) => {

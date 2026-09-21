@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 import { categoriasPrueba, ventaPrueba } from '@/dominio/datosPrueba';
-import { bd } from './bd';
+import { bd, leerMeta } from './bd';
 import {
   actualizar,
   alEscribir,
   borrar,
+  configurarDispositivo,
   crear,
   guardar,
   registrarVenta,
@@ -117,5 +118,36 @@ describe('registrarVenta', () => {
     await expect(registrarVenta(ventaSinFolio())).rejects.toThrow('no está configurado');
     expect(await bd.ventas.count()).toBe(0);
     expect(await bd.outbox.count()).toBe(0);
+  });
+});
+
+describe('configurarDispositivo', () => {
+  test('crea el dispositivo, lo recuerda y encola su operación', async () => {
+    const d = await configurarDispositivo({ nombre: ' Caja 1 ', tipo: 'caja', prefijo: 'A' });
+    expect(d).toMatchObject({ nombre: 'Caja 1', prefijo: 'A', ultimoFolio: 0 });
+    expect(await leerMeta('dispositivoId')).toBe(d.id);
+    expect((await bd.outbox.toArray()).map((o) => o.tabla)).toEqual(['dispositivos']);
+  });
+
+  test('el contador arranca en el mayor entre el servidor y las ventas con ese prefijo', async () => {
+    await bd.dispositivos.put({
+      ...dispositivo,
+      id: 'vieja',
+      prefijo: 'B',
+      ultimoFolio: 40,
+      actualizadoEn: '2026-09-19T00:00:00.000Z',
+    });
+    await bd.ventas.put(ventaPrueba({ id: 'v1', folio: 'B-000045', folioNumero: 45 }));
+    await bd.ventas.put(ventaPrueba({ id: 'v2', folio: 'C-000099', folioNumero: 99 }));
+    const d = await configurarDispositivo({ nombre: 'Caja nueva', tipo: 'caja', prefijo: 'B' });
+    expect(d.ultimoFolio).toBe(45);
+  });
+
+  test('cambiar solo el nombre conserva el contador', async () => {
+    await configurarDispositivo({ nombre: 'Caja 1', tipo: 'caja', prefijo: 'A' });
+    const id = (await leerMeta('dispositivoId'))!;
+    await bd.dispositivos.update(id, { ultimoFolio: 12 });
+    const d = await configurarDispositivo({ nombre: 'Caja principal', tipo: 'caja', prefijo: 'A' });
+    expect(d).toMatchObject({ id, nombre: 'Caja principal', ultimoFolio: 12 });
   });
 });

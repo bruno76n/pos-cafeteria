@@ -38,7 +38,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 
 - [x] 2.1 Shell: barra superior (negocio, dispositivo, conexión, usuario), riel lateral con las secciones permitidas, pestañas de subsección y rutas con guardas (`docs/02-arquitectura.md` §3). → Navegación completa con pantallas vacías.
 - [x] 2.2 Pantalla de acceso (correo y contraseña contra `/api/acceso`, token guardado en Dexie) con errores claros, incluido el de primer inicio sin internet y el de sesión expirada. → Entra con la cuenta demo; tras recargar sin red sigue dentro.
-- [ ] 2.3 Configuración del dispositivo: nombre, tipo, prefijo único; guarda en Dexie y se sincroniza; inicializa el contador de folios con lo que haya en el servidor. → Persiste tras recargar.
+- [x] 2.3 Configuración del dispositivo: nombre, tipo, prefijo único; guarda en Dexie y se sincroniza; inicializa el contador de folios con lo que haya en el servidor. → Persiste tras recargar.
 - [ ] 2.4 Asistente inicial cuando no existe configuración (ni local ni en el servidor tras el primer pull): nombre del negocio, Administrador con PIN y "Cargar menú de ejemplo" (JSON empaquetado, sin usuarios demo). → Probado con una base vacía.
 - [ ] 2.5 Bloqueo con PIN (teclado propio, espera tras 5 fallos), cambiar usuario, bloquear, bloqueo automático por inactividad. → Recargar pide PIN.
 - [ ] 2.6 `RequierePermiso` y `pedirAutorizacion(permiso)`. → Probado con un cajero.
