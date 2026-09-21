@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { Boton, type VarianteBoton } from './Boton';
 import { Hoja } from './Hoja';
 
-/** Diálogo de confirmación con dos botones: la acción y "conservar" (cancelar). */
+/** Diálogo de confirmación: la acción y, si se indica, un botón para cancelar ("Conservar", "Volver"). */
 export function Confirmar({
   titulo,
   children,
@@ -15,7 +15,7 @@ export function Confirmar({
   titulo: string;
   children?: ReactNode;
   textoAccion: string;
-  textoCancelar: string;
+  textoCancelar?: string;
   variante?: VarianteBoton;
   alConfirmar: () => void;
   alCancelar: () => void;
@@ -28,9 +28,11 @@ export function Confirmar({
       alCerrar={alCancelar}
       pie={
         <div className="flex justify-end gap-2">
-          <Boton tamano="grande" onClick={alCancelar}>
-            {textoCancelar}
-          </Boton>
+          {textoCancelar && (
+            <Boton tamano="grande" onClick={alCancelar}>
+              {textoCancelar}
+            </Boton>
+          )}
           <Boton tamano="grande" variante={variante} onClick={alConfirmar}>
             {textoAccion}
           </Boton>

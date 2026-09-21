@@ -80,6 +80,20 @@ export async function guardar<T extends TablaSync>(tabla: T, registro: SinFecha<
   return completo;
 }
 
+/** Guarda varios registros completos de catálogo en una sola transacción (p. ej. al reordenar). */
+export async function guardarVarios<T extends 'categorias' | 'gruposModificadores' | 'productos'>(
+  tabla: T,
+  registros: SinFecha<RegistrosPorTabla[T]>[],
+) {
+  const ahora = ahoraISO();
+  const completos = registros.map((r) => ({ ...r, actualizadoEn: ahora }) as RegistrosPorTabla[T]);
+  await bd.transaction('rw', bd.tabla(tabla), bd.outbox, async () => {
+    await bd.tabla(tabla).bulkPut(completos as never);
+    await bd.outbox.bulkAdd(completos.map((r) => operacion(tabla, 'actualizar', r.id, r)));
+  });
+  avisar();
+}
+
 /** Cambia campos de un registro (ventas: estado, cancelación, devuelto; movimientos: anulación; turnos). */
 export async function actualizar<T extends 'ventas' | 'movimientos' | 'turnos'>(
   tabla: T,
