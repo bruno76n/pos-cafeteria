@@ -1,0 +1,78 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/atkinson-hyperlegible-next';
+
+/* Tokens de docs/03-interfaz.md ("barra de acero") */
+@theme {
+  --font-sans: 'Atkinson Hyperlegible Next Variable', system-ui, sans-serif;
+
+  --color-acero: #f2f4f3;
+  --color-papel: #ffffff;
+  --color-grafito: #1e2528;
+  --color-grafito-suave: #5b676c;
+  --color-linea: #d5dcda;
+  --color-cafeto: #1f6f4a;
+  --color-cafeto-oscuro: #175a3b;
+  --color-faltante: #b3372f;
+  --color-ambar: #8a5a12;
+  --color-ambar-fondo: #fff4de;
+
+  --color-cat-tostado: #6b4226;
+  --color-cat-hielo: #2f7ca6;
+  --color-cat-mostaza: #b8862b;
+  --color-cat-frambuesa: #a83e5b;
+  --color-cat-pizarra: #5e6b73;
+  --color-cat-hoja: #4b7f52;
+  --color-cat-lavanda: #7a5aa6;
+  --color-cat-canela: #c2553a;
+
+  --text-etiqueta: 14px;
+  --text-normal: 16px;
+  --text-producto: 18px;
+  --text-seccion: 22px;
+  --text-pantalla: 28px;
+  --text-total: 40px;
+  --text-cambio: 64px;
+
+  --radius-boton: 10px;
+  --radius-hoja: 16px;
+}
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-acero font-sans text-normal text-grafito antialiased;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-cafeto);
+    outline-offset: 2px;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: default;
+  }
+}
+
+@utility cifras {
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
