@@ -1,5 +1,13 @@
 import { describe, expect, test } from 'vitest';
-import { aTextoCaptura, esCentavos, formatearDinero, formatearDineroCorto, leerCaptura, pesos, redondear } from './dinero';
+import {
+  aTextoCaptura,
+  esCentavos,
+  formatearDinero,
+  formatearDineroCorto,
+  leerCaptura,
+  pesos,
+  redondear,
+} from './dinero';
 
 describe('redondear', () => {
   test('mitades hacia arriba', () => {
@@ -15,12 +23,11 @@ describe('redondear', () => {
 });
 
 describe('formato MXN', () => {
-  const normal = (s: string) => s.replace(/ /g, ' ');
   test('centavos a pesos', () => {
-    expect(normal(formatearDinero(19350))).toBe('$193.50');
-    expect(normal(formatearDinero(0))).toBe('$0.00');
-    expect(normal(formatearDinero(123456))).toBe('$1,234.56');
-    expect(normal(formatearDinero(-2150))).toBe('-$21.50');
+    expect(formatearDinero(19350)).toBe('$193.50');
+    expect(formatearDinero(0)).toBe('$0.00');
+    expect(formatearDinero(123456)).toBe('$1,234.56');
+    expect(formatearDinero(-2150)).toBe('-$21.50');
   });
   test('corto sin decimales cuando son pesos cerrados', () => {
     expect(formatearDineroCorto(20000)).toBe('$200');

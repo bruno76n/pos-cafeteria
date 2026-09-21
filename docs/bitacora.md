@@ -23,11 +23,14 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 0.9 | hecho | Playwright + Chromium, 1280×800 táctil, zona America/Mexico_City; webServer con API (PGlite temporal nueva) en 8797 y Vite en 5197; prueba de arranque.
 0.10 | hecho | Scripts build, preview, seed (vacío), db:generar (drizzle-kit) y db:migrar (servidor/db/migrar.ts para PGlite y Neon).
 1.1 | hecho | dinero.ts: redondeo mitad arriba, formato MXN, formato corto, lectura de captura y pruebas.
+1.2 | hecho | esquemas.ts (Zod 4) de todas las entidades, operaciones de sync y acceso; tipos.ts derivado con z.infer; pruebas válidas e inválidas.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
 - Se agregan @eslint/js y globals (dev): los necesita la config plana de ESLint.
 - e2e usa puertos 8797/5197 para no chocar con otros servidores locales (5173 ya estaba ocupado en esta Mac).
+- IDs como texto (no uuid): el menú demo usa ids legibles ('latte', 'cafes'); los nuevos registros siguen usando crypto.randomUUID().
+- Todo registro sincronizable lleva actualizadoEn; config se guarda como { id: 'general', datos }.
 
 ## Para probar a mano (Bruno)
 
