@@ -1,4 +1,3 @@
-import { anchoLogo, prepararLogo, ticketAEscPos } from '../escpos';
 import type { TicketDocumento } from '../ticket';
 import { ErrorImpresion, type DriverImpresora } from './tipos';
 
@@ -82,6 +81,8 @@ export function crearDriverDirecto(opciones: {
     },
     async imprimir(doc: TicketDocumento) {
       if (!impresora || !conexion) throw new ErrorImpresion('La impresora no está conectada.');
+      // El codificador ESC/POS (con sus páginas de códigos) solo se carga si se imprime directo.
+      const { anchoLogo, prepararLogo, ticketAEscPos } = await import('../escpos');
       const lineaLogo = doc.lineas.find((l) => l.tipo === 'logo');
       const logo = lineaLogo
         ? await prepararLogo(lineaLogo.dataUrl, anchoLogo(doc.columnas)).catch(() => undefined)

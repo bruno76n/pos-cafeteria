@@ -91,6 +91,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 11.3 | hecho | Pestañas Productos (ordenable por importe o cantidad, Top 10 destacado, %), Categorías, Cajeros (ventas, total, ticket promedio, cancelaciones) y Cortes (diferencia en color).
 11.4 | hecho | Exportar CSV de cada pestaña con aCSV (UTF-8 con BOM, comillas escapadas, CRLF, montos decimales).
 11.5 | hecho | e2e: producto propio, 3 ventas (una cancelada); Productos muestra 4 por $120, el CSV trae BOM y la fila; el Resumen coincide con lo calculado desde los datos del servidor (brutas, netas, número, efectivo, tarjeta).
+12.1 | hecho | vite-plugin-pwa (prompt): manifest en español con colores Grafito/Acero, íconos 192/512/maskable/apple generados desde public/icono.svg (taza propia) con scripts/generar-iconos.ts, precache de js/css/html/íconos/fuentes, /api fuera del fallback; AvisoActualizacion ('Hay una versión nueva.' + 'Actualizar') solo con el carrito vacío y sin recargar solo; codificador ESC/POS en carga diferida.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -109,6 +110,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - Los cambios de 4.1–4.5 van en un solo commit porque la capa de cobro y sus paneles no funcionan por separado.
 - El presupuesto de toques se cuenta con el producto ya a la vista (la especificación no incluye el toque de pestaña de categoría en la secuencia).
 - Las pruebas e2e que cambian la configuración la restauran al terminar empujando la original por la API (la configuración es global y la comparten todas las pruebas).
+- workbox-window se agrega como dependencia de desarrollo: es peer de vite-plugin-pwa y lo usa el registro del service worker.
 
 ## Para probar a mano (Bruno)
 
