@@ -50,6 +50,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 3.4 | hecho | PanelVenta: 'Para:', líneas (cantidad, resumen, nota, precio unitario si >1) con − / + / Editar (reabre la hoja) / Nota / Eliminar, línea recién agregada resaltada, totales, Vaciar con confirmación ('Se quitarán N productos'), barra Cobrar de 72 px; en vertical barra 'Ver venta (N)' + 'Cobrar'; carrito sobrevive a recargar (captura).
 3.5 | hecho | DialogoDescuento (porcentaje con atajos o monto, motivo, tope de configuración, Quitar descuento); se autoriza al aplicar y guarda autorizadoPor; solo si descuentosPermitidos; e2e con cajero (pide PIN, rechaza PIN sin permiso) y encargada (directo).
 3.6 | hecho | Panel muestra subtotal, descuento, IVA (incluido o 'IVA 16 %' sumado al total según configuración) y total en Cobrar con calcularTotales; e2e: caso B da $193.50 e IVA incluido $26.69 (caso C cubierto en pruebas unitarias).
+3.7 | hecho | e2e: abrir caja, caso A con modificadores, 'Para:', nota, descuento 10 %, recargar (espera a que IndexedDB confirme) y el carrito sigue igual; editar línea; vaciar con confirmación; buscador sin acentos.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

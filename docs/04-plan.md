@@ -53,7 +53,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 3.4 Carrito: líneas, + / −, eliminar, editar línea, nota, "Para:", vaciar con confirmación, guardado local. → Sobrevive a recargar.
 - [x] 3.5 Descuento a la venta con permiso o autorización y tope de configuración. → Probado con cajero y encargado.
 - [x] 3.6 Totales con IVA según configuración. → Coinciden con el caso B.
-- [ ] 3.7 e2e: abrir caja, armar venta con modificadores y descuento, recargar y el carrito sigue. → Pasa.
+- [x] 3.7 e2e: abrir caja, armar venta con modificadores y descuento, recargar y el carrito sigue. → Pasa.
 
 ## Fase 4: Cobro
 

@@ -68,3 +68,19 @@ export async function irAVentaConCajaAbierta(page: Page, fondo = '500') {
 }
 
 export const panelVenta = (page: Page) => page.getByRole('complementary', { name: 'Venta actual' });
+
+/** Lee un valor de `meta` directamente de IndexedDB (para esperar a que una escritura quede confirmada). */
+export function leerMetaLocal(page: Page, clave: string) {
+  return page.evaluate(
+    (c) =>
+      new Promise<unknown>((resolver) => {
+        const peticion = indexedDB.open('pos-cafeteria');
+        peticion.onsuccess = () => {
+          const lectura = peticion.result.transaction('meta').objectStore('meta').get(c);
+          lectura.onsuccess = () =>
+            resolver((lectura.result as { valor?: unknown } | undefined)?.valor ?? null);
+        };
+      }),
+    clave,
+  );
+}
