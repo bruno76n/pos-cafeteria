@@ -32,6 +32,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 1.8 | hecho | folios.ts (formato, siguiente, contador inicial, prefijo en uso), permisos.ts (roles por defecto, puede, nombres) y pin.ts (SHA-256 con sal, Web Crypto, búsqueda por PIN, PIN en uso).
 1.9 | hecho | esquema.ts con todas las tablas (rev de la secuencia rev_global, actualizado_en, índices, folio único), cuentas y operaciones_aplicadas; migración 0000_inicial; migrar.ts para PGlite/Neon; dev-api migra al arrancar; pruebas desde cero.
 1.10 | hecho | reglasServidor.ts (evaluarOperacion: insertar/upsert último-gana/actualizar campos permitidos/borrar), auth.ts (jose HS256 1 año, bcryptjs, límite 5 intentos por IP), rutas acceso, sync/push (idempotente, 2 MB, 100 ops), sync/pull (500 por página, 35 días, lápidas) y reportes (máx. 92 días); 38 pruebas de API.
+1.11 | hecho | menuEjemplo.ts (menú y config de ejemplo + roles por defecto), seed.ts idempotente (cuenta demo, config, 3 usuarios con PIN, menú), crear-cuenta.ts; e2e siembra su base temporal; prueba de doble seed.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

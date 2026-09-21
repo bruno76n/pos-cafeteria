@@ -12,6 +12,7 @@
     "build": "tsc -p . && vite build",
     "preview": "vite preview",
     "seed": "tsx scripts/seed.ts",
+    "crear-cuenta": "tsx scripts/crear-cuenta.ts",
     "db:generar": "drizzle-kit generate",
     "db:migrar": "tsx servidor/db/migrar.ts",
     "test": "vitest run",
