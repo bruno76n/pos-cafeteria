@@ -7,7 +7,7 @@ export interface PropsCampo extends InputHTMLAttributes<HTMLInputElement> {
 }
 
 export const clasesEntrada =
-  'min-h-12 w-full rounded-boton border border-linea bg-papel px-3 text-normal text-grafito placeholder:text-grafito-suave/70 focus:border-grafito focus:outline-none disabled:bg-acero aria-invalid:border-faltante';
+  'min-h-12 w-full rounded-boton border border-linea bg-papel px-3 text-normal text-grafito placeholder:text-grafito-suave focus:border-grafito disabled:bg-acero aria-invalid:border-faltante';
 
 export function Campo({ etiqueta, error, ayuda, id, className = '', ...props }: PropsCampo) {
   const idGenerado = useId();

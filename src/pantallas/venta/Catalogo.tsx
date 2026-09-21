@@ -98,7 +98,7 @@ export function Catalogo({
             placeholder="Buscar…"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="min-h-14 w-full rounded-boton border border-linea bg-papel pr-12 pl-10 focus:border-grafito focus:outline-none [&::-webkit-search-cancel-button]:hidden"
+            className="min-h-14 w-full rounded-boton border border-linea bg-papel pr-12 pl-10 focus:border-grafito [&::-webkit-search-cancel-button]:hidden"
           />
           {busqueda && (
             <button
