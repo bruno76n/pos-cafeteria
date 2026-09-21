@@ -1,7 +1,9 @@
 import { ahoraISO } from '@/dominio/fechas';
 import { contadorInicial, siguienteFolio } from '@/dominio/folios';
+import { configNueva, menuDeEjemplo } from '@/dominio/menuEjemplo';
+import { crearPin } from '@/dominio/pin';
 import { TABLAS_ULTIMO_GANA } from '@/dominio/reglasServidor';
-import type { Operacion, RegistrosPorTabla, TablaSync, Venta } from '@/dominio/tipos';
+import type { Operacion, RegistrosPorTabla, TablaSync, Usuario, Venta } from '@/dominio/tipos';
 import { bd, guardarMeta, leerMeta, type OperacionOutbox } from './bd';
 
 // Toda escritura pasa por aquí: guarda el registro y agrega su operación a la outbox
@@ -141,4 +143,48 @@ export async function configurarDispositivo(datos: {
   const registro = await guardar('dispositivos', { id, ...datos, nombre: datos.nombre.trim(), ultimoFolio });
   await guardarMeta('dispositivoId', id);
   return registro;
+}
+
+/**
+ * Asistente inicial: configuración del negocio, Administrador y, si se pide, el menú de ejemplo
+ * (sin sus usuarios demo). Todo en una transacción.
+ */
+export async function inicializarNegocio(datos: {
+  nombreNegocio: string;
+  admin: { nombre: string; pin: string };
+  cargarMenu: boolean;
+}): Promise<Usuario> {
+  const ahora = ahoraISO();
+  const config = { id: 'general' as const, datos: configNueva(datos.nombreNegocio), actualizadoEn: ahora };
+  const admin: Usuario = {
+    id: crypto.randomUUID(),
+    nombre: datos.admin.nombre.trim(),
+    rol: 'admin',
+    ...(await crearPin(datos.admin.pin)),
+    activo: true,
+    actualizadoEn: ahora,
+  };
+  const menu = datos.cargarMenu
+    ? menuDeEjemplo(ahora)
+    : { categorias: [], gruposModificadores: [], productos: [] };
+  await bd.transaction(
+    'rw',
+    [bd.config, bd.usuarios, bd.categorias, bd.gruposModificadores, bd.productos, bd.outbox],
+    async () => {
+      await bd.config.put(config);
+      await bd.usuarios.put(admin);
+      await bd.categorias.bulkPut(menu.categorias);
+      await bd.gruposModificadores.bulkPut(menu.gruposModificadores);
+      await bd.productos.bulkPut(menu.productos);
+      await bd.outbox.bulkAdd([
+        operacion('config', 'crear', config.id, config),
+        operacion('usuarios', 'crear', admin.id, admin),
+        ...menu.categorias.map((c) => operacion('categorias', 'crear', c.id, c)),
+        ...menu.gruposModificadores.map((g) => operacion('gruposModificadores', 'crear', g.id, g)),
+        ...menu.productos.map((p) => operacion('productos', 'crear', p.id, p)),
+      ]);
+    },
+  );
+  avisar();
+  return admin;
 }

@@ -39,6 +39,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 2.1 | hecho | Shell: barra superior (negocio, dispositivo, conexión, usuario con Cambiar usuario/Bloquear), riel lateral y barra inferior con Más en vertical, pestañas por sección, rutas con guardas (sesión → primer pull → dispositivo → bienvenida → PIN → permiso) y pantallas vacías; componentes Boton, Campo, Hoja, Pantalla, Pestanas.
 2.2 | hecho | Pantalla de acceso con errores claros (credenciales, primer inicio sin internet, sesión expirada con correo precargado); datos/sesion.ts guarda el token en Dexie y dispara el sync; e2e de acceso y de recarga sin API.
 2.3 | hecho | FormularioDispositivo (nombre, tipo caja/consulta, letra A–Z con aviso si otra caja la usa), configurarDispositivo() guarda en Dexie + outbox y arranca el contador con el mayor entre dispositivos con ese prefijo y ventas locales; componente Segmentos; pruebas y e2e.
+2.4 | hecho | Asistente /bienvenida (negocio, Administrador con PIN confirmado, menú de ejemplo opcional sin usuarios demo); inicializarNegocio() en una transacción; componente Interruptor; e2e con servidor vacío simulado (pull vacío, push bloqueado).
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

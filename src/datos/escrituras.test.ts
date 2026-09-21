@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 import { categoriasPrueba, ventaPrueba } from '@/dominio/datosPrueba';
+import { verificarPin } from '@/dominio/pin';
 import { bd, leerMeta } from './bd';
 import {
   actualizar,
@@ -7,6 +8,7 @@ import {
   borrar,
   configurarDispositivo,
   crear,
+  inicializarNegocio,
   guardar,
   registrarVenta,
   type VentaSinFolio,
@@ -149,5 +151,34 @@ describe('configurarDispositivo', () => {
     await bd.dispositivos.update(id, { ultimoFolio: 12 });
     const d = await configurarDispositivo({ nombre: 'Caja principal', tipo: 'caja', prefijo: 'A' });
     expect(d).toMatchObject({ id, nombre: 'Caja principal', ultimoFolio: 12 });
+  });
+});
+
+describe('inicializarNegocio', () => {
+  test('crea configuración, Administrador y menú de ejemplo sin usuarios demo', async () => {
+    const admin = await inicializarNegocio({
+      nombreNegocio: 'Café Luna',
+      admin: { nombre: 'Rosa', pin: '4321' },
+      cargarMenu: true,
+    });
+    expect(admin).toMatchObject({ nombre: 'Rosa', rol: 'admin', activo: true });
+    expect(await verificarPin('4321', admin)).toBe(true);
+    expect((await bd.config.get('general'))?.datos.negocio).toMatchObject({
+      nombre: 'Café Luna',
+      direccion: '',
+    });
+    expect(await bd.usuarios.count()).toBe(1);
+    expect(await bd.productos.count()).toBe(28);
+    expect(await bd.outbox.count()).toBe(2 + 5 + 5 + 28);
+  });
+
+  test('sin menú de ejemplo', async () => {
+    await inicializarNegocio({
+      nombreNegocio: 'Café Luna',
+      admin: { nombre: 'Rosa', pin: '4321' },
+      cargarMenu: false,
+    });
+    expect(await bd.productos.count()).toBe(0);
+    expect(await bd.outbox.count()).toBe(2);
   });
 });
