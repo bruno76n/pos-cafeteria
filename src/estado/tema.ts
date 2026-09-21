@@ -1,9 +1,9 @@
 import { useEffect } from 'react';
 import { useMeta } from '@/datos/consultas';
 
-/** Aplica el tema del dispositivo (automático sigue al sistema) en <html data-tema>. */
+/** Aplica el tema del dispositivo en <html data-tema>: claro por defecto; automático sigue al sistema. */
 export function useTema() {
-  const tema = useMeta('tema') ?? 'automatico';
+  const tema = useMeta('tema') ?? 'claro';
   useEffect(() => {
     const sistema = window.matchMedia('(prefers-color-scheme: dark)');
     const aplicar = () => {

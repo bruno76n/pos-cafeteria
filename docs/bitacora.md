@@ -128,6 +128,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - Se agrega uqr (MIT, sin dependencias, ~80 KB): hace falta para dibujar el QR en el ticket HTML (impresión por navegador/iPad); en ESC/POS se usa el QR nativo de la impresora.
 - ticket.mostrarQR es opcional en el esquema para que las configuraciones ya guardadas sigan siendo válidas.
 - A pedido de Bruno: marco (barra superior, riel y barra inferior) en negro y fondo de la app blanco; las tarjetas llevan borde fino para separarse del fondo.
+- Tema claro por defecto (antes automático): con el sistema en modo oscuro la app se veía oscura; el oscuro queda solo si se elige en Configuración › Dispositivo.
 
 ## Para probar a mano (Bruno)
 

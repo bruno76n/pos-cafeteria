@@ -47,7 +47,7 @@ export function ConfigDispositivo() {
       <section className="rounded-hoja border border-linea bg-papel p-5" aria-label="Tema">
         <Segmentos
           etiqueta="Tema"
-          valor={tema ?? 'automatico'}
+          valor={tema ?? 'claro'}
           alCambiar={(t) => void guardarMeta('tema', t)}
           opciones={[
             { valor: 'automatico', texto: 'Automático' },
