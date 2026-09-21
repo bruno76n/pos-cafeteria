@@ -67,8 +67,8 @@ export function Catalogo({
 
   return (
     <section className="flex min-h-0 min-w-0 flex-1 flex-col" aria-label="Productos">
-      <div className="flex flex-wrap items-center gap-2 px-4 pt-4 pb-3">
-        <div role="tablist" aria-label="Categorías" className="flex flex-1 flex-wrap gap-2">
+      <div className="flex items-center gap-2 px-4 pt-4 pb-3">
+        <div role="tablist" aria-label="Categorías" className="flex min-w-0 flex-1 gap-2 overflow-x-auto">
           {activas.map((c) => {
             const actual = !busqueda.trim() && c.id === categoriaId;
             return (
@@ -81,7 +81,7 @@ export function Catalogo({
                   setElegida(c.id);
                   setBusqueda('');
                 }}
-                className={`min-h-14 rounded-boton border px-5 text-producto font-semibold ${
+                className={`min-h-14 shrink-0 rounded-boton border px-5 text-producto font-semibold ${
                   actual ? 'border-grafito bg-grafito text-papel' : 'border-linea bg-papel text-grafito'
                 }`}
               >
@@ -90,7 +90,7 @@ export function Catalogo({
             );
           })}
         </div>
-        <label className="relative flex min-w-56 items-center">
+        <label className="relative flex w-52 shrink-0 items-center">
           <Search aria-hidden size={20} className="pointer-events-none absolute left-3 text-grafito-suave" />
           <input
             type="search"

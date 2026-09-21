@@ -1,8 +1,15 @@
 import { useState } from 'react';
 import { Boton } from '@/componentes/Boton';
 import { Hoja } from '@/componentes/Hoja';
-import { useCategorias, useGruposModificadores, useProductos, useTurnoAbierto } from '@/datos/consultas';
-import { crearLinea } from '@/dominio/carrito';
+import {
+  useCategorias,
+  useConfig,
+  useGruposModificadores,
+  useProductos,
+  useTurnoAbierto,
+} from '@/datos/consultas';
+import { calcularTotales, cantidadDeProductos, crearLinea, type LineaCarrito } from '@/dominio/carrito';
+import { formatearDinero } from '@/dominio/dinero';
 import { gruposDelProducto } from '@/dominio/modificadores';
 import type { Producto } from '@/dominio/tipos';
 import { useCarrito } from '@/estado/carrito';
@@ -10,18 +17,24 @@ import { useDispositivoActual } from '@/estado/dispositivo';
 import { FormularioAbrirCaja } from '@/pantallas/caja/FormularioAbrirCaja';
 import { Catalogo } from './Catalogo';
 import { HojaPersonalizacion } from './HojaPersonalizacion';
+import { PanelVenta } from './PanelVenta';
+
+type Personalizacion = { producto: Producto; linea?: LineaCarrito };
 
 export function NuevaVenta() {
   const dispositivo = useDispositivoActual();
   const turno = useTurnoAbierto(dispositivo?.id);
+  const config = useConfig();
   const categorias = useCategorias();
   const productos = useProductos();
   const grupos = useGruposModificadores();
-  const agregar = useCarrito((s) => s.agregar);
+  const carrito = useCarrito((s) => s.carrito);
+  const { agregar, reemplazar } = useCarrito.getState();
   const [abriendo, setAbriendo] = useState(false);
-  const [personalizando, setPersonalizando] = useState<Producto | null>(null);
+  const [personalizando, setPersonalizando] = useState<Personalizacion | null>(null);
+  const [ventaAbierta, setVentaAbierta] = useState(false);
 
-  if (turno === undefined || !categorias || !productos || !grupos) return null;
+  if (turno === undefined || !config || !categorias || !productos || !grupos) return null;
 
   if (!turno) {
     return (
@@ -39,22 +52,70 @@ export function NuevaVenta() {
     );
   }
 
+  const totales = calcularTotales(carrito.lineas, carrito.descuento, config.ventas);
+  const etiquetaDescuento =
+    carrito.descuento?.tipo === 'porcentaje' ? `Descuento ${carrito.descuento.valor}%` : 'Descuento';
+  const productoDe = (linea: LineaCarrito) => productos.find((p) => p.id === linea.productoId);
+
   function tocarProducto(producto: Producto) {
-    if (gruposDelProducto(producto, grupos!).length > 0) return setPersonalizando(producto);
+    if (gruposDelProducto(producto, grupos!).length > 0) return setPersonalizando({ producto });
     const categoria = categorias!.find((c) => c.id === producto.categoriaId);
     agregar(crearLinea({ producto, categoria, grupos: grupos! }));
   }
 
+  const panel = (
+    <PanelVenta
+      totales={totales}
+      etiquetaDescuento={etiquetaDescuento}
+      mostrarIVA={config.ventas.tasaIVA > 0}
+      resultado={null}
+      acciones={null}
+      puedeEditar={(l) => {
+        const p = productoDe(l);
+        return Boolean(p && gruposDelProducto(p, grupos).length > 0);
+      }}
+      alEditar={(linea) => {
+        const producto = productoDe(linea);
+        if (producto) setPersonalizando({ producto, linea });
+      }}
+      alCobrar={() => {}}
+    />
+  );
+
   return (
-    <div className="flex min-h-0 flex-1">
+    <div className="flex min-h-0 flex-1 portrait:flex-col">
       <Catalogo categorias={categorias} productos={productos} alTocarProducto={tocarProducto} />
+      <div className="flex w-[380px] shrink-0 flex-col border-l border-linea max-[1100px]:w-[340px] portrait:hidden">
+        {panel}
+      </div>
+      <div className="flex gap-2 border-t border-linea bg-papel p-2 landscape:hidden">
+        <Boton tamano="grande" className="flex-1" onClick={() => setVentaAbierta(true)}>
+          Ver venta ({cantidadDeProductos(carrito)})
+        </Boton>
+        <Boton
+          variante="dinero"
+          tamano="grande"
+          className="flex-1"
+          disabled={carrito.lineas.length === 0}
+          onClick={() => setVentaAbierta(true)}
+        >
+          Cobrar <span className="cifras">{formatearDinero(totales.total)}</span>
+        </Boton>
+      </div>
+      {ventaAbierta && (
+        <Hoja titulo="Venta actual" alCerrar={() => setVentaAbierta(false)}>
+          <div className="-m-4 flex h-[70vh] flex-col">{panel}</div>
+        </Hoja>
+      )}
       {personalizando && (
         <HojaPersonalizacion
-          producto={personalizando}
-          categoria={categorias.find((c) => c.id === personalizando.categoriaId)}
+          producto={personalizando.producto}
+          categoria={categorias.find((c) => c.id === personalizando.producto.categoriaId)}
           grupos={grupos}
+          linea={personalizando.linea}
           alTerminar={(linea) => {
-            agregar(linea);
+            if (personalizando.linea) reemplazar(personalizando.linea.id, linea);
+            else agregar(linea);
             setPersonalizando(null);
           }}
           alCerrar={() => setPersonalizando(null)}

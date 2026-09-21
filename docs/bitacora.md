@@ -47,6 +47,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 3.1 | hecho | abrirTurno() (un turno abierto por dispositivo, en transacción), FormularioAbrirCaja con CampoDinero y autorización, Caja actual cerrada/abierta, Nueva venta bloqueada sin caja con 'Abrir caja'; e2e verifica el turno en la base; ayudas leerServidor/esperarSubida.
 3.2 | hecho | Catalogo: pestañas de categorías activas en orden, cuadrícula auto-fill 140 px con botones de 104 px (franja de color, precio, imagen opcional), no disponibles apagados, buscador sin acentos en todas las categorías (dominio/texto.ts); store del carrito (estado/carrito.ts) guardado en Dexie en cada cambio.
 3.3 | hecho | HojaPersonalizacion: grupos en el orden del producto con indicación (elige 1 / opcional / hasta 2), opciones de 56 px, por defecto elegidas, tope al máximo, nota, cantidad y 'Agregar $130.00' (o 'Elige tamaño' deshabilitado); caso J verificado en captura.
+3.4 | hecho | PanelVenta: 'Para:', líneas (cantidad, resumen, nota, precio unitario si >1) con − / + / Editar (reabre la hoja) / Nota / Eliminar, línea recién agregada resaltada, totales, Vaciar con confirmación ('Se quitarán N productos'), barra Cobrar de 72 px; en vertical barra 'Ver venta (N)' + 'Cobrar'; carrito sobrevive a recargar (captura).
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
