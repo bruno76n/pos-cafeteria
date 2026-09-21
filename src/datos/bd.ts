@@ -105,7 +105,3 @@ export async function leerMeta<K extends ClaveMeta>(clave: K): Promise<Meta[K] |
 export async function guardarMeta<K extends ClaveMeta>(clave: K, valor: Meta[K]): Promise<void> {
   await bd.meta.put({ clave, valor });
 }
-
-export async function borrarMeta(clave: ClaveMeta): Promise<void> {
-  await bd.meta.delete(clave);
-}

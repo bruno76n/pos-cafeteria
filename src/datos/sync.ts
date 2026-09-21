@@ -68,13 +68,13 @@ export class MotorSync {
   private registrarFallo(error: ErrorApi) {
     this.fallosSeguidos += 1;
     this.reintentarDesde = this.ahora() + this.esperaMs;
-    marcarEstado({ enLinea: false, ultimoError: error.message, esperaMs: this.esperaMs });
+    marcarEstado({ enLinea: false, ultimoError: error.message });
   }
 
   private registrarExito() {
     this.fallosSeguidos = 0;
     this.reintentarDesde = 0;
-    marcarEstado({ enLinea: true, ultimoError: null, esperaMs: 0, ultimoExito: ahoraISO() });
+    marcarEstado({ enLinea: true, ultimoError: null });
   }
 
   /** Sube la outbox en orden, en lotes de hasta 100. Solo un push a la vez. */
@@ -99,7 +99,6 @@ export class MotorSync {
       );
       if (lote.length === 0) return 'ok';
 
-      marcarEstado({ sincronizando: true });
       try {
         const operaciones = lote.map(({ orden: _o, intentos: _i, ultimoError: _u, ...op }) => op);
         const { resultados } = await this.cliente.push(token, operaciones);
@@ -131,8 +130,6 @@ export class MotorSync {
         );
         this.registrarFallo(error);
         return 'error-red';
-      } finally {
-        marcarEstado({ sincronizando: false });
       }
     }
   }
@@ -180,7 +177,6 @@ export class MotorSync {
     const sesion = await leerMeta('sesion');
     const token = await this.token();
     if (!token) return sesion ? 'sesion-expirada' : 'sin-sesion';
-    marcarEstado({ sincronizando: true });
     try {
       for (;;) {
         const desde = (await leerMeta('cursorPull')) ?? 0;
@@ -199,8 +195,6 @@ export class MotorSync {
       }
       this.registrarFallo(error);
       return 'error-red';
-    } finally {
-      marcarEstado({ sincronizando: false });
     }
   }
 

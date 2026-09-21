@@ -51,6 +51,12 @@ test('las cifras de Reportes coinciden con las ventas', async ({ page, request }
   await page.getByRole('button', { name: 'Cancelar venta' }).click();
   await page.getByRole('dialog').getByLabel('Motivo').fill('Prueba de reporte');
   await page.getByRole('dialog').getByRole('button', { name: 'Cancelar venta' }).click();
+  await expect(page.getByText('Cancelada por Dueño')).toBeVisible();
+  await expect
+    .poll(async () => (await leerServidor(request))('ventas').find((v) => v.folio === 'Z-000003')?.estado, {
+      timeout: 15_000,
+    })
+    .toBe('cancelada');
   await esperarSubida(page);
 
   await page.getByRole('navigation', { name: 'Secciones' }).getByRole('link', { name: 'Reportes' }).click();

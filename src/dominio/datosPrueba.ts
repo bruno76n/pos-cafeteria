@@ -5,7 +5,7 @@ import type { ConfigGeneral, GrupoModificadores, Producto, Venta } from './tipos
 const menu = menuDeEjemplo('2026-09-19T12:00:00.000Z');
 export const categoriasPrueba = menu.categorias;
 export const gruposPrueba = menu.gruposModificadores;
-export const productosPrueba = menu.productos;
+const productosPrueba = menu.productos;
 
 export function productoPrueba(id: string): Producto {
   const p = productosPrueba.find((x) => x.id === id);

@@ -101,6 +101,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 13.2 | hecho | Revisados los textos de §5 en todas las pantallas (sin caja, sin conexión, por subir, error de subida, sin permiso, impresora, historial vacío, confirmar vaciar, cancelar, caja cerrada, actualización); agregado 'Aún no hay productos.' con 'Agregar producto'/'Cargar menú de ejemplo' en Nueva venta y el diálogo de autorización ahora dice 'Tu usuario no puede …'. Las pantallas no muestran 'Cargando' mientras leen Dexie (tarda milisegundos) para no parpadear.
 13.3 | hecho | Campos con anillo de foco Cafeto de 3 px (se quitó focus:outline-none), placeholders con contraste suficiente; contrastes de la paleta ≥ 5.2:1; prefers-reduced-motion global; e2e que recorre todas las pantallas y verifica que cada campo y botón visible tenga nombre accesible y que el foco con teclado se vea.
 13.4 | hecho | README.md: requisitos, cómo correrlo, cuenta y PINs demo, comandos, resumen técnico, producción en Neon y Vercel (§15) y limitaciones conocidas (permisos solo en la app, reloj del dispositivo, impresión directa solo Android/Chrome, último gana, reportes >35 días con internet).
+13.5 | hecho | Resumen final y lista de 'Para probar a mano' en la bitácora; limpieza final (estado de sync sin lectores, exports sin uso) y corrección de una carrera en la e2e de Reportes.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -128,7 +129,15 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - Instalación como app en la tablet real (Android: Chrome › Instalar app; iPad: Safari › Compartir › Agregar a inicio).
 - Neon real: migraciones y cuentas (`npm run db:migrar`, `npm run crear-cuenta`).
 - Despliegue en Vercel: adaptador de `api/`, variables `DATABASE_URL` y `JWT_SECRET`, `/api/salud`.
+- Impresión por el diálogo del sistema en iPad (AirPrint/PDF) y que el ticket de 58/80 mm salga del ancho correcto en papel.
+- Tomar foto del producto con la cámara de la tablet (en escritorio solo se probó elegir archivo).
+- Bloqueo automático por inactividad (se configura en Configuración › Dispositivo; no hay prueba automática del tiempo).
+- Aviso "Hay una versión nueva." al desplegar una versión nueva con la app abierta.
 
 ## Resumen final
 
-(al terminar el plan: qué quedó, qué probar primero, qué falta, cómo correrlo)
+Quedó el POS completo de las fases 0–13: vender (2–7 toques), cobrar (efectivo, tarjeta, transferencia y combinados), ticket (HTML/navegador y ESC/POS), caja con corte ciego, menú, historial con cancelaciones y devoluciones, usuarios y permisos con autorización por PIN, configuración, inicio y reportes con CSV; todo local primero (Dexie + outbox) con sincronización idempotente contra Hono/Drizzle y PWA que abre y vende sin red.
+Pruebas: 241 unitarias/API (`npm test`) y 35 e2e (`npm run test:e2e`), todas pasan; typecheck y lint limpios.
+Cómo correrlo: `npm install`, `npm run seed`, `npm run dev` y abrir la URL de Vite; cuenta `caja@demo.test`/`demo1234`, PINs Dueño 1234, Encargada 2222, Cajero 1111 (detalle en README.md).
+Probar primero a mano: abrir caja, Latte mediano con almendra en efectivo $100 (cambio $15), un gasto y cerrar caja; luego la misma cuenta en dos navegadores para ver la sincronización.
+Falta lo que requiere hardware o servicios reales (lista de arriba): impresora física, tablet real, Neon y Vercel.

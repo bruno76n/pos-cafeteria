@@ -49,7 +49,6 @@ export interface RegistrosPorTabla {
 }
 
 export type Operacion = z.infer<typeof e.esquemaOperacion>;
-export type TipoOperacion = Operacion['tipo'];
 export type ResultadoOperacion = z.infer<typeof e.esquemaResultadoOperacion>;
 export type RespuestaPush = z.infer<typeof e.esquemaRespuestaPush>;
 export type FilaPull = z.infer<typeof e.esquemaFilaPull>;
