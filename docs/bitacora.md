@@ -49,6 +49,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 3.3 | hecho | HojaPersonalizacion: grupos en el orden del producto con indicación (elige 1 / opcional / hasta 2), opciones de 56 px, por defecto elegidas, tope al máximo, nota, cantidad y 'Agregar $130.00' (o 'Elige tamaño' deshabilitado); caso J verificado en captura.
 3.4 | hecho | PanelVenta: 'Para:', líneas (cantidad, resumen, nota, precio unitario si >1) con − / + / Editar (reabre la hoja) / Nota / Eliminar, línea recién agregada resaltada, totales, Vaciar con confirmación ('Se quitarán N productos'), barra Cobrar de 72 px; en vertical barra 'Ver venta (N)' + 'Cobrar'; carrito sobrevive a recargar (captura).
 3.5 | hecho | DialogoDescuento (porcentaje con atajos o monto, motivo, tope de configuración, Quitar descuento); se autoriza al aplicar y guarda autorizadoPor; solo si descuentosPermitidos; e2e con cajero (pide PIN, rechaza PIN sin permiso) y encargada (directo).
+3.6 | hecho | Panel muestra subtotal, descuento, IVA (incluido o 'IVA 16 %' sumado al total según configuración) y total en Cobrar con calcularTotales; e2e: caso B da $193.50 e IVA incluido $26.69 (caso C cubierto en pruebas unitarias).
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
