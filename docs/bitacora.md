@@ -35,6 +35,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 1.11 | hecho | menuEjemplo.ts (menú y config de ejemplo + roles por defecto), seed.ts idempotente (cuenta demo, config, 3 usuarios con PIN, menú), crear-cuenta.ts; e2e siembra su base temporal; prueba de doble seed.
 1.12 | hecho | bd.ts (Dexie: tablas + outbox ordenada, meta tipada, erroresSync), escrituras.ts (crear/guardar/actualizar/borrar/registrarVenta con folio, todo en una transacción; aviso al sync) y consultas.ts (hooks useLiveQuery); pruebas con fake-indexeddb.
 1.13 | hecho | api.ts (ErrorApi red/sesión/petición), sync.ts (MotorSync: push por lotes de 100 en orden, espera 5/15/30/60 s, 401 sin perder outbox, rechazadas a erroresSync, pull paginado que no pisa pendientes, contador de folios que no retrocede, limpieza diaria de 35 días, disparadores), estadoSync.ts y erroresSync.ts; 20 pruebas con servidor simulado.
+1.14 | hecho | integracion.test.ts: Dexie (fake-indexeddb) + api.ts real con fetch enrutado a la app Hono con PGlite sembrada; dispositivo A vende y sube, B hace pull y recibe venta, turno y contador.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
