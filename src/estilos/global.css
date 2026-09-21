@@ -100,3 +100,18 @@
     }
   }
 }
+
+/* Tema oscuro: los mismos tokens con otros valores (contrastes ≥ 5:1). */
+:root[data-tema='oscuro'] {
+  color-scheme: dark;
+  --color-acero: #121617;
+  --color-papel: #1e2528;
+  --color-grafito: #eef1f0;
+  --color-grafito-suave: #a9b4b8;
+  --color-linea: #34403f;
+  --color-cafeto: #43a574;
+  --color-cafeto-oscuro: #379064;
+  --color-faltante: #f07167;
+  --color-ambar: #f2b84b;
+  --color-ambar-fondo: #3a2e14;
+}

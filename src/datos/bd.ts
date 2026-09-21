@@ -51,6 +51,7 @@ export interface Meta {
   almacenamientoPersistente: boolean;
   /** El primer pull terminó (para saber si "no hay configuración" es definitivo). */
   primerPullCompleto: boolean;
+  tema: 'automatico' | 'claro' | 'oscuro';
 }
 
 export type ClaveMeta = keyof Meta;

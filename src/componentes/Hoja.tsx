@@ -47,7 +47,7 @@ export function Hoja({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-40 flex bg-grafito/40 ${centrada ? 'items-center justify-center p-4' : 'items-end justify-center'}`}
+      className={`fixed inset-0 z-40 flex bg-black/50 ${centrada ? 'items-center justify-center p-4' : 'items-end justify-center'}`}
       onPointerDown={(e) => {
         if (e.target === e.currentTarget) alCerrar?.();
       }}

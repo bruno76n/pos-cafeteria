@@ -104,6 +104,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 13.5 | hecho | Resumen final y lista de 'Para probar a mano' en la bitácora; limpieza final (estado de sync sin lectores, exports sin uso) y corrección de una carrera en la e2e de Reportes.
 14.1 | hecho | GET /api/tickets/:id sin token (solo esa venta por su UUID + datos del negocio para dibujarla; 404 si no existe) con pruebas; opción 'QR con el ticket digital' en Configuración › Ticket; QR nativo en ESC/POS y SVG en HTML; página pública /t/:id fuera del guardián; e2e con un navegador sin sesión.
 14.2 | hecho | Pulsación larga (600 ms) o clic secundario en un producto de Nueva venta abre 'Marcar como no disponible/disponible'; requiere crearProductos o autorización; los no disponibles ya no usan disabled (aria-disabled) para poder reactivarlos así; e2e con encargada y cajero.
+14.3 | hecho | Tema oscuro con los mismos tokens (valores alternos en :root[data-tema='oscuro'], contrastes ≥ 5:1); opción Automático/Claro/Oscuro por dispositivo en Configuración › Dispositivo (meta local, automático sigue al sistema); fondo de hojas neutro; el ticket sigue en papel blanco; e2e.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -141,7 +142,8 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 ## Resumen final
 
 Quedó el POS completo de las fases 0–13: vender (2–7 toques), cobrar (efectivo, tarjeta, transferencia y combinados), ticket (HTML/navegador y ESC/POS), caja con corte ciego, menú, historial con cancelaciones y devoluciones, usuarios y permisos con autorización por PIN, configuración, inicio y reportes con CSV; todo local primero (Dexie + outbox) con sincronización idempotente contra Hono/Drizzle y PWA que abre y vende sin red.
-Pruebas: 241 unitarias/API (`npm test`) y 35 e2e (`npm run test:e2e`), todas pasan; typecheck y lint limpios.
+Pruebas: 244 unitarias/API (`npm test`) y 37 e2e (`npm run test:e2e`), todas pasan; typecheck y lint limpios.
 Cómo correrlo: `npm install`, `npm run seed`, `npm run dev` y abrir la URL de Vite; cuenta `caja@demo.test`/`demo1234`, PINs Dueño 1234, Encargada 2222, Cajero 1111 (detalle en README.md).
 Probar primero a mano: abrir caja, Latte mediano con almendra en efectivo $100 (cambio $15), un gasto y cerrar caja; luego la misma cuenta en dos navegadores para ver la sincronización.
+También quedaron los opcionales de la Fase 14: QR con ticket digital público (/t/:id), marcar no disponible con pulsación larga y tema oscuro.
 Falta lo que requiere hardware o servicios reales (lista de arriba): impresora física, tablet real, Neon y Vercel.

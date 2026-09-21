@@ -14,6 +14,7 @@ export function ConfigDispositivo() {
   const dispositivo = useDispositivoActual();
   const bloqueo = useMeta('bloqueoMinutos');
   const persistente = useMeta('almacenamientoPersistente');
+  const tema = useMeta('tema');
   const [guardado, setGuardado] = useState(false);
   if (!dispositivo || bloqueo === undefined || persistente === undefined) return null;
 
@@ -38,6 +39,18 @@ export function ConfigDispositivo() {
           valor={String(bloqueo ?? 0) as (typeof MINUTOS)[number]}
           alCambiar={(m) => void guardarMeta('bloqueoMinutos', Number(m))}
           opciones={MINUTOS.map((m) => ({ valor: m, texto: m === '0' ? 'Nunca' : `${m} min` }))}
+        />
+      </section>
+      <section className="rounded-hoja bg-papel p-5" aria-label="Tema">
+        <Segmentos
+          etiqueta="Tema"
+          valor={tema ?? 'automatico'}
+          alCambiar={(t) => void guardarMeta('tema', t)}
+          opciones={[
+            { valor: 'automatico', texto: 'Automático' },
+            { valor: 'claro', texto: 'Claro' },
+            { valor: 'oscuro', texto: 'Oscuro' },
+          ]}
         />
       </section>
       <section className="rounded-hoja bg-papel p-5" aria-label="Almacenamiento">
