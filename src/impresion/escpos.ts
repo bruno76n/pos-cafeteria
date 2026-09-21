@@ -6,15 +6,19 @@ import { renglonesDe, type TicketDocumento } from './ticket';
 /** Ancho del logo en puntos (múltiplo de 8): ~60 % del área imprimible (384 en 58 mm, 576 en 80 mm). */
 export const anchoLogo = (columnas: 32 | 48) => (columnas === 48 ? 320 : 224);
 
-export function ticketAEscPos(
-  doc: TicketDocumento,
-  opciones: { logo?: ImageInput & { width: number; height: number } } = {},
-) {
+export interface OpcionesEscPos {
+  logo?: ImageInput & { width: number; height: number };
+  /** Idioma y mapa de páginas de códigos que reporta la impresora al conectarse. */
+  language?: string;
+  codepageMapping?: string;
+}
+
+export function ticketAEscPos(doc: TicketDocumento, opciones: OpcionesEscPos = {}) {
   const e = new ReceiptPrinterEncoder({
-    language: 'esc-pos',
+    language: (opciones.language ?? 'esc-pos') as 'esc-pos',
     columns: doc.columnas,
     // Página de códigos elegida sola (CP437 cubre á é í ó ú ñ ¡ ¿).
-    codepageMapping: 'epson',
+    codepageMapping: (opciones.codepageMapping ?? 'epson') as 'epson',
     feedBeforeCut: 4,
   });
   e.initialize().codepage('auto');
