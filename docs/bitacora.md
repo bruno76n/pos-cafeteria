@@ -68,6 +68,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 6.3 | hecho | Cerrar caja en pasos: contar por denominaciones (tabla con piezas, subtotal y teclado) o total directo sin ver el esperado (corte ciego); resultado con esperado, contado y diferencia grande (Faltan/Sobran/Cuadra exacto), resumen, nota y aviso de ventas por subir; cerrarTurno guarda estado, conteo y resumen; requiere cerrarCaja o autorización.
 6.4 | hecho | CorteCerrado: 'Caja cerrada. Diferencia: faltan $X.' con 'Imprimir corte' (useImpresora + construirTicketCorte) y vista previa del ticket de corte.
 6.5 | hecho | Cortes de caja: tabla de turnos cerrados (cierre, dispositivo, abrió/cerró, total, diferencia en color) y detalle con totales, esperado/contado/diferencia, nota, vista del ticket con marca de reimpresión y 'Reimprimir'.
+6.6 | hecho | e2e: cajero abre con $500, vende $45, gasta $80, cuenta $450 por denominaciones sin ver el esperado; resultado 'Faltan $15.00'; corte en historial y detalle con reimpresión; el turno cerrado llega a la base con resumen.diferencia = −1500.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
