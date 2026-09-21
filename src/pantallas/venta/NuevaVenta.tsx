@@ -101,7 +101,7 @@ export function NuevaVenta() {
       totales={totales}
       etiquetaDescuento={etiquetaDescuento}
       mostrarIVA={config.ventas.tasaIVA > 0}
-      resultado={ultimaVenta && <ResultadoVenta venta={ultimaVenta} />}
+      resultado={ultimaVenta && <ResultadoVenta ultima={ultimaVenta} />}
       acciones={
         config.ventas.descuentosPermitidos && (
           <Boton className="flex-1" onClick={() => setDescontando(true)}>
