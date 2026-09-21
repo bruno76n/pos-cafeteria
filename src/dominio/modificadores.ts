@@ -124,3 +124,12 @@ export function claveSeleccion(seleccion: Seleccion): string {
     .map((g) => `${g}:${[...(seleccion[g] ?? [])].sort().join(',')}`)
     .join('|');
 }
+
+/** "(elige 1)", "(opcional)", "(hasta 2)", "(elige de 1 a 3)". */
+export function indicacionGrupo(grupo: GrupoModificadores): string {
+  const min = minimoDelGrupo(grupo);
+  const max = maximoDelGrupo(grupo);
+  if (grupo.tipo === 'unico') return min > 0 ? '(elige 1)' : '(opcional)';
+  if (min === 0) return `(hasta ${max})`;
+  return min === max ? `(elige ${min})` : `(elige de ${min} a ${max})`;
+}

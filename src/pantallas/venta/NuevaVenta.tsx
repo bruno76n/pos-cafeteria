@@ -9,6 +9,7 @@ import { useCarrito } from '@/estado/carrito';
 import { useDispositivoActual } from '@/estado/dispositivo';
 import { FormularioAbrirCaja } from '@/pantallas/caja/FormularioAbrirCaja';
 import { Catalogo } from './Catalogo';
+import { HojaPersonalizacion } from './HojaPersonalizacion';
 
 export function NuevaVenta() {
   const dispositivo = useDispositivoActual();
@@ -18,6 +19,7 @@ export function NuevaVenta() {
   const grupos = useGruposModificadores();
   const agregar = useCarrito((s) => s.agregar);
   const [abriendo, setAbriendo] = useState(false);
+  const [personalizando, setPersonalizando] = useState<Producto | null>(null);
 
   if (turno === undefined || !categorias || !productos || !grupos) return null;
 
@@ -38,7 +40,7 @@ export function NuevaVenta() {
   }
 
   function tocarProducto(producto: Producto) {
-    if (gruposDelProducto(producto, grupos!).length > 0) return;
+    if (gruposDelProducto(producto, grupos!).length > 0) return setPersonalizando(producto);
     const categoria = categorias!.find((c) => c.id === producto.categoriaId);
     agregar(crearLinea({ producto, categoria, grupos: grupos! }));
   }
@@ -46,6 +48,18 @@ export function NuevaVenta() {
   return (
     <div className="flex min-h-0 flex-1">
       <Catalogo categorias={categorias} productos={productos} alTocarProducto={tocarProducto} />
+      {personalizando && (
+        <HojaPersonalizacion
+          producto={personalizando}
+          categoria={categorias.find((c) => c.id === personalizando.categoriaId)}
+          grupos={grupos}
+          alTerminar={(linea) => {
+            agregar(linea);
+            setPersonalizando(null);
+          }}
+          alCerrar={() => setPersonalizando(null)}
+        />
+      )}
     </div>
   );
 }

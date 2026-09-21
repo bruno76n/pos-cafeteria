@@ -4,6 +4,7 @@ import {
   alternarOpcion,
   claveSeleccion,
   gruposDelProducto,
+  indicacionGrupo,
   modificadoresElegidos,
   precioUnitario,
   puedeAgregarOpcion,
@@ -113,5 +114,15 @@ describe('precio y clave', () => {
     expect(claveSeleccion({ jarabes: ['caramelo', 'vainilla'], tamano: ['chico'], leche: [] })).toBe(
       claveSeleccion({ tamano: ['chico'], jarabes: ['vainilla', 'caramelo'] }),
     );
+  });
+});
+
+describe('indicación de cada grupo', () => {
+  test('según tipo, obligatorio, mínimo y máximo', () => {
+    expect(indicacionGrupo(tamano)).toBe('(elige 1)');
+    expect(indicacionGrupo(shot)).toBe('(opcional)');
+    expect(indicacionGrupo(jarabes)).toBe('(hasta 2)');
+    expect(indicacionGrupo({ ...jarabes, obligatorio: true, min: 1, max: 3 })).toBe('(elige de 1 a 3)');
+    expect(indicacionGrupo({ ...jarabes, min: 2, max: 2 })).toBe('(elige 2)');
   });
 });
