@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Boton } from '@/componentes/Boton';
+import { Link } from 'react-router';
+import { Boton, clasesBoton } from '@/componentes/Boton';
 import { Hoja } from '@/componentes/Hoja';
 import {
   useCategorias,
@@ -8,7 +9,7 @@ import {
   useProductos,
   useTurnoAbierto,
 } from '@/datos/consultas';
-import { registrarVenta } from '@/datos/escrituras';
+import { cargarMenuDeEjemplo, registrarVenta } from '@/datos/escrituras';
 import { calcularTotales, cantidadDeProductos, crearLinea, type LineaCarrito } from '@/dominio/carrito';
 import { armarVenta } from '@/dominio/cobro';
 import { formatearDinero } from '@/dominio/dinero';
@@ -37,7 +38,7 @@ export function NuevaVenta() {
   const categorias = useCategorias();
   const productos = useProductos();
   const grupos = useGruposModificadores();
-  const { usuario } = useUsuarioActivo();
+  const { usuario, puede } = useUsuarioActivo();
   const carrito = useCarrito((s) => s.carrito);
   const ultimaVenta = useCarrito((s) => s.ultimaVenta);
   const { agregar, reemplazar, terminarVenta } = useCarrito.getState();
@@ -63,6 +64,24 @@ export function NuevaVenta() {
           <Hoja titulo="Abrir caja" centrada ancho="max-w-md" alCerrar={() => setAbriendo(false)}>
             <FormularioAbrirCaja alAbrir={() => setAbriendo(false)} />
           </Hoja>
+        )}
+      </div>
+    );
+  }
+
+  if (productos.length === 0) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+        <p className="text-seccion font-semibold">Aún no hay productos.</p>
+        {puede('crearProductos') && (
+          <div className="flex flex-wrap justify-center gap-2">
+            <Link to="/menu/productos/nuevo" className={clasesBoton('oscuro', 'grande')}>
+              Agregar producto
+            </Link>
+            <Boton tamano="grande" onClick={() => void cargarMenuDeEjemplo()}>
+              Cargar menú de ejemplo
+            </Boton>
+          </div>
         )}
       </div>
     );

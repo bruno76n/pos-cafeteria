@@ -24,8 +24,9 @@ export function DialogoAutorizacion() {
 
   return (
     <Hoja titulo="Pedir autorización" centrada ancho="max-w-md" alCerrar={() => solicitud.resolver(null)}>
-      <p className="mb-4 text-center text-grafito-suave">
-        Un usuario que pueda {ACCION_PERMISO[solicitud.permiso]} escribe su PIN.
+      <p className="mb-4 text-center">
+        Tu usuario no puede {ACCION_PERMISO[solicitud.permiso]}.
+        <span className="block text-grafito-suave">Otro usuario con ese permiso escribe su PIN.</span>
       </p>
       <TecladoPin verificar={verificar} />
     </Hoja>
