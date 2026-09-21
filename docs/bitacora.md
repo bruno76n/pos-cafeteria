@@ -37,6 +37,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 1.13 | hecho | api.ts (ErrorApi red/sesión/petición), sync.ts (MotorSync: push por lotes de 100 en orden, espera 5/15/30/60 s, 401 sin perder outbox, rechazadas a erroresSync, pull paginado que no pisa pendientes, contador de folios que no retrocede, limpieza diaria de 35 días, disparadores), estadoSync.ts y erroresSync.ts; 20 pruebas con servidor simulado.
 1.14 | hecho | integracion.test.ts: Dexie (fake-indexeddb) + api.ts real con fetch enrutado a la app Hono con PGlite sembrada; dispositivo A vende y sube, B hace pull y recibe venta, turno y contador.
 2.1 | hecho | Shell: barra superior (negocio, dispositivo, conexión, usuario con Cambiar usuario/Bloquear), riel lateral y barra inferior con Más en vertical, pestañas por sección, rutas con guardas (sesión → primer pull → dispositivo → bienvenida → PIN → permiso) y pantallas vacías; componentes Boton, Campo, Hoja, Pantalla, Pestanas.
+2.2 | hecho | Pantalla de acceso con errores claros (credenciales, primer inicio sin internet, sesión expirada con correo precargado); datos/sesion.ts guarda el token en Dexie y dispara el sync; e2e de acceso y de recarga sin API.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
