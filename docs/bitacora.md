@@ -90,6 +90,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 11.2 | hecho | Reportes: selector de rango (máx. 92 días) y Resumen (brutas, cancelaciones, devoluciones, netas, número, ticket promedio, descuentos, por método, gastos por categoría) con barras CSS por hora (un día, solo el horario con ventas) o por día; datos locales si caben en 35 días (aviso sin conexión) o GET /api/reportes (datos/reportes.ts).
 11.3 | hecho | Pestañas Productos (ordenable por importe o cantidad, Top 10 destacado, %), Categorías, Cajeros (ventas, total, ticket promedio, cancelaciones) y Cortes (diferencia en color).
 11.4 | hecho | Exportar CSV de cada pestaña con aCSV (UTF-8 con BOM, comillas escapadas, CRLF, montos decimales).
+11.5 | hecho | e2e: producto propio, 3 ventas (una cancelada); Productos muestra 4 por $120, el CSV trae BOM y la fila; el Resumen coincide con lo calculado desde los datos del servidor (brutas, netas, número, efectivo, tarjeta).
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.

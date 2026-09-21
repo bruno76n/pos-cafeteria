@@ -125,5 +125,8 @@ test('dispositivo: renombrar y almacenamiento visible', async ({ page }) => {
   await expect(page.getByRole('status').filter({ hasText: 'Dispositivo guardado.' })).toBeVisible();
   await expect(page.getByRole('banner')).toContainText('Barra');
   await page.getByRole('button', { name: '5 min', exact: true }).click();
-  await expect(page.getByRole('button', { name: '5 min', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByRole('button', { name: '5 min', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
 });

@@ -117,7 +117,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 11.2 Reportes: selector de rango y pestaña Resumen con barras por hora o día. → Cifras correctas.
 - [x] 11.3 Pestañas Productos, Categorías, Cajeros y Cortes. → Cifras correctas.
 - [x] 11.4 Exportar CSV (UTF-8 con BOM). → Abre bien con acentos.
-- [ ] 11.5 e2e: las cifras de Reportes coinciden con ventas conocidas creadas en la prueba. → Pasa.
+- [x] 11.5 e2e: las cifras de Reportes coinciden con ventas conocidas creadas en la prueba. → Pasa.
 
 ## Fase 12: PWA y robustez offline
 
