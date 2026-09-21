@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest';
 import { categoriasPrueba, ventaPrueba } from '@/dominio/datosPrueba';
+import type { VentaNueva } from '@/dominio/cobro';
 import { verificarPin } from '@/dominio/pin';
 import { bd, leerMeta } from './bd';
 import {
@@ -12,7 +13,6 @@ import {
   inicializarNegocio,
   guardar,
   registrarVenta,
-  type VentaSinFolio,
 } from './escrituras';
 
 beforeEach(async () => {
@@ -21,7 +21,7 @@ beforeEach(async () => {
 
 const dispositivo = { id: 'caja-1', nombre: 'Caja 1', tipo: 'caja' as const, prefijo: 'A', ultimoFolio: 122 };
 
-function ventaSinFolio(): VentaSinFolio {
+function ventaSinFolio(): VentaNueva {
   const {
     folio: _f,
     folioNumero: _n,

@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'vitest';
+import { agregarLinea, carritoVacio, crearLinea } from './carrito';
 import {
   agregarPago,
+  armarVenta,
   billetesSugeridos,
   cambio,
   cobroCompleto,
@@ -8,6 +10,7 @@ import {
   quitarPago,
   totalPagado,
 } from './cobro';
+import { categoriasPrueba, configPrueba, productoPrueba } from './datosPrueba';
 import type { Pago } from './tipos';
 
 function pagar(total: number, ...nuevos: Parameters<typeof agregarPago>[2][]): Pago[] {
@@ -105,5 +108,68 @@ describe('billetes sugeridos', () => {
     expect(billetesSugeridos(10000)).toEqual([20000, 50000, 100000]);
     expect(billetesSugeridos(60000)).toEqual([100000]);
     expect(billetesSugeridos(150000)).toEqual([]);
+  });
+});
+
+describe('armarVenta', () => {
+  const brownie = productoPrueba('brownie');
+  const carrito = {
+    ...agregarLinea(
+      carritoVacio(),
+      crearLinea({ producto: brownie, categoria: categoriasPrueba[3], grupos: [] }),
+    ),
+    cliente: ' Luis ',
+    descuento: {
+      tipo: 'porcentaje' as const,
+      valor: 10,
+      motivo: null,
+      autorizadoPor: { id: 'e', nombre: 'Encargada' },
+    },
+  };
+  const base = {
+    id: 'v1',
+    fecha: '2026-09-19T14:42:10.123Z',
+    dia: '2026-09-19',
+    carrito,
+    config: configPrueba.ventas,
+    turno: { id: 't1' },
+    dispositivo: { id: 'd1', nombre: 'Caja 1' },
+    cajero: { id: 'c', nombre: 'Cajero' },
+  };
+
+  test('copia el carrito, totales, pagos y cambio', () => {
+    const v = armarVenta({ ...base, pagos: [{ metodo: 'efectivo', monto: 4050, recibido: 5000 }] });
+    expect(v).toMatchObject({
+      cliente: 'Luis',
+      subtotal: 4500,
+      total: 4050,
+      cambio: 950,
+      estado: 'pagada',
+      devuelto: 0,
+      cancelacion: null,
+      turnoId: 't1',
+      dispositivoNombre: 'Caja 1',
+      descuento: {
+        tipo: 'porcentaje',
+        valor: 10,
+        importe: 450,
+        autorizadoPor: { id: 'e', nombre: 'Encargada' },
+      },
+    });
+    expect(v.lineas[0]).toMatchObject({ nombre: 'Brownie', importe: 4500, categoriaNombre: 'Postres' });
+    expect(v.lineas[0]).not.toHaveProperty('seleccion');
+  });
+
+  test('no arma una venta con pagos incompletos', () => {
+    expect(() => armarVenta({ ...base, pagos: [{ metodo: 'tarjeta', monto: 100 }] })).toThrow();
+  });
+
+  test('total en cero sin pagos', () => {
+    const gratis = {
+      ...carrito,
+      descuento: { tipo: 'monto' as const, valor: 6000, motivo: null, autorizadoPor: null },
+    };
+    const v = armarVenta({ ...base, carrito: gratis, pagos: [] });
+    expect(v).toMatchObject({ total: 0, pagos: [], cambio: 0, descuento: { importe: 4500 } });
   });
 });

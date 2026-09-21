@@ -1,3 +1,4 @@
+import type { VentaNueva } from '@/dominio/cobro';
 import { ahoraISO, diaLocal } from '@/dominio/fechas';
 import { contadorInicial, siguienteFolio } from '@/dominio/folios';
 import { configNueva, menuDeEjemplo } from '@/dominio/menuEjemplo';
@@ -101,13 +102,11 @@ export async function borrar(tabla: 'categorias' | 'gruposModificadores' | 'prod
   avisar();
 }
 
-export type VentaSinFolio = SinFecha<Omit<Venta, 'folio' | 'folioNumero'>>;
-
 /**
  * Registra una venta: asigna el folio del dispositivo, guarda la venta, sube el contador y
  * encola ambas operaciones, todo en la misma transacción.
  */
-export async function registrarVenta(venta: VentaSinFolio): Promise<Venta> {
+export async function registrarVenta(venta: VentaNueva): Promise<Venta> {
   let guardada: Venta | undefined;
   await bd.transaction('rw', bd.ventas, bd.dispositivos, bd.outbox, async () => {
     const dispositivo = await bd.dispositivos.get(venta.dispositivoId);

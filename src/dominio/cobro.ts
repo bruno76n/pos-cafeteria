@@ -1,5 +1,6 @@
+import { calcularTotales, lineasParaVenta, type Carrito, type ConfigVentas } from './carrito';
 import type { Centavos } from './dinero';
-import type { MetodoPago, Pago } from './tipos';
+import type { Dispositivo, MetodoPago, Pago, RefUsuario, Turno, Venta } from './tipos';
 
 export const NOMBRE_METODO: Record<MetodoPago, string> = {
   efectivo: 'Efectivo',
@@ -79,4 +80,47 @@ export function agregarPago(
 
 export function quitarPago(pagos: Pago[], metodo: MetodoPago): Pago[] {
   return pagos.filter((p) => p.metodo !== metodo);
+}
+
+/** Venta lista para guardarse (el folio se asigna al guardarla, en la misma transacción). */
+export type VentaNueva = Omit<Venta, 'folio' | 'folioNumero' | 'actualizadoEn'>;
+
+/** Arma la venta con copia completa del carrito, totales, pagos y cambio. */
+export function armarVenta(datos: {
+  id: string;
+  fecha: string;
+  dia: string;
+  carrito: Carrito;
+  config: ConfigVentas;
+  pagos: Pago[];
+  turno: Pick<Turno, 'id'>;
+  dispositivo: Pick<Dispositivo, 'id' | 'nombre'>;
+  cajero: RefUsuario;
+}): VentaNueva {
+  const { carrito } = datos;
+  const totales = calcularTotales(carrito.lineas, carrito.descuento, datos.config);
+  if (!cobroCompleto(totales.total, datos.pagos)) throw new Error('Los pagos no cubren el total.');
+  return {
+    id: datos.id,
+    dispositivoId: datos.dispositivo.id,
+    dispositivoNombre: datos.dispositivo.nombre,
+    turnoId: datos.turno.id,
+    fecha: datos.fecha,
+    dia: datos.dia,
+    cajero: datos.cajero,
+    cliente: carrito.cliente?.trim() || null,
+    lineas: lineasParaVenta(carrito),
+    subtotal: totales.subtotal,
+    descuento:
+      carrito.descuento && totales.descuento > 0
+        ? { ...carrito.descuento, importe: totales.descuento }
+        : null,
+    iva: totales.iva,
+    total: totales.total,
+    pagos: datos.pagos,
+    cambio: cambio(datos.pagos),
+    estado: 'pagada',
+    devuelto: 0,
+    cancelacion: null,
+  };
 }

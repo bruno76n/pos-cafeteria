@@ -51,6 +51,11 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 3.5 | hecho | DialogoDescuento (porcentaje con atajos o monto, motivo, tope de configuración, Quitar descuento); se autoriza al aplicar y guarda autorizadoPor; solo si descuentosPermitidos; e2e con cajero (pide PIN, rechaza PIN sin permiso) y encargada (directo).
 3.6 | hecho | Panel muestra subtotal, descuento, IVA (incluido o 'IVA 16 %' sumado al total según configuración) y total en Cobrar con calcularTotales; e2e: caso B da $193.50 e IVA incluido $26.69 (caso C cubierto en pruebas unitarias).
 3.7 | hecho | e2e: abrir caja, caso A con modificadores, 'Para:', nota, descuento 10 %, recargar (espera a que IndexedDB confirme) y el carrito sigue igual; editar línea; vaciar con confirmación; buscador sin acentos.
+4.1 | hecho | CapaCobro a pantalla completa: total, métodos activos según configuración, pagos con Quitar, pendiente; 'Volver a la venta' descarta pagos y conserva el carrito.
+4.2 | hecho | PanelEfectivo: Exacto, hasta 3 billetes mayores al pendiente, TecladoNumerico (pesos enteros, 00, ⌫), cambio a 48 px; 'Confirmar cobro' o 'Agregar pago'.
+4.3 | hecho | PanelTarjeta (monto = pendiente, referencia opcional, 'Pagado con tarjeta') y PanelTransferencia (cuentas, CLABE en grupos de 4, referencia obligatoria según config, 'Marcar como pagada').
+4.4 | hecho | Pagos combinados con agregarPago (uno por método, solo efectivo excede) y cambio automático a otro método; total en cero muestra 'Nada que cobrar' + 'Confirmar' sin pagos.
+4.5 | hecho | armarVenta() pura (copia completa del carrito, descuento con importe, IVA, pagos, cambio) + registrarVenta() con folio en la misma transacción; resultado en el carrito vacío (folio y cambio a 64 px).
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -66,6 +71,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - Dispositivos de consulta no muestran Nueva venta.
 - Prefijo repetido: se advierte pero se permite (caso de una tablet que reemplaza a otra); el contador continúa desde el mayor folio conocido.
 - El teclado de PIN lleva una tecla Entrar (✓) en el hueco de la última fila: sin ella, un PIN de 4 dígitos equivocado no se podría rechazar hasta escribir 6.
+- Los cambios de 4.1–4.5 van en un solo commit porque la capa de cobro y sus paneles no funcionan por separado.
 
 ## Para probar a mano (Bruno)
 
