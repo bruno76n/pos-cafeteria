@@ -24,6 +24,22 @@ describe('ventas', () => {
     expect(r).toMatchObject({ ok: true, accion: { tipo: 'insertar' } });
   });
 
+  test('la línea conserva la copia del tamaño y de los ingredientes', () => {
+    const [linea] = venta.lineas;
+    const crepa = {
+      ...linea!,
+      tamano: { nombre: 'Grande', precio: 7500 },
+      ingredientes: { nombres: ['Nutella', 'Fresa', 'Nuez'], incluidos: 2, extras: 1, precioExtra: 500 },
+    };
+    const r = evaluarOperacion({
+      tabla: 'ventas',
+      tipo: 'crear',
+      registroId: venta.id,
+      datos: { ...venta, lineas: [crepa] },
+    });
+    expect(r.ok && r.accion.tipo === 'insertar' && r.accion.valores.lineas).toEqual([crepa]);
+  });
+
   test('crear es tolerante con datos raros', () => {
     const rara = {
       ...venta,
@@ -161,18 +177,12 @@ describe('catálogo y configuración', () => {
     ).toBe(false);
   });
 
-  test('borrar categorías, grupos y productos; no usuarios', () => {
-    expect(
-      evaluarOperacion({
-        tabla: 'productos',
-        tipo: 'borrar',
-        registroId: 'p',
-        datos: { actualizadoEn: ahora },
-      }),
-    ).toEqual({
-      ok: true,
-      accion: { tipo: 'borrar', actualizadoEn: ahora },
-    });
+  test('borrar categorías, grupos, ingredientes y productos; no usuarios', () => {
+    for (const tabla of ['productos', 'ingredientes'] as const) {
+      expect(
+        evaluarOperacion({ tabla, tipo: 'borrar', registroId: 'p', datos: { actualizadoEn: ahora } }),
+      ).toEqual({ ok: true, accion: { tipo: 'borrar', actualizadoEn: ahora } });
+    }
     expect(
       evaluarOperacion({
         tabla: 'usuarios',

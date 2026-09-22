@@ -93,7 +93,7 @@ function FormularioGrupo({ inicial, alCerrar }: { inicial: Grupo; alCerrar: () =
       <div className="flex flex-col gap-4">
         <Campo
           etiqueta="Nombre"
-          placeholder="Tamaño"
+          placeholder="Leche, Extras…"
           value={grupo.nombre}
           maxLength={30}
           onChange={(e) => cambiar({ nombre: e.target.value })}

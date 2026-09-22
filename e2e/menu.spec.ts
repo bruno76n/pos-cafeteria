@@ -111,3 +111,26 @@ test('la encargada edita el menú pero no el precio sin autorización', async ({
       .click();
   await expect(page.getByLabel('Precio')).toBeEnabled();
 });
+
+test('sin modificarPrecios no se tocan precios de tamaños ni del ingrediente extra', async ({ page }) => {
+  await prepararDispositivo(page, 'S');
+  await entrarCon(page, PIN.encargada);
+  await page.getByRole('navigation', { name: 'Secciones' }).getByRole('link', { name: 'Menú' }).click();
+  await page.getByRole('link', { name: 'Editar Crepa dulce' }).click();
+  await expect(page.getByLabel('Precio del tamaño 1')).toBeDisabled();
+  await expect(page.getByLabel('Precio por ingrediente extra')).toBeDisabled();
+  await expect(page.getByRole('button', { name: 'Agregar tamaño' })).toBeHidden();
+  await expect(page.getByRole('button', { name: 'Quitar el tamaño 1' })).toBeHidden();
+  // El nombre de los tamaños y los incluidos sí son del menú
+  await expect(page.getByLabel('Nombre del tamaño 1')).toBeEnabled();
+  await expect(page.getByLabel('Incluidos en Chica')).toBeEnabled();
+  await page.getByRole('button', { name: 'Pedir autorización para cambiar el precio' }).click();
+  for (const d of PIN.dueno)
+    await page
+      .getByRole('dialog', { name: 'Pedir autorización' })
+      .getByRole('button', { name: d, exact: true })
+      .click();
+  await expect(page.getByLabel('Precio del tamaño 1')).toBeEnabled();
+  await expect(page.getByLabel('Precio por ingrediente extra')).toBeEnabled();
+  await expect(page.getByRole('button', { name: 'Agregar tamaño' })).toBeVisible();
+});
