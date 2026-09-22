@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { categoriasPrueba, ventaPrueba } from '@/dominio/datosPrueba';
+import { categoriaPrueba, ventaPrueba } from '@/dominio/datosPrueba';
 import type { VentaNueva } from '@/dominio/cobro';
 import { verificarPin } from '@/dominio/pin';
 import { bd, leerMeta } from './bd';
@@ -38,7 +38,7 @@ function ventaSinFolio(): VentaNueva {
 
 describe('escrituras con outbox', () => {
   test('crear guarda el registro y su operación', async () => {
-    const cafes = categoriasPrueba[0]!;
+    const cafes = categoriaPrueba('cafes');
     const { actualizadoEn: _, ...sinFecha } = cafes;
     await crear('categorias', sinFecha);
     expect(await bd.categorias.get(cafes.id)).toMatchObject({ nombre: 'Cafés' });
@@ -49,7 +49,7 @@ describe('escrituras con outbox', () => {
   });
 
   test('guardar decide entre crear y actualizar y manda el registro completo', async () => {
-    const { actualizadoEn: _, ...cafes } = categoriasPrueba[0]!;
+    const { actualizadoEn: _, ...cafes } = categoriaPrueba('cafes');
     await guardar('categorias', cafes);
     await guardar('categorias', { ...cafes, nombre: 'Café' });
     const ops = await bd.outbox.orderBy('orden').toArray();
@@ -73,7 +73,7 @@ describe('escrituras con outbox', () => {
   });
 
   test('borrar quita el registro y encola la lápida', async () => {
-    const { actualizadoEn: _, ...cafes } = categoriasPrueba[0]!;
+    const { actualizadoEn: _, ...cafes } = categoriaPrueba('cafes');
     await crear('categorias', cafes);
     await borrar('categorias', cafes.id);
     expect(await bd.categorias.get(cafes.id)).toBeUndefined();
@@ -82,7 +82,7 @@ describe('escrituras con outbox', () => {
   });
 
   test('si falla la transacción no queda ni el registro ni la operación', async () => {
-    const { actualizadoEn: _, ...cafes } = categoriasPrueba[0]!;
+    const { actualizadoEn: _, ...cafes } = categoriaPrueba('cafes');
     await crear('categorias', cafes);
     await expect(crear('categorias', cafes)).rejects.toThrow();
     expect(await bd.outbox.count()).toBe(1);
@@ -91,7 +91,7 @@ describe('escrituras con outbox', () => {
   test('avisa al motor de sync', async () => {
     let avisos = 0;
     const quitar = alEscribir(() => avisos++);
-    const { actualizadoEn: _, ...cafes } = categoriasPrueba[0]!;
+    const { actualizadoEn: _, ...cafes } = categoriaPrueba('cafes');
     await crear('categorias', cafes);
     quitar();
     await borrar('categorias', cafes.id);
@@ -174,9 +174,9 @@ describe('inicializarNegocio', () => {
       direccion: '',
     });
     expect(await bd.usuarios.count()).toBe(1);
-    expect(await bd.productos.count()).toBe(28);
+    expect(await bd.productos.count()).toBe(30);
     expect(await bd.ingredientes.count()).toBe(17);
-    expect(await bd.outbox.count()).toBe(2 + 5 + 4 + 17 + 28);
+    expect(await bd.outbox.count()).toBe(2 + 6 + 4 + 17 + 30);
   });
 
   test('sin menú de ejemplo', async () => {

@@ -6,6 +6,7 @@ import {
   useCategorias,
   useConfig,
   useGruposModificadores,
+  useIngredientes,
   useProductos,
   useTurnoAbierto,
 } from '@/datos/consultas';
@@ -40,6 +41,7 @@ export function NuevaVenta() {
   const categorias = useCategorias();
   const productos = useProductos();
   const grupos = useGruposModificadores();
+  const ingredientes = useIngredientes();
   const { usuario, puede } = useUsuarioActivo();
   const carrito = useCarrito((s) => s.carrito);
   const ultimaVenta = useCarrito((s) => s.ultimaVenta);
@@ -53,7 +55,16 @@ export function NuevaVenta() {
   const autorizar = useAutorizar();
   const impresora = useImpresora();
 
-  if (turno === undefined || !config || !categorias || !productos || !grupos || !dispositivo || !usuario) {
+  if (
+    turno === undefined ||
+    !config ||
+    !categorias ||
+    !productos ||
+    !grupos ||
+    !ingredientes ||
+    !dispositivo ||
+    !usuario
+  ) {
     return null;
   }
 
@@ -220,6 +231,7 @@ export function NuevaVenta() {
           producto={personalizando.producto}
           categoria={categorias.find((c) => c.id === personalizando.producto.categoriaId)}
           grupos={grupos}
+          ingredientes={ingredientes}
           linea={personalizando.linea}
           alTerminar={(linea) => {
             if (personalizando.linea) reemplazar(personalizando.linea.id, linea);

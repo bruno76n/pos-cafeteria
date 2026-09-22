@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { categoriasPrueba, ventaPrueba } from './datosPrueba';
+import { categoriaPrueba, ventaPrueba } from './datosPrueba';
 import { evaluarOperacion } from './reglasServidor';
 
 const ahora = '2026-09-19T15:00:00.000Z';
@@ -143,7 +143,7 @@ describe('movimientos, devoluciones y turnos', () => {
 });
 
 describe('catálogo y configuración', () => {
-  const cafes = categoriasPrueba[0]!;
+  const cafes = categoriaPrueba('cafes');
   test('crear y actualizar son upsert con el registro completo', () => {
     expect(
       evaluarOperacion({ tabla: 'categorias', tipo: 'crear', registroId: cafes.id, datos: cafes }),

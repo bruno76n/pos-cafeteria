@@ -38,7 +38,11 @@ export const useCarrito = create<EstadoCarrito>((set, get) => {
     cargar: async () => {
       if (get().cargado) return;
       const [carrito, ultimaVenta] = await Promise.all([leerMeta('carrito'), leerMeta('ultimaVenta')]);
-      set({ cargado: true, carrito: carrito ?? c.carritoVacio(), ultimaVenta: ultimaVenta ?? null });
+      set({
+        cargado: true,
+        carrito: carrito ? c.completarCarrito(carrito) : c.carritoVacio(),
+        ultimaVenta: ultimaVenta ?? null,
+      });
     },
     agregar: (linea) => {
       const antes = get().carrito;

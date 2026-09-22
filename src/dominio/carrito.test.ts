@@ -5,6 +5,7 @@ import {
   cambiarCantidad,
   cantidadDeProductos,
   carritoVacio,
+  completarCarrito,
   crearLinea,
   eliminarLinea,
   lineasParaVenta,
@@ -14,12 +15,19 @@ import {
   reemplazarLinea,
   validarDescuento,
   type Carrito,
+  type LineaCarrito,
 } from './carrito';
-import { categoriasPrueba, configPrueba, gruposPrueba, productoPrueba } from './datosPrueba';
+import {
+  categoriaPrueba,
+  configPrueba,
+  gruposPrueba,
+  ingredientesPrueba,
+  productoPrueba,
+} from './datosPrueba';
 import { seleccionPorDefecto, gruposDelProducto } from './modificadores';
 
-const cafes = categoriasPrueba.find((c) => c.id === 'cafes');
-const postres = categoriasPrueba.find((c) => c.id === 'postres');
+const cafes = categoriaPrueba('cafes');
+const postres = categoriaPrueba('postres');
 const latte = productoPrueba('latte');
 const brownie = productoPrueba('brownie');
 const eleccionLatte = {
@@ -34,6 +42,14 @@ const lineaLatte = (cantidad = 1) =>
     grupos: gruposPrueba,
     eleccion: eleccionLatte,
     cantidad,
+  });
+const lineaCrepa = (ingredientesIds: string[], tamanoId = 'grande') =>
+  crearLinea({
+    producto: productoPrueba('crepa-dulce'),
+    categoria: categoriaPrueba('crepas'),
+    grupos: gruposPrueba,
+    ingredientes: ingredientesPrueba,
+    eleccion: { tamanoId, ingredientesIds },
   });
 const lineaBrownie = () => crearLinea({ producto: brownie, categoria: postres, grupos: gruposPrueba });
 
@@ -71,9 +87,42 @@ describe('líneas', () => {
     expect(b).not.toHaveProperty('tamano');
   });
 
+  test('crepa Grande con 4 ingredientes: copia tamaño e ingredientes y cobra 2 extra', () => {
+    const l = lineaCrepa(['nutella', 'platano', 'fresa', 'nuez']);
+    expect(l).toMatchObject({
+      nombre: 'Crepa dulce',
+      precioBase: 7500,
+      tamano: { nombre: 'Grande', precio: 7500 },
+      ingredientes: {
+        nombres: ['Nutella', 'Plátano', 'Fresa', 'Nuez'],
+        incluidos: 2,
+        extras: 2,
+        precioExtra: 500,
+      },
+      precioUnitario: 8500,
+    });
+    expect(lineaBrownie()).not.toHaveProperty('ingredientes');
+  });
+
+  test('crepas con los mismos ingredientes (en otro orden) se fusionan; con otros, no', () => {
+    let c = agregarLinea(carritoVacio(), lineaCrepa(['nutella', 'fresa']));
+    c = agregarLinea(c, lineaCrepa(['fresa', 'nutella']));
+    c = agregarLinea(c, lineaCrepa(['nutella', 'nuez']));
+    c = agregarLinea(c, lineaCrepa(['nutella', 'fresa'], 'chica'));
+    expect(c.lineas.map((l) => l.cantidad)).toEqual([2, 1, 1]);
+  });
+
+  test('un carrito guardado antes de los tamaños se completa al cargarlo', () => {
+    const { tamanoId: _t, ingredientesIds: _i, ...vieja } = lineaBrownie();
+    const c = completarCarrito({ ...carritoVacio(), lineas: [vieja as LineaCarrito] });
+    expect(c.lineas[0]).toMatchObject({ tamanoId: null, ingredientesIds: [] });
+    expect(agregarLinea(c, lineaBrownie()).lineas).toHaveLength(1);
+  });
+
   test('las líneas para la venta no llevan lo elegido', () => {
     const [l] = lineasParaVenta({ ...carritoVacio(), lineas: [lineaLatte()] });
     expect(l).not.toHaveProperty('tamanoId');
+    expect(l).not.toHaveProperty('ingredientesIds');
     expect(l).not.toHaveProperty('seleccion');
     expect(l).toHaveProperty('tamano');
   });

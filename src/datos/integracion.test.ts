@@ -40,7 +40,8 @@ async function iniciarDispositivo() {
 test('una venta hecha en un dispositivo llega a la base y al otro dispositivo', async () => {
   // Dispositivo A: primer pull trae menú, configuración y usuarios
   const motorA = await iniciarDispositivo();
-  expect(await bd.productos.count()).toBe(28);
+  expect(await bd.productos.count()).toBe(30);
+  expect(await bd.ingredientes.count()).toBe(17);
   expect((await bd.config.get('general'))?.datos.negocio.nombre).toBe('Cafetería Demo');
   const cajero = (await bd.usuarios.get('cajero'))!;
 

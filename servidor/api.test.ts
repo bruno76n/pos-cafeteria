@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
-import { categoriasPrueba, configPrueba, ventaPrueba } from '../src/dominio/datosPrueba';
+import { categoriaPrueba, configPrueba, ventaPrueba } from '../src/dominio/datosPrueba';
 import { diaLocal, sumarDias } from '../src/dominio/fechas';
 import type { Operacion, RespuestaPull, RespuestaPush, Venta } from '../src/dominio/tipos';
 import { crearApp } from './app';
@@ -237,7 +237,7 @@ describe('push', () => {
   });
 
   test('en el catálogo gana el cambio más reciente', async () => {
-    const cafes = { ...categoriasPrueba[0]!, id: 'cat-lww', actualizadoEn: '2026-09-19T12:00:00.000Z' };
+    const cafes = { ...categoriaPrueba('cafes'), id: 'cat-lww', actualizadoEn: '2026-09-19T12:00:00.000Z' };
     const nuevo = { ...cafes, nombre: 'Nuevo', actualizadoEn: '2026-09-19T13:00:00.000Z' };
     const viejo = { ...cafes, nombre: 'Viejo', actualizadoEn: '2026-09-19T12:30:00.000Z' };
     const { cuerpo } = await push([
@@ -280,7 +280,7 @@ describe('pull', () => {
     const { rev: cursor } = await pullCompleto(0);
     const lote = (n: number) =>
       Array.from({ length: 100 }, (_, i) => {
-        const c = { ...categoriasPrueba[0]!, id: `pag-${n}-${i}`, actualizadoEn: ahora() };
+        const c = { ...categoriaPrueba('cafes'), id: `pag-${n}-${i}`, actualizadoEn: ahora() };
         return op({ tabla: 'categorias', tipo: 'crear', registroId: c.id, datos: c });
       });
     for (let n = 0; n < 6; n++) await push(lote(n));

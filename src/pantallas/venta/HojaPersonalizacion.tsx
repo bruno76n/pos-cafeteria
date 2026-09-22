@@ -13,8 +13,18 @@ import {
   seleccionPorDefecto,
   type Seleccion,
 } from '@/dominio/modificadores';
-import { precioBaseDe, tamanoInicial, validarEleccion } from '@/dominio/personalizacion';
-import type { Categoria, GrupoModificadores, Producto } from '@/dominio/tipos';
+import {
+  alternarIngrediente,
+  contadorIngredientes,
+  incluidosDe,
+  indicacionIngredientes,
+  ingredientesDelProducto,
+  precioBaseDe,
+  puedeAgregarIngrediente,
+  tamanoInicial,
+  validarEleccion,
+} from '@/dominio/personalizacion';
+import type { Categoria, GrupoModificadores, Ingrediente, Producto } from '@/dominio/tipos';
 
 const clasesOpcion = (elegida: boolean) =>
   `flex min-h-14 items-center gap-2 rounded-boton border px-4 font-semibold active:scale-[0.98] disabled:opacity-40 ${
@@ -24,14 +34,22 @@ const clasesOpcion = (elegida: boolean) =>
 const clasesPrecioOpcion = (elegida: boolean) =>
   `cifras font-normal ${elegida ? 'text-papel/80' : 'text-grafito-suave'}`;
 
+/** Ingredientes agrupados por su grupo, en el orden del catálogo. */
+function porGrupo(ingredientes: Ingrediente[]): [string | null, Ingrediente[]][] {
+  const grupos = new Map<string | null, Ingrediente[]>();
+  for (const i of ingredientes) grupos.set(i.grupo, [...(grupos.get(i.grupo) ?? []), i]);
+  return [...grupos];
+}
+
 /**
- * Tamaño → modificadores (con los por defecto ya elegidos) → nota → cantidad, y "Agregar $85.00"
- * o lo que falta.
+ * Tamaño → ingredientes → extras (modificadores, con los por defecto ya elegidos) → nota →
+ * cantidad, y "Agregar $85.00" o lo que falta.
  */
 export function HojaPersonalizacion({
   producto,
   categoria,
   grupos,
+  ingredientes,
   linea,
   alTerminar,
   alCerrar,
@@ -39,22 +57,27 @@ export function HojaPersonalizacion({
   producto: Producto;
   categoria: Categoria | undefined;
   grupos: GrupoModificadores[];
+  ingredientes: Ingrediente[];
   /** Línea a editar (reabre la hoja con lo que tenía). */
   linea?: LineaCarrito;
   alTerminar: (linea: LineaCarrito) => void;
   alCerrar: () => void;
 }) {
   const delProducto = gruposDelProducto(producto, grupos);
+  const posibles = ingredientesDelProducto(producto, ingredientes);
   const [tamanoId, setTamanoId] = useState(() => linea?.tamanoId ?? tamanoInicial(producto));
+  const [ingredientesIds, setIngredientesIds] = useState(() => linea?.ingredientesIds ?? []);
   const [seleccion, setSeleccion] = useState<Seleccion>(
     () => linea?.seleccion ?? seleccionPorDefecto(delProducto),
   );
   const [nota, setNota] = useState(linea?.nota ?? '');
   const [cantidad, setCantidad] = useState(linea?.cantidad ?? 1);
 
-  const eleccion = { tamanoId, seleccion };
-  const errores = validarEleccion(producto, grupos, eleccion);
-  const nueva = crearLinea({ producto, categoria, grupos, eleccion, cantidad, nota });
+  const eleccion = { tamanoId, ingredientesIds, seleccion };
+  const errores = validarEleccion(producto, { grupos, ingredientes }, eleccion);
+  const nueva = crearLinea({ producto, categoria, grupos, ingredientes, eleccion, cantidad, nota });
+  const indicacion = indicacionIngredientes(producto, tamanoId);
+  const lleno = !puedeAgregarIngrediente(producto, ingredientesIds);
   const textoAccion = linea ? 'Guardar' : 'Agregar';
 
   return (
@@ -120,6 +143,42 @@ export function HojaPersonalizacion({
                 </button>
               ))}
             </div>
+          </fieldset>
+        )}
+        {producto.armado && (
+          <fieldset className="flex flex-col gap-3">
+            <legend className="mb-1 text-producto font-semibold">Ingredientes</legend>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              {indicacion && <p className="text-grafito-suave">{indicacion}</p>}
+              <p className="cifras font-semibold" aria-live="polite">
+                {contadorIngredientes(ingredientesIds.length, incluidosDe(producto, tamanoId))}
+              </p>
+            </div>
+            {posibles.length === 0 && <p className="text-grafito-suave">No hay ingredientes para elegir.</p>}
+            {porGrupo(posibles).map(([grupo, lista]) => (
+              <div key={grupo ?? ''} className="flex flex-col gap-2">
+                {grupo && <p className="text-etiqueta text-grafito-suave">{grupo}</p>}
+                <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-2">
+                  {lista.map((i) => {
+                    const elegido = ingredientesIds.includes(i.id);
+                    return (
+                      <button
+                        key={i.id}
+                        type="button"
+                        aria-pressed={elegido}
+                        disabled={!i.disponible || (lleno && !elegido)}
+                        onClick={() =>
+                          setIngredientesIds((ids) => alternarIngrediente(producto, ingredientes, ids, i.id))
+                        }
+                        className={`${clasesOpcion(elegido)} min-h-16 justify-center text-center`}
+                      >
+                        {i.nombre}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
           </fieldset>
         )}
         {delProducto.map((g) => {

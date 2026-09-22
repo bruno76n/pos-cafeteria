@@ -148,6 +148,6 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 15.3 Productos que se arman con ingredientes: incluidos por tamaño, precio por ingrediente extra, mínimo/máximo y permitidos (todos o selección por grupo). → Se guarda y valida.
 - [x] 15.4 "Opciones adicionales" en el producto: casillas con todos los grupos de extras/modificadores, en orden. → Un extra recién creado se asigna desde el producto.
 - [ ] 15.5 Venta: hoja Tamaño → Ingredientes → Extras → Nota → Cantidad, contador de extras, máximo y no disponibles; fusión de líneas idénticas; texto de la línea en carrito y ticket. → e2e.
-- [ ] 15.6 Cálculo en centavos (tamaño o base + extras de ingredientes + modificadores) con los casos obligatorios. → Pruebas unitarias.
+- [x] 15.6 Cálculo en centavos (tamaño o base + extras de ingredientes + modificadores) con los casos obligatorios. → Pruebas unitarias.
 - [ ] 15.7 Datos: tabla de ingredientes y campos nuevos en servidor, Dexie y sync; migraciones; copia en las ventas sin romper las pasadas; precios solo con `modificarPrecios`. → Pruebas de API y de datos.
 - [ ] 15.8 Cierre: e2e de crepa y bebida con tamaños, docs, menú de ejemplo con Crepas e ingredientes, sin código muerto. → typecheck, lint, test y e2e.

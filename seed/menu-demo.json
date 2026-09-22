@@ -50,11 +50,12 @@
     { "id": "cajero", "nombre": "Cajero", "rol": "cajero", "pin": "1111" }
   ],
   "categorias": [
-    { "id": "cafes", "nombre": "Cafés", "color": "#6B4226", "orden": 1, "activa": true },
-    { "id": "bebidas-frias", "nombre": "Bebidas frías", "color": "#2F7CA6", "orden": 2, "activa": true },
-    { "id": "alimentos", "nombre": "Alimentos", "color": "#B8862B", "orden": 3, "activa": true },
-    { "id": "postres", "nombre": "Postres", "color": "#A83E5B", "orden": 4, "activa": true },
-    { "id": "extras", "nombre": "Extras", "color": "#5E6B73", "orden": 5, "activa": true }
+    { "id": "crepas", "nombre": "Crepas", "color": "#C2553A", "orden": 1, "activa": true },
+    { "id": "cafes", "nombre": "Cafés", "color": "#6B4226", "orden": 2, "activa": true },
+    { "id": "bebidas-frias", "nombre": "Bebidas frías", "color": "#2F7CA6", "orden": 3, "activa": true },
+    { "id": "alimentos", "nombre": "Alimentos", "color": "#B8862B", "orden": 4, "activa": true },
+    { "id": "postres", "nombre": "Postres", "color": "#A83E5B", "orden": 5, "activa": true },
+    { "id": "extras", "nombre": "Extras", "color": "#5E6B73", "orden": 6, "activa": true }
   ],
   "gruposModificadores": [
     {
@@ -138,6 +139,8 @@
     { "id": "elote", "nombre": "Elote", "grupo": "Salados", "orden": 17, "disponible": true }
   ],
   "productos": [
+    { "id": "crepa-dulce", "nombre": "Crepa dulce", "descripcion": "Arma tu crepa con ingredientes dulces", "categoriaId": "crepas", "precio": 5500, "gruposIds": ["toppings"], "orden": 1, "disponible": true, "tamanos": [{ "id": "chica", "nombre": "Chica", "precio": 5500, "incluidos": 2 }, { "id": "grande", "nombre": "Grande", "precio": 7500, "incluidos": 2 }], "armado": { "incluidos": 2, "precioExtra": 500, "min": 1, "max": 5, "permitidos": ["nutella", "cajeta", "lechera", "platano", "fresa", "nuez", "durazno", "queso-crema", "chispas"] } },
+    { "id": "crepa-salada", "nombre": "Crepa salada", "descripcion": "Arma tu crepa con ingredientes salados", "categoriaId": "crepas", "precio": 6000, "gruposIds": [], "orden": 2, "disponible": true, "tamanos": [{ "id": "chica", "nombre": "Chica", "precio": 6000, "incluidos": 2 }, { "id": "grande", "nombre": "Grande", "precio": 8000, "incluidos": 3 }], "armado": { "incluidos": 2, "precioExtra": 1000, "min": 1, "max": 5, "permitidos": ["jamon", "queso-manchego", "pollo", "champinones", "espinaca", "pepperoni", "tocino", "elote"] } },
     { "id": "espresso", "nombre": "Espresso", "descripcion": "Shot doble de espresso", "categoriaId": "cafes", "precio": 4000, "gruposIds": ["extra-shot"], "orden": 1, "disponible": true, "tamanos": [] },
     { "id": "americano", "nombre": "Americano", "descripcion": "Espresso con agua caliente", "categoriaId": "cafes", "precio": 4500, "gruposIds": ["extra-shot"], "orden": 2, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 4500 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 5500 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 6500 }] },
     { "id": "capuchino", "nombre": "Capuchino", "descripcion": "Espresso con leche y mucha espuma", "categoriaId": "cafes", "precio": 6200, "gruposIds": ["leche", "extra-shot", "jarabes", "toppings"], "orden": 3, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 6200 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 7200 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 8200 }] },

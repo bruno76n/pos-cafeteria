@@ -1,11 +1,18 @@
 // Menú, configuración y una venta para las pruebas (a partir de seed/menu-demo.json).
 import { configInicial, menuDeEjemplo } from './menuEjemplo';
-import type { ConfigGeneral, GrupoModificadores, Producto, Venta } from './tipos';
+import type { Categoria, ConfigGeneral, GrupoModificadores, Producto, Venta } from './tipos';
 
 const menu = menuDeEjemplo('2026-09-19T12:00:00.000Z');
 export const categoriasPrueba = menu.categorias;
 export const gruposPrueba = menu.gruposModificadores;
+export const ingredientesPrueba = menu.ingredientes;
 const productosPrueba = menu.productos;
+
+export function categoriaPrueba(id: string): Categoria {
+  const c = categoriasPrueba.find((x) => x.id === id);
+  if (!c) throw new Error(`No existe la categoría ${id}`);
+  return c;
+}
 
 export function productoPrueba(id: string): Producto {
   const p = productosPrueba.find((x) => x.id === id);

@@ -1,7 +1,21 @@
 import { redondear, type Centavos } from './dinero';
 import { claveSeleccion, gruposDelProducto, modificadoresElegidos } from './modificadores';
-import { precioBaseDe, precioUnitario, tamanoDe, type Eleccion } from './personalizacion';
-import type { Categoria, ConfigGeneral, GrupoModificadores, LineaVenta, Producto, RefUsuario } from './tipos';
+import {
+  ingredientesElegidos,
+  precioBaseDe,
+  precioUnitario,
+  tamanoDe,
+  type Eleccion,
+} from './personalizacion';
+import type {
+  Categoria,
+  ConfigGeneral,
+  GrupoModificadores,
+  Ingrediente,
+  LineaVenta,
+  Producto,
+  RefUsuario,
+} from './tipos';
 
 /** Línea del carrito: la copia que irá a la venta más lo elegido, para poder editarla. */
 export interface LineaCarrito extends LineaVenta, Eleccion {}
@@ -32,14 +46,28 @@ export interface Totales {
 
 export const carritoVacio = (): Carrito => ({ lineas: [], cliente: null, descuento: null });
 
+/** Un carrito guardado por una versión anterior no trae tamaño ni ingredientes en sus líneas. */
+export function completarCarrito(guardado: Carrito): Carrito {
+  return {
+    ...guardado,
+    lineas: guardado.lineas.map((l) => ({
+      ...l,
+      tamanoId: l.tamanoId ?? null,
+      ingredientesIds: l.ingredientesIds ?? [],
+    })),
+  };
+}
+
 /**
- * Arma una línea con copia de nombre, tamaño, precios y modificadores (nunca referencias vivas
- * al menú). Sin tamaño elegido toma el primero del producto.
+ * Arma una línea con copia de nombre, tamaño, ingredientes, precios y modificadores (nunca
+ * referencias vivas al menú). Sin tamaño elegido toma el primero del producto.
  */
 export function crearLinea(params: {
   producto: Producto;
   categoria: Categoria | undefined;
   grupos: GrupoModificadores[];
+  /** Catálogo de ingredientes (solo lo usan los productos que se arman). */
+  ingredientes?: Ingrediente[];
   eleccion?: Partial<Eleccion>;
   cantidad?: number;
   nota?: string | null;
@@ -48,9 +76,15 @@ export function crearLinea(params: {
   const { producto, categoria, cantidad = 1 } = params;
   const seleccion = params.eleccion?.seleccion ?? {};
   const tamano = tamanoDe(producto, params.eleccion?.tamanoId ?? producto.tamanos[0]?.id ?? null);
-  const precioBase = precioBaseDe(producto, tamano?.id ?? null);
+  const tamanoId = tamano?.id ?? null;
+  const ingredientesIds = params.eleccion?.ingredientesIds ?? [];
+  const precioBase = precioBaseDe(producto, tamanoId);
+  const ingredientes = ingredientesElegidos(producto, params.ingredientes ?? [], {
+    tamanoId,
+    ingredientesIds,
+  });
   const modificadores = modificadoresElegidos(gruposDelProducto(producto, params.grupos), seleccion);
-  const unitario = precioUnitario(precioBase, modificadores);
+  const unitario = precioUnitario(precioBase, modificadores, ingredientes);
   const nota = params.nota?.trim() || null;
   return {
     id: params.id ?? crypto.randomUUID(),
@@ -60,12 +94,14 @@ export function crearLinea(params: {
     categoriaNombre: categoria?.nombre ?? '',
     precioBase,
     ...(tamano ? { tamano: { nombre: tamano.nombre, precio: tamano.precio } } : {}),
+    ...(ingredientes ? { ingredientes } : {}),
     modificadores,
     precioUnitario: unitario,
     cantidad,
     nota,
     importe: unitario * cantidad,
-    tamanoId: tamano?.id ?? null,
+    tamanoId,
+    ingredientesIds,
     seleccion,
   };
 }
@@ -76,11 +112,14 @@ const conCantidad = (linea: LineaCarrito, cantidad: number): LineaCarrito => ({
   importe: linea.precioUnitario * cantidad,
 });
 
-/** Mismo producto, tamaño y opciones, mismo precio y sin nota. */
+const claveIngredientes = (l: LineaCarrito) => [...l.ingredientesIds].sort().join(',');
+
+/** Mismo producto, tamaño, ingredientes y opciones, mismo precio y sin nota. */
 function sonIdenticas(a: LineaCarrito, b: LineaCarrito): boolean {
   return (
     a.productoId === b.productoId &&
     a.tamanoId === b.tamanoId &&
+    claveIngredientes(a) === claveIngredientes(b) &&
     a.nota === null &&
     b.nota === null &&
     a.precioUnitario === b.precioUnitario &&
@@ -203,5 +242,7 @@ export function calcularTotales(
 
 /** Líneas listas para guardarse en la venta (sin lo elegido, que solo sirve para editar). */
 export function lineasParaVenta(carrito: Carrito): LineaVenta[] {
-  return carrito.lineas.map(({ seleccion: _seleccion, tamanoId: _tamanoId, ...linea }) => linea);
+  return carrito.lineas.map(
+    ({ seleccion: _seleccion, tamanoId: _tamanoId, ingredientesIds: _ingredientesIds, ...linea }) => linea,
+  );
 }

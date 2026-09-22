@@ -10,7 +10,7 @@ import {
   quitarPago,
   totalPagado,
 } from './cobro';
-import { categoriasPrueba, configPrueba, productoPrueba } from './datosPrueba';
+import { categoriaPrueba, configPrueba, productoPrueba } from './datosPrueba';
 import type { Pago } from './tipos';
 
 function pagar(total: number, ...nuevos: Parameters<typeof agregarPago>[2][]): Pago[] {
@@ -116,7 +116,11 @@ describe('armarVenta', () => {
   const carrito = {
     ...agregarLinea(
       carritoVacio(),
-      crearLinea({ producto: brownie, categoria: categoriasPrueba[3], grupos: [] }),
+      crearLinea({
+        producto: brownie,
+        categoria: categoriaPrueba('postres'),
+        grupos: [],
+      }),
     ),
     cliente: ' Luis ',
     descuento: {

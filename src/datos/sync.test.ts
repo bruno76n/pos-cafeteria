@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { categoriasPrueba, ventaPrueba } from '@/dominio/datosPrueba';
+import { categoriaPrueba, categoriasPrueba, ventaPrueba } from '@/dominio/datosPrueba';
 import { diaLocal, sumarDias } from '@/dominio/fechas';
 import type { FilaPull, Operacion, RespuestaPull, RespuestaPush } from '@/dominio/tipos';
 import { ErrorApi, type ClienteApi } from './api';
@@ -47,7 +47,7 @@ beforeEach(async () => {
 
 async function crearCategorias(n: number) {
   for (let i = 0; i < n; i++) {
-    const { actualizadoEn: _, ...c } = categoriasPrueba[0]!;
+    const { actualizadoEn: _, ...c } = categoriaPrueba('cafes');
     await crear('categorias', { ...c, id: `c${i}`, orden: i });
   }
 }
@@ -241,7 +241,7 @@ describe('pull', () => {
   });
 
   test('no pisa registros con operaciones pendientes', async () => {
-    const { actualizadoEn: _, ...cafes } = categoriasPrueba[0]!;
+    const { actualizadoEn: _, ...cafes } = categoriaPrueba('cafes');
     await crear('categorias', { ...cafes, nombre: 'Local' });
     servidor.paginas = [
       { filas: [fila('categorias', { ...cafes, nombre: 'Servidor' }, 5)], rev: 5, hayMas: false },
@@ -252,7 +252,7 @@ describe('pull', () => {
   });
 
   test('borra lo que llega como lápida', async () => {
-    const cafes = categoriasPrueba[0]!;
+    const cafes = categoriaPrueba('cafes');
     await bd.categorias.put(cafes);
     servidor.paginas = [{ filas: [fila('categorias', { id: cafes.id }, 7, true)], rev: 7, hayMas: false }];
     await motor.pull();

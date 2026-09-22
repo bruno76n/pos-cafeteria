@@ -34,10 +34,10 @@ test('sembrar dos veces no duplica nada', async () => {
     cuentas: 1,
     config: 1,
     usuarios: 3,
-    categorias: 5,
+    categorias: 6,
     grupos: 4,
     ingredientes: 17,
-    productos: 28,
+    productos: 30,
   });
   await sembrar(conexion.db);
   expect(await contar()).toEqual(primera);
