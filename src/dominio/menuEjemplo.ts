@@ -1,11 +1,12 @@
 // Menú y configuración de ejemplo (seed/menu-demo.json). Lo usan el seed y "Cargar menú de ejemplo".
 import menu from '../../seed/menu-demo.json';
 import { ROLES_POR_DEFECTO } from './permisos';
-import type { Categoria, ConfigGeneral, GrupoModificadores, Producto } from './tipos';
+import type { Categoria, ConfigGeneral, GrupoModificadores, Ingrediente, Producto } from './tipos';
 
 export interface MenuEjemplo {
   categorias: Categoria[];
   gruposModificadores: GrupoModificadores[];
+  ingredientes: Ingrediente[];
   productos: Producto[];
 }
 
@@ -17,6 +18,7 @@ export function menuDeEjemplo(actualizadoEn: string): MenuEjemplo {
       tipo: g.tipo as GrupoModificadores['tipo'],
       actualizadoEn,
     })),
+    ingredientes: menu.ingredientes.map((i) => ({ ...i, actualizadoEn })),
     productos: menu.productos.map((p) => ({ ...p, imagen: null, actualizadoEn })),
   };
 }

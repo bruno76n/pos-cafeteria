@@ -62,6 +62,7 @@ export class BaseLocal extends Dexie {
   declare config: TablasSync['config'];
   declare categorias: TablasSync['categorias'];
   declare gruposModificadores: TablasSync['gruposModificadores'];
+  declare ingredientes: TablasSync['ingredientes'];
   declare productos: TablasSync['productos'];
   declare usuarios: TablasSync['usuarios'];
   declare dispositivos: TablasSync['dispositivos'];
@@ -90,9 +91,10 @@ export class BaseLocal extends Dexie {
       meta: 'clave',
       erroresSync: 'id, registroId',
     });
-    // Tamaños por producto: los productos guardados antes no traen el campo.
+    // Tamaños por producto y catálogo de ingredientes: los productos guardados antes no traen
+    // los campos nuevos.
     this.version(2)
-      .stores({})
+      .stores({ ingredientes: 'id, orden' })
       .upgrade((tx) =>
         tx
           .table('productos')

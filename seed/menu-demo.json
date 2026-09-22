@@ -118,6 +118,25 @@
       ]
     }
   ],
+  "ingredientes": [
+    { "id": "nutella", "nombre": "Nutella", "grupo": "Dulces", "orden": 1, "disponible": true },
+    { "id": "cajeta", "nombre": "Cajeta", "grupo": "Dulces", "orden": 2, "disponible": true },
+    { "id": "lechera", "nombre": "Lechera", "grupo": "Dulces", "orden": 3, "disponible": true },
+    { "id": "platano", "nombre": "Plátano", "grupo": "Dulces", "orden": 4, "disponible": true },
+    { "id": "fresa", "nombre": "Fresa", "grupo": "Dulces", "orden": 5, "disponible": true },
+    { "id": "nuez", "nombre": "Nuez", "grupo": "Dulces", "orden": 6, "disponible": true },
+    { "id": "durazno", "nombre": "Durazno", "grupo": "Dulces", "orden": 7, "disponible": true },
+    { "id": "queso-crema", "nombre": "Queso crema", "grupo": "Dulces", "orden": 8, "disponible": true },
+    { "id": "chispas", "nombre": "Chispas de chocolate", "grupo": "Dulces", "orden": 9, "disponible": true },
+    { "id": "jamon", "nombre": "Jamón", "grupo": "Salados", "orden": 10, "disponible": true },
+    { "id": "queso-manchego", "nombre": "Queso manchego", "grupo": "Salados", "orden": 11, "disponible": true },
+    { "id": "pollo", "nombre": "Pollo", "grupo": "Salados", "orden": 12, "disponible": true },
+    { "id": "champinones", "nombre": "Champiñones", "grupo": "Salados", "orden": 13, "disponible": true },
+    { "id": "espinaca", "nombre": "Espinaca", "grupo": "Salados", "orden": 14, "disponible": true },
+    { "id": "pepperoni", "nombre": "Pepperoni", "grupo": "Salados", "orden": 15, "disponible": true },
+    { "id": "tocino", "nombre": "Tocino", "grupo": "Salados", "orden": 16, "disponible": true },
+    { "id": "elote", "nombre": "Elote", "grupo": "Salados", "orden": 17, "disponible": true }
+  ],
   "productos": [
     { "id": "espresso", "nombre": "Espresso", "descripcion": "Shot doble de espresso", "categoriaId": "cafes", "precio": 4000, "gruposIds": ["extra-shot"], "orden": 1, "disponible": true, "tamanos": [] },
     { "id": "americano", "nombre": "Americano", "descripcion": "Espresso con agua caliente", "categoriaId": "cafes", "precio": 4500, "gruposIds": ["extra-shot"], "orden": 2, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 4500 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 5500 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 6500 }] },

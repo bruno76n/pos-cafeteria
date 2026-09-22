@@ -6,6 +6,7 @@ import {
   config,
   cuentas,
   gruposModificadores,
+  ingredientes,
   productos,
   usuarios,
 } from '../servidor/db/esquema';
@@ -25,10 +26,19 @@ test('sembrar dos veces no duplica nada', async () => {
     usuarios: (await conexion.db.select().from(usuarios)).length,
     categorias: (await conexion.db.select().from(categorias)).length,
     grupos: (await conexion.db.select().from(gruposModificadores)).length,
+    ingredientes: (await conexion.db.select().from(ingredientes)).length,
     productos: (await conexion.db.select().from(productos)).length,
   });
   const primera = await contar();
-  expect(primera).toEqual({ cuentas: 1, config: 1, usuarios: 3, categorias: 5, grupos: 4, productos: 28 });
+  expect(primera).toEqual({
+    cuentas: 1,
+    config: 1,
+    usuarios: 3,
+    categorias: 5,
+    grupos: 4,
+    ingredientes: 17,
+    productos: 28,
+  });
   await sembrar(conexion.db);
   expect(await contar()).toEqual(primera);
   const [general] = await conexion.db.select().from(config);

@@ -1,9 +1,10 @@
-import { useId, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useId, type InputHTMLAttributes, type ReactNode, type Ref } from 'react';
 
 export interface PropsCampo extends InputHTMLAttributes<HTMLInputElement> {
   etiqueta: string;
   error?: string | null;
   ayuda?: ReactNode;
+  ref?: Ref<HTMLInputElement>;
 }
 
 export const clasesEntrada =

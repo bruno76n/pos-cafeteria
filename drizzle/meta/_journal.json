@@ -15,6 +15,13 @@
       "when": 1790066096766,
       "tag": "0001_tamanos",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790066676444,
+      "tag": "0002_ingredientes",
+      "breakpoints": true
     }
   ]
 }

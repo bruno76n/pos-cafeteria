@@ -28,6 +28,7 @@ import { ConfigTicket } from '@/pantallas/configuracion/Ticket';
 import { Inicio } from '@/pantallas/inicio/Inicio';
 import { Categorias } from '@/pantallas/menu/Categorias';
 import { EditarProducto } from '@/pantallas/menu/EditarProducto';
+import { Ingredientes } from '@/pantallas/menu/Ingredientes';
 import { Modificadores } from '@/pantallas/menu/Modificadores';
 import { Productos } from '@/pantallas/menu/Productos';
 import { Reportes } from '@/pantallas/reportes/Reportes';
@@ -176,6 +177,7 @@ export const router = createBrowserRouter([
                     pestanas={[
                       { a: '/menu/productos', texto: 'Productos' },
                       { a: '/menu/categorias', texto: 'Categorías' },
+                      { a: '/menu/ingredientes', texto: 'Ingredientes' },
                       { a: '/menu/modificadores', texto: 'Modificadores' },
                     ]}
                   />
@@ -185,6 +187,7 @@ export const router = createBrowserRouter([
                   { path: 'productos', element: <Productos /> },
                   { path: 'productos/:id', element: <EditarProducto /> },
                   { path: 'categorias', element: <Categorias /> },
+                  { path: 'ingredientes', element: <Ingredientes /> },
                   { path: 'modificadores', element: <Modificadores /> },
                 ],
               },

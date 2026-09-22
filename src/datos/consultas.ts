@@ -29,6 +29,10 @@ export function useGruposModificadores() {
   return useLiveQuery(() => bd.gruposModificadores.orderBy('orden').toArray());
 }
 
+export function useIngredientes() {
+  return useLiveQuery(() => bd.ingredientes.orderBy('orden').toArray());
+}
+
 export function useUsuarios() {
   return useLiveQuery(() => bd.usuarios.toArray());
 }

@@ -61,6 +61,8 @@ function operacion(
 
 type SinFecha<T> = Omit<T, 'actualizadoEn'>;
 
+type TablaCatalogo = 'categorias' | 'gruposModificadores' | 'ingredientes' | 'productos';
+
 /** Crea un registro nuevo (ventas, movimientos, devoluciones, turnos o catálogo). */
 export async function crear<T extends TablaSync>(tabla: T, registro: SinFecha<RegistrosPorTabla[T]>) {
   const completo = { ...registro, actualizadoEn: ahoraISO() } as RegistrosPorTabla[T];
@@ -90,7 +92,7 @@ export async function guardar<T extends TablaSync>(tabla: T, registro: SinFecha<
 }
 
 /** Guarda varios registros completos de catálogo en una sola transacción (p. ej. al reordenar). */
-export async function guardarVarios<T extends 'categorias' | 'gruposModificadores' | 'productos'>(
+export async function guardarVarios<T extends TablaCatalogo>(
   tabla: T,
   registros: SinFecha<RegistrosPorTabla[T]>[],
 ) {
@@ -118,8 +120,8 @@ export async function actualizar<T extends 'ventas' | 'movimientos' | 'turnos'>(
   avisar();
 }
 
-/** Borra categorías, grupos o productos (las ventas guardan copia). */
-export async function borrar(tabla: 'categorias' | 'gruposModificadores' | 'productos', id: string) {
+/** Borra categorías, grupos, ingredientes o productos (las ventas guardan copia). */
+export async function borrar(tabla: TablaCatalogo, id: string) {
   await bd.transaction('rw', bd.tabla(tabla), bd.outbox, async () => {
     await bd.tabla(tabla).delete(id);
     await bd.outbox.add(operacion(tabla, 'borrar', id, { actualizadoEn: ahoraISO() }));
@@ -181,10 +183,12 @@ export async function configurarDispositivo(datos: {
 async function escribirMenu(menu: MenuEjemplo) {
   await bd.categorias.bulkPut(menu.categorias);
   await bd.gruposModificadores.bulkPut(menu.gruposModificadores);
+  await bd.ingredientes.bulkPut(menu.ingredientes);
   await bd.productos.bulkPut(menu.productos);
   await bd.outbox.bulkAdd([
     ...menu.categorias.map((c) => operacion('categorias', 'crear', c.id, c)),
     ...menu.gruposModificadores.map((g) => operacion('gruposModificadores', 'crear', g.id, g)),
+    ...menu.ingredientes.map((i) => operacion('ingredientes', 'crear', i.id, i)),
     ...menu.productos.map((p) => operacion('productos', 'crear', p.id, p)),
   ]);
 }
@@ -210,7 +214,7 @@ export async function inicializarNegocio(datos: {
   };
   await bd.transaction(
     'rw',
-    [bd.config, bd.usuarios, bd.categorias, bd.gruposModificadores, bd.productos, bd.outbox],
+    [bd.config, bd.usuarios, bd.categorias, bd.gruposModificadores, bd.ingredientes, bd.productos, bd.outbox],
     async () => {
       await bd.config.put(config);
       await bd.usuarios.put(admin);
@@ -225,10 +229,12 @@ export async function inicializarNegocio(datos: {
   return admin;
 }
 
-/** "Cargar menú de ejemplo": categorías, grupos y productos del ejemplo (sin usuarios). */
+/** "Cargar menú de ejemplo": categorías, grupos, ingredientes y productos del ejemplo (sin usuarios). */
 export async function cargarMenuDeEjemplo() {
-  await bd.transaction('rw', [bd.categorias, bd.gruposModificadores, bd.productos, bd.outbox], () =>
-    escribirMenu(menuDeEjemplo(ahoraISO())),
+  await bd.transaction(
+    'rw',
+    [bd.categorias, bd.gruposModificadores, bd.ingredientes, bd.productos, bd.outbox],
+    () => escribirMenu(menuDeEjemplo(ahoraISO())),
   );
   avisar();
 }

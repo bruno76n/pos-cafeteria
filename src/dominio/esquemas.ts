@@ -21,6 +21,7 @@ export const TABLAS_SYNC = [
   'config',
   'categorias',
   'gruposModificadores',
+  'ingredientes',
   'productos',
   'usuarios',
   'dispositivos',
@@ -132,6 +133,17 @@ export const esquemaGrupoModificadores = z
     ...sincronizable,
   })
   .refine((g) => g.min <= g.max, { message: 'El mínimo no puede ser mayor que el máximo', path: ['min'] });
+
+/** Ingrediente del catálogo (sin precio: el precio del extra lo define cada producto). */
+export const esquemaIngrediente = z.object({
+  id,
+  nombre: z.string().trim().min(1),
+  /** "Dulces", "Salados"… (opcional). */
+  grupo: z.string().trim().min(1).nullable(),
+  orden: z.number().int(),
+  disponible: z.boolean(),
+  ...sincronizable,
+});
 
 /** Tamaño propio de un producto. El primero es el que viene elegido en la venta. */
 export const esquemaTamano = z.object({
@@ -335,6 +347,7 @@ export const ESQUEMAS_TABLA = {
   config: esquemaConfig,
   categorias: esquemaCategoria,
   gruposModificadores: esquemaGrupoModificadores,
+  ingredientes: esquemaIngrediente,
   productos: esquemaProducto,
   usuarios: esquemaUsuario,
   dispositivos: esquemaDispositivo,

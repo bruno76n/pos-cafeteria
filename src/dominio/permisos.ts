@@ -7,7 +7,7 @@ export const NOMBRE_PERMISO: Record<Permiso, string> = {
   aplicarDescuentos: 'Aplicar descuentos',
   cancelarVentas: 'Cancelar ventas y hacer devoluciones',
   modificarPrecios: 'Modificar precios',
-  crearProductos: 'Crear y editar productos, categorías y modificadores',
+  crearProductos: 'Crear y editar productos, categorías, ingredientes y modificadores',
   abrirCaja: 'Abrir caja',
   cerrarCaja: 'Cerrar caja',
   verReportes: 'Ver reportes',

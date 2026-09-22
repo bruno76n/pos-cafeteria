@@ -20,13 +20,19 @@ export const TABLAS_ULTIMO_GANA: readonly TablaSync[] = [
   'config',
   'categorias',
   'gruposModificadores',
+  'ingredientes',
   'productos',
   'usuarios',
   'dispositivos',
 ];
 
 /** Se pueden borrar porque las ventas guardan copia. */
-export const TABLAS_BORRABLES: readonly TablaSync[] = ['categorias', 'gruposModificadores', 'productos'];
+export const TABLAS_BORRABLES: readonly TablaSync[] = [
+  'categorias',
+  'gruposModificadores',
+  'ingredientes',
+  'productos',
+];
 
 /** Tablas que el pull limita a los últimos 35 días. */
 export const TABLAS_CON_ALCANCE: readonly TablaSync[] = ['ventas', 'movimientos', 'devoluciones', 'turnos'];

@@ -327,6 +327,66 @@ describe('pull', () => {
     const { filas } = await pull(antes);
     expect(filas.find((f) => f.registro.id === producto.id)).toMatchObject({ borrado: true });
   });
+
+  test('un producto de una versión anterior (sin tamaños) baja con la lista vacía', async () => {
+    const producto = {
+      id: 'prod-viejo',
+      nombre: 'Americano',
+      descripcion: '',
+      categoriaId: 'cafes',
+      precio: 4500,
+      imagen: null,
+      disponible: true,
+      orden: 1,
+      gruposIds: [],
+      actualizadoEn: ahora(),
+    };
+    const { rev: antes } = await pullCompleto(0);
+    await push([op({ tabla: 'productos', tipo: 'crear', registroId: producto.id, datos: producto })]);
+    const { filas } = await pull(antes);
+    expect(filas.find((f) => f.registro.id === producto.id)?.registro).toMatchObject({ tamanos: [] });
+  });
+
+  test('los ingredientes suben, bajan y se borran como el resto del catálogo', async () => {
+    const nutella = {
+      id: 'ing-nutella',
+      nombre: 'Nutella',
+      grupo: 'Dulces',
+      orden: 1,
+      disponible: true,
+      actualizadoEn: '2026-09-19T12:00:00.000Z',
+    };
+    const { rev: antes } = await pullCompleto(0);
+    const creado = await push([
+      op({ tabla: 'ingredientes', tipo: 'crear', registroId: nutella.id, datos: nutella }),
+    ]);
+    expect(creado.cuerpo.resultados[0]?.resultado).toBe('aplicada');
+    const { filas, rev } = await pull(antes);
+    expect(filas.find((f) => f.registro.id === nutella.id)).toMatchObject({
+      tabla: 'ingredientes',
+      borrado: false,
+      registro: { nombre: 'Nutella', grupo: 'Dulces' },
+    });
+    const sinNombre = await push([
+      op({
+        tabla: 'ingredientes',
+        tipo: 'actualizar',
+        registroId: nutella.id,
+        datos: { ...nutella, nombre: '' },
+      }),
+    ]);
+    expect(sinNombre.cuerpo.resultados[0]?.resultado).toBe('rechazada');
+    await push([
+      op({
+        tabla: 'ingredientes',
+        tipo: 'borrar',
+        registroId: nutella.id,
+        datos: { actualizadoEn: '2026-09-19T13:00:00.000Z' },
+      }),
+    ]);
+    const despues = await pull(rev);
+    expect(despues.filas.find((f) => f.registro.id === nutella.id)).toMatchObject({ borrado: true });
+  });
 });
 
 describe('reportes', () => {

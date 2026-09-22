@@ -10,6 +10,7 @@ import {
   config,
   cuentas,
   gruposModificadores,
+  ingredientes,
   productos,
   usuarios,
 } from '../servidor/db/esquema';
@@ -53,6 +54,10 @@ export async function sembrar(db: BaseDatos): Promise<void> {
   await db
     .insert(gruposModificadores)
     .values(menu.gruposModificadores.map((g) => aFila(g)) as never)
+    .onConflictDoNothing();
+  await db
+    .insert(ingredientes)
+    .values(menu.ingredientes.map((i) => aFila(i)) as never)
     .onConflictDoNothing();
   await db
     .insert(productos)

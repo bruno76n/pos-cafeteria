@@ -23,6 +23,7 @@ test('la migración crea todas las tablas desde cero', async () => {
     'devoluciones',
     'dispositivos',
     'grupos_modificadores',
+    'ingredientes',
     'movimientos',
     'operaciones_aplicadas',
     'productos',

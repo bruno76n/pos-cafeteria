@@ -21,6 +21,7 @@ export function describirError(error: {
     config: 'La configuración',
     categorias: `La categoría${nombre}`,
     gruposModificadores: `El grupo${nombre}`,
+    ingredientes: `El ingrediente${nombre}`,
     productos: `El producto${nombre}`,
     usuarios: `El usuario${nombre}`,
     dispositivos: `El dispositivo${nombre}`,

@@ -92,6 +92,20 @@ export const gruposModificadores = pgTable(
   (t) => [index().on(t.rev)],
 );
 
+export const ingredientes = pgTable(
+  'ingredientes',
+  {
+    id: text().primaryKey(),
+    nombre: text().notNull(),
+    grupo: text(),
+    orden: integer().notNull(),
+    disponible: boolean().notNull(),
+    borrado: boolean().notNull().default(false),
+    ...sync(),
+  },
+  (t) => [index().on(t.rev)],
+);
+
 export const productos = pgTable(
   'productos',
   {
@@ -241,6 +255,7 @@ export const TABLAS = {
   config,
   categorias,
   gruposModificadores,
+  ingredientes,
   productos,
   usuarios,
   dispositivos,
