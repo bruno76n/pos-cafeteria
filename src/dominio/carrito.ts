@@ -1,17 +1,10 @@
 import { redondear, type Centavos } from './dinero';
-import {
-  claveSeleccion,
-  gruposDelProducto,
-  modificadoresElegidos,
-  precioUnitario,
-  type Seleccion,
-} from './modificadores';
+import { claveSeleccion, gruposDelProducto, modificadoresElegidos } from './modificadores';
+import { precioBaseDe, precioUnitario, tamanoDe, type Eleccion } from './personalizacion';
 import type { Categoria, ConfigGeneral, GrupoModificadores, LineaVenta, Producto, RefUsuario } from './tipos';
 
-/** Línea del carrito: la copia que irá a la venta más la selección, para poder editarla. */
-export interface LineaCarrito extends LineaVenta {
-  seleccion: Seleccion;
-}
+/** Línea del carrito: la copia que irá a la venta más lo elegido, para poder editarla. */
+export interface LineaCarrito extends LineaVenta, Eleccion {}
 
 export interface DescuentoCarrito {
   tipo: 'porcentaje' | 'monto';
@@ -39,20 +32,25 @@ export interface Totales {
 
 export const carritoVacio = (): Carrito => ({ lineas: [], cliente: null, descuento: null });
 
-/** Arma una línea con copia de nombre, precios y modificadores (nunca referencias vivas al menú). */
+/**
+ * Arma una línea con copia de nombre, tamaño, precios y modificadores (nunca referencias vivas
+ * al menú). Sin tamaño elegido toma el primero del producto.
+ */
 export function crearLinea(params: {
   producto: Producto;
   categoria: Categoria | undefined;
   grupos: GrupoModificadores[];
-  seleccion?: Seleccion;
+  eleccion?: Partial<Eleccion>;
   cantidad?: number;
   nota?: string | null;
   id?: string;
 }): LineaCarrito {
   const { producto, categoria, cantidad = 1 } = params;
-  const seleccion = params.seleccion ?? {};
+  const seleccion = params.eleccion?.seleccion ?? {};
+  const tamano = tamanoDe(producto, params.eleccion?.tamanoId ?? producto.tamanos[0]?.id ?? null);
+  const precioBase = precioBaseDe(producto, tamano?.id ?? null);
   const modificadores = modificadoresElegidos(gruposDelProducto(producto, params.grupos), seleccion);
-  const unitario = precioUnitario(producto.precio, modificadores);
+  const unitario = precioUnitario(precioBase, modificadores);
   const nota = params.nota?.trim() || null;
   return {
     id: params.id ?? crypto.randomUUID(),
@@ -60,12 +58,14 @@ export function crearLinea(params: {
     nombre: producto.nombre,
     categoriaId: producto.categoriaId,
     categoriaNombre: categoria?.nombre ?? '',
-    precioBase: producto.precio,
+    precioBase,
+    ...(tamano ? { tamano: { nombre: tamano.nombre, precio: tamano.precio } } : {}),
     modificadores,
     precioUnitario: unitario,
     cantidad,
     nota,
     importe: unitario * cantidad,
+    tamanoId: tamano?.id ?? null,
     seleccion,
   };
 }
@@ -76,10 +76,11 @@ const conCantidad = (linea: LineaCarrito, cantidad: number): LineaCarrito => ({
   importe: linea.precioUnitario * cantidad,
 });
 
-/** Mismo producto, mismas opciones, mismo precio y sin nota. */
+/** Mismo producto, tamaño y opciones, mismo precio y sin nota. */
 function sonIdenticas(a: LineaCarrito, b: LineaCarrito): boolean {
   return (
     a.productoId === b.productoId &&
+    a.tamanoId === b.tamanoId &&
     a.nota === null &&
     b.nota === null &&
     a.precioUnitario === b.precioUnitario &&
@@ -200,7 +201,7 @@ export function calcularTotales(
   };
 }
 
-/** Líneas listas para guardarse en la venta (sin la selección interna). */
+/** Líneas listas para guardarse en la venta (sin lo elegido, que solo sirve para editar). */
 export function lineasParaVenta(carrito: Carrito): LineaVenta[] {
-  return carrito.lineas.map(({ seleccion: _seleccion, ...linea }) => linea);
+  return carrito.lineas.map(({ seleccion: _seleccion, tamanoId: _tamanoId, ...linea }) => linea);
 }

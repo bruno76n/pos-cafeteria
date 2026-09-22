@@ -22,10 +22,9 @@ const cafes = categoriasPrueba.find((c) => c.id === 'cafes');
 const postres = categoriasPrueba.find((c) => c.id === 'postres');
 const latte = productoPrueba('latte');
 const brownie = productoPrueba('brownie');
-const seleccionLatte = {
-  ...seleccionPorDefecto(gruposDelProducto(latte, gruposPrueba)),
-  tamano: ['mediano'],
-  leche: ['almendra'],
+const eleccionLatte = {
+  tamanoId: 'mediano',
+  seleccion: { ...seleccionPorDefecto(gruposDelProducto(latte, gruposPrueba)), leche: ['almendra'] },
 };
 
 const lineaLatte = (cantidad = 1) =>
@@ -33,7 +32,7 @@ const lineaLatte = (cantidad = 1) =>
     producto: latte,
     categoria: cafes,
     grupos: gruposPrueba,
-    seleccion: seleccionLatte,
+    eleccion: eleccionLatte,
     cantidad,
   });
 const lineaBrownie = () => crearLinea({ producto: brownie, categoria: postres, grupos: gruposPrueba });
@@ -48,19 +47,35 @@ const ivaNoIncluido = { ...configPrueba.ventas, preciosIncluyenIVA: false };
 const diezPorCiento = { tipo: 'porcentaje' as const, valor: 10, motivo: null, autorizadoPor: null };
 
 describe('líneas', () => {
-  test('la línea copia nombre, categoría, precios y modificadores', () => {
+  test('la línea copia nombre, categoría, tamaño, precios y modificadores', () => {
     const l = lineaLatte(2);
     expect(l).toMatchObject({
       productoId: 'latte',
       nombre: 'Latte',
       categoriaNombre: 'Cafés',
-      precioBase: 6500,
+      precioBase: 7500,
+      tamano: { nombre: 'Mediano 16 oz', precio: 7500 },
       precioUnitario: 8500,
       cantidad: 2,
       importe: 17000,
       nota: null,
     });
-    expect(l.modificadores.map((m) => m.opcion)).toEqual(['Mediano 16 oz', 'Almendra']);
+    expect(l.modificadores.map((m) => m.opcion)).toEqual(['Almendra']);
+  });
+
+  test('sin tamaño elegido toma el primero; sin tamaños usa el precio base', () => {
+    const l = crearLinea({ producto: latte, categoria: cafes, grupos: gruposPrueba });
+    expect(l).toMatchObject({ tamanoId: 'chico', tamano: { nombre: 'Chico 12 oz' }, precioUnitario: 6500 });
+    const b = lineaBrownie();
+    expect(b).toMatchObject({ tamanoId: null, precioBase: 4500, precioUnitario: 4500 });
+    expect(b).not.toHaveProperty('tamano');
+  });
+
+  test('las líneas para la venta no llevan lo elegido', () => {
+    const [l] = lineasParaVenta({ ...carritoVacio(), lineas: [lineaLatte()] });
+    expect(l).not.toHaveProperty('tamanoId');
+    expect(l).not.toHaveProperty('seleccion');
+    expect(l).toHaveProperty('tamano');
   });
 
   test('tocar dos veces un producto sin modificadores suma a la misma línea', () => {
@@ -77,7 +92,7 @@ describe('líneas', () => {
         producto: latte,
         categoria: cafes,
         grupos: gruposPrueba,
-        seleccion: { tamano: ['grande'] },
+        eleccion: { tamanoId: 'grande' },
       }),
     );
     c = agregarLinea(
@@ -86,7 +101,7 @@ describe('líneas', () => {
         producto: latte,
         categoria: cafes,
         grupos: gruposPrueba,
-        seleccion: seleccionLatte,
+        eleccion: eleccionLatte,
         nota: 'sin espuma',
       }),
     );
@@ -117,7 +132,7 @@ describe('líneas', () => {
         producto: latte,
         categoria: cafes,
         grupos: gruposPrueba,
-        seleccion: { tamano: ['grande'] },
+        eleccion: { tamanoId: 'grande' },
         cantidad: 2,
       }),
     );

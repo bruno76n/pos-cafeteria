@@ -7,8 +7,8 @@ import { Interruptor } from '@/componentes/Interruptor';
 import { Pantalla } from '@/componentes/Pantalla';
 import { useCategorias, useProductos } from '@/datos/consultas';
 import { cargarMenuDeEjemplo, guardar, guardarVarios } from '@/datos/escrituras';
-import { formatearDinero } from '@/dominio/dinero';
 import { mover } from '@/dominio/orden';
+import { textoPrecio } from '@/dominio/personalizacion';
 import { coincide } from '@/dominio/texto';
 import { useUsuarioActivo } from '@/estado/sesion';
 
@@ -111,7 +111,7 @@ export function Productos() {
                       {categoria(p.categoriaId)?.nombre ?? 'Sin categoría'}
                     </span>
                   </span>
-                  <span className="cifras w-24 text-right font-semibold">{formatearDinero(p.precio)}</span>
+                  <span className="cifras w-32 text-right font-semibold">{textoPrecio(p)}</span>
                   <span className="flex items-center gap-2 text-etiqueta text-grafito-suave">
                     Disponible
                     <Interruptor

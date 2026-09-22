@@ -175,7 +175,7 @@ describe('inicializarNegocio', () => {
     });
     expect(await bd.usuarios.count()).toBe(1);
     expect(await bd.productos.count()).toBe(28);
-    expect(await bd.outbox.count()).toBe(2 + 5 + 5 + 28);
+    expect(await bd.outbox.count()).toBe(2 + 5 + 4 + 28);
   });
 
   test('sin menú de ejemplo', async () => {

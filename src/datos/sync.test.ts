@@ -171,6 +171,7 @@ describe('push', () => {
         disponible: true,
         orden: i,
         gruposIds: [],
+        tamanos: [],
       });
     }
     await motor.push();

@@ -1,13 +1,13 @@
 import { Search, X } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
-import { formatearDinero } from '@/dominio/dinero';
+import { textoPrecio } from '@/dominio/personalizacion';
 import { coincide } from '@/dominio/texto';
 import type { Categoria, Producto } from '@/dominio/tipos';
 
 const PULSACION_LARGA_MS = 600;
 
 /**
- * Botón de producto: nombre, precio y franja del color de su categoría. Con `alMantener`,
+ * Botón de producto: nombre, precio ("Desde $55.00" si tiene tamaños) y franja del color de su categoría. Con `alMantener`,
  * una pulsación larga (o clic secundario) llama a esa acción en lugar de agregar.
  */
 export function BotonProducto({
@@ -70,7 +70,7 @@ export function BotonProducto({
         )}
       </span>
       <span className="cifras text-grafito-suave">
-        {producto.disponible ? formatearDinero(producto.precio) : 'No disponible'}
+        {producto.disponible ? textoPrecio(producto) : 'No disponible'}
       </span>
     </button>
   );

@@ -29,6 +29,7 @@ import {
 import { formatearDinero } from '@/dominio/dinero';
 import { formatearFechaHora } from '@/dominio/fechas';
 import { NOMBRE_ESTADO } from '@/dominio/historial';
+import { nombreLinea } from '@/dominio/personalizacion';
 import type { Devolucion, MetodoPago, Venta } from '@/dominio/tipos';
 import { useAutorizar } from '@/estado/autorizacion';
 import { useDispositivoActual } from '@/estado/dispositivo';
@@ -159,14 +160,14 @@ function DialogoDevolucion({
             return (
               <li key={l.id} className="flex items-center gap-3 border-b border-linea py-2">
                 <span className="flex-1">
-                  <span className="font-semibold">{l.nombre}</span>
+                  <span className="font-semibold">{nombreLinea(l)}</span>
                   <span className="ml-2 text-etiqueta text-grafito-suave">
                     {disponible} de {l.cantidad} por devolver · {formatearDinero(l.precioUnitario)} c/u
                   </span>
                 </span>
                 <Boton
                   className="w-12 px-0"
-                  aria-label={`Devolver uno menos de ${l.nombre}`}
+                  aria-label={`Devolver uno menos de ${nombreLinea(l)}`}
                   disabled={n <= 0}
                   onClick={() => cambiarCantidad(l.id, n - 1)}
                 >
@@ -174,13 +175,13 @@ function DialogoDevolucion({
                 </Boton>
                 <span
                   className="cifras w-8 text-center text-producto font-semibold"
-                  aria-label={`${l.nombre}: ${n}`}
+                  aria-label={`${nombreLinea(l)}: ${n}`}
                 >
                   {n}
                 </span>
                 <Boton
                   className="w-12 px-0"
-                  aria-label={`Devolver uno más de ${l.nombre}`}
+                  aria-label={`Devolver uno más de ${nombreLinea(l)}`}
                   disabled={n >= disponible}
                   onClick={() => cambiarCantidad(l.id, n + 1)}
                 >

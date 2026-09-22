@@ -105,6 +105,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 14.1 | hecho | GET /api/tickets/:id sin token (solo esa venta por su UUID + datos del negocio para dibujarla; 404 si no existe) con pruebas; opción 'QR con el ticket digital' en Configuración › Ticket; QR nativo en ESC/POS y SVG en HTML; página pública /t/:id fuera del guardián; e2e con un navegador sin sesión.
 14.2 | hecho | Pulsación larga (600 ms) o clic secundario en un producto de Nueva venta abre 'Marcar como no disponible/disponible'; requiere crearProductos o autorización; los no disponibles ya no usan disabled (aria-disabled) para poder reactivarlos así; e2e con encargada y cajero.
 14.3 | hecho | Tema oscuro con los mismos tokens (valores alternos en :root[data-tema='oscuro'], contrastes ≥ 5:1); opción Automático/Claro/Oscuro por dispositivo en Configuración › Dispositivo (meta local, automático sigue al sistema); fondo de hojas neutro; el ticket sigue en papel blanco; e2e.
+15.1 | hecho | Tamaños por producto (`producto.tamanos`: id, nombre, precio; el primero viene elegido). Sin tamaños se usa el precio base; con tamaños el campo Precio se oculta. Sección Tamaños en el producto: nombre libre, precio, subir/bajar, quitar, agregar y "Copiar tamaños de…" (copia con ids nuevos). La hoja de venta abre con tamaños y muestra el precio del tamaño; la cuadrícula y la lista de productos dicen "Desde $XX". La línea guarda `tamano` { nombre, precio } y `precioBase` = precio del tamaño; carrito, ticket y devoluciones muestran "Latte Mediano 16 oz". Migración 0001: columna `tamanos` y, si existe un grupo "Tamaño", sus opciones pasan a tamaños de cada producto (precio base + extra, la opción por defecto primero), se quita de gruposIds y el grupo queda borrado (sube rev para que llegue a las tablets). Dexie v2 rellena `tamanos: []`. Menú de ejemplo sin el grupo Tamaño (mismos precios en tamaños). Pruebas: personalizacion.test, migración, actualización de Dexie, compatibilidad de esquemas; e2e de venta ajustada al nuevo texto de la línea.
 
 ## Decisiones
 - TypeScript 6.0 y no 7: typescript-eslint aún exige <6.1.
@@ -129,6 +130,8 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - ticket.mostrarQR es opcional en el esquema para que las configuraciones ya guardadas sigan siendo válidas.
 - A pedido de Bruno: marco (barra superior, riel y barra inferior) en negro y fondo de la app blanco; las tarjetas llevan borde fino para separarse del fondo.
 - Tema claro por defecto (antes automático): con el sistema en modo oscuro la app se veía oscura; el oscuro queda solo si se elige en Configuración › Dispositivo.
+- Tamaños dentro del producto y no como grupo de modificadores: cada producto define los suyos (nombre libre y precio absoluto). Agregar, quitar o copiar tamaños y cambiar su precio pide `modificarPrecios` (o autorización); el nombre y el orden solo `crearProductos`.
+- Ventas anteriores a los tamaños no traen `tamano`: se muestran como antes (el tamaño viene dentro de los modificadores).
 
 ## Para probar a mano (Bruno)
 

@@ -1,4 +1,3 @@
-import type { Centavos } from './dinero';
 import type { GrupoModificadores, LineaVenta, Producto } from './tipos';
 
 /** Opciones elegidas por grupo: grupoId → ids de opción. */
@@ -104,11 +103,6 @@ export function modificadoresElegidos(
       .filter((o) => ids.includes(o.id))
       .map((o) => ({ grupo: g.nombre, opcion: o.nombre, precioExtra: o.precioExtra }));
   });
-}
-
-/** precioUnitario = precioBase + Σ precioExtra */
-export function precioUnitario(precioBase: Centavos, modificadores: ModificadorElegido[]): Centavos {
-  return modificadores.reduce((suma, m) => suma + m.precioExtra, precioBase);
 }
 
 /** "Mediano 16 oz, Almendra, 1 shot extra" */

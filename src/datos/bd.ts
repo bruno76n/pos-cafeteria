@@ -1,6 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import type { Carrito } from '@/dominio/carrito';
-import type { Operacion, RegistrosPorTabla, RespuestaAcceso, TablaSync } from '@/dominio/tipos';
+import type { Operacion, Producto, RegistrosPorTabla, RespuestaAcceso, TablaSync } from '@/dominio/tipos';
 
 // Base local (IndexedDB): fuente de verdad de la tablet. Mismas tablas que el servidor
 // más la cola de salida (outbox), metadatos y errores de sincronización.
@@ -90,6 +90,17 @@ export class BaseLocal extends Dexie {
       meta: 'clave',
       erroresSync: 'id, registroId',
     });
+    // Tamaños por producto: los productos guardados antes no traen el campo.
+    this.version(2)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table('productos')
+          .toCollection()
+          .modify((p: Partial<Producto>) => {
+            p.tamanos ??= [];
+          }),
+      );
   }
 
   tabla<T extends TablaSync>(nombre: T): TablasSync[T] {

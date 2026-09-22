@@ -133,18 +133,32 @@ export const esquemaGrupoModificadores = z
   })
   .refine((g) => g.min <= g.max, { message: 'El mínimo no puede ser mayor que el máximo', path: ['min'] });
 
-export const esquemaProducto = z.object({
+/** Tamaño propio de un producto. El primero es el que viene elegido en la venta. */
+export const esquemaTamano = z.object({
   id,
   nombre: z.string().trim().min(1),
-  descripcion: z.string(),
-  categoriaId: id,
   precio: centavosPositivos,
-  imagen: z.string().startsWith('data:image/').nullable(),
-  disponible: z.boolean(),
-  orden: z.number().int(),
-  gruposIds: z.array(id),
-  ...sincronizable,
 });
+
+export const esquemaProducto = z
+  .object({
+    id,
+    nombre: z.string().trim().min(1),
+    descripcion: z.string(),
+    categoriaId: id,
+    /** Precio base; si hay tamaños, el precio sale del tamaño elegido. */
+    precio: centavosPositivos,
+    imagen: z.string().startsWith('data:image/').nullable(),
+    disponible: z.boolean(),
+    orden: z.number().int(),
+    gruposIds: z.array(id),
+    tamanos: z.array(esquemaTamano).default([]),
+    ...sincronizable,
+  })
+  .refine((p) => new Set(p.tamanos.map((t) => t.nombre.toLowerCase())).size === p.tamanos.length, {
+    message: 'Hay dos tamaños con el mismo nombre',
+    path: ['tamanos'],
+  });
 
 export const esquemaUsuario = z.object({
   id,
@@ -237,7 +251,10 @@ export const esquemaLineaVenta = z.object({
   nombre: z.string(),
   categoriaId: id,
   categoriaNombre: z.string(),
+  /** Precio del tamaño elegido, o el precio base del producto. */
   precioBase: centavosPositivos,
+  /** Copia del tamaño elegido (ventas anteriores a los tamaños no lo traen). */
+  tamano: z.object({ nombre: z.string(), precio: centavosPositivos }).optional(),
   modificadores: z.array(z.object({ grupo: z.string(), opcion: z.string(), precioExtra: centavosPositivos })),
   precioUnitario: centavosPositivos,
   cantidad: z.number().int().positive(),

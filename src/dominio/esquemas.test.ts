@@ -96,6 +96,41 @@ const venta: Venta = {
   actualizadoEn: ahora,
 };
 
+const productoValido = {
+  id: 'p',
+  nombre: 'Latte',
+  descripcion: '',
+  categoriaId: 'c',
+  precio: 6500,
+  imagen: null,
+  disponible: true,
+  orden: 1,
+  gruposIds: ['g'],
+  actualizadoEn: ahora,
+};
+
+describe('compatibilidad con datos anteriores', () => {
+  test('un producto sin tamaños (guardado antes) queda con la lista vacía', () => {
+    expect(esquemaProducto.parse(productoValido).tamanos).toEqual([]);
+  });
+  test('una venta anterior a los tamaños sigue siendo válida', () => {
+    expect(esquemaVenta.safeParse(venta).success).toBe(true);
+  });
+  test('una línea nueva guarda la copia del tamaño', () => {
+    const [linea] = venta.lineas;
+    const conTamano = {
+      ...linea!,
+      precioBase: 7500,
+      tamano: { nombre: 'Mediano', precio: 7500 },
+      modificadores: [],
+    };
+    expect(esquemaVenta.parse({ ...venta, lineas: [conTamano] }).lineas[0]?.tamano).toEqual({
+      nombre: 'Mediano',
+      precio: 7500,
+    });
+  });
+});
+
 describe('esquemas válidos', () => {
   test.each([
     ['config', esquemaConfig, config],
@@ -270,6 +305,16 @@ describe('esquemas inválidos', () => {
         actualizadoEn: ahora,
       }).success,
     ).toBe(false);
+  });
+  test('dos tamaños con el mismo nombre', () => {
+    const r = esquemaProducto.safeParse({
+      ...productoValido,
+      tamanos: [
+        { id: 't1', nombre: 'Grande', precio: 7500 },
+        { id: 't2', nombre: 'grande', precio: 8500 },
+      ],
+    });
+    expect(r.error?.issues[0]?.message).toBe('Hay dos tamaños con el mismo nombre');
   });
   test('config con permiso faltante', () => {
     const { vender: _, ...sinVender } = todos;

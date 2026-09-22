@@ -22,6 +22,7 @@ export type ConfigTicket = Pick<ConfigGeneral, 'negocio' | 'ticket' | 'ventas' |
 export type Categoria = z.infer<typeof e.esquemaCategoria>;
 export type OpcionModificador = z.infer<typeof e.esquemaOpcionModificador>;
 export type GrupoModificadores = z.infer<typeof e.esquemaGrupoModificadores>;
+export type Tamano = z.infer<typeof e.esquemaTamano>;
 export type Producto = z.infer<typeof e.esquemaProducto>;
 export type Usuario = z.infer<typeof e.esquemaUsuario>;
 export type Dispositivo = z.infer<typeof e.esquemaDispositivo>;

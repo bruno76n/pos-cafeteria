@@ -9,16 +9,25 @@ import {
   alternarOpcion,
   gruposDelProducto,
   indicacionGrupo,
-  modificadoresElegidos,
-  precioUnitario,
   puedeAgregarOpcion,
   seleccionPorDefecto,
-  validarSeleccion,
   type Seleccion,
 } from '@/dominio/modificadores';
+import { precioBaseDe, tamanoInicial, validarEleccion } from '@/dominio/personalizacion';
 import type { Categoria, GrupoModificadores, Producto } from '@/dominio/tipos';
 
-/** Opciones del producto (con las por defecto ya elegidas), nota, cantidad y "Agregar $85.00". */
+const clasesOpcion = (elegida: boolean) =>
+  `flex min-h-14 items-center gap-2 rounded-boton border px-4 font-semibold active:scale-[0.98] disabled:opacity-40 ${
+    elegida ? 'border-grafito bg-grafito text-papel' : 'border-linea bg-papel text-grafito'
+  }`;
+
+const clasesPrecioOpcion = (elegida: boolean) =>
+  `cifras font-normal ${elegida ? 'text-papel/80' : 'text-grafito-suave'}`;
+
+/**
+ * Tamaño → modificadores (con los por defecto ya elegidos) → nota → cantidad, y "Agregar $85.00"
+ * o lo que falta.
+ */
 export function HojaPersonalizacion({
   producto,
   categoria,
@@ -36,25 +45,25 @@ export function HojaPersonalizacion({
   alCerrar: () => void;
 }) {
   const delProducto = gruposDelProducto(producto, grupos);
+  const [tamanoId, setTamanoId] = useState(() => linea?.tamanoId ?? tamanoInicial(producto));
   const [seleccion, setSeleccion] = useState<Seleccion>(
     () => linea?.seleccion ?? seleccionPorDefecto(delProducto),
   );
   const [nota, setNota] = useState(linea?.nota ?? '');
   const [cantidad, setCantidad] = useState(linea?.cantidad ?? 1);
 
-  const errores = validarSeleccion(delProducto, seleccion);
-  const unitario = precioUnitario(producto.precio, modificadoresElegidos(delProducto, seleccion));
+  const eleccion = { tamanoId, seleccion };
+  const errores = validarEleccion(producto, grupos, eleccion);
+  const nueva = crearLinea({ producto, categoria, grupos, eleccion, cantidad, nota });
   const textoAccion = linea ? 'Guardar' : 'Agregar';
-
-  function terminar() {
-    alTerminar(crearLinea({ producto, categoria, grupos, seleccion, cantidad, nota }));
-  }
 
   return (
     <Hoja
       titulo={producto.nombre}
       encabezado={
-        <span className="cifras text-producto text-grafito-suave">{formatearDinero(producto.precio)}</span>
+        <span className="cifras text-producto text-grafito-suave">
+          {formatearDinero(precioBaseDe(producto, tamanoId))}
+        </span>
       }
       alCerrar={alCerrar}
       pie={
@@ -80,11 +89,11 @@ export function HojaPersonalizacion({
             tamano="enorme"
             className="ml-auto min-w-64"
             disabled={errores.length > 0}
-            onClick={terminar}
+            onClick={() => alTerminar(nueva)}
           >
-            {errores[0]?.mensaje ?? (
+            {errores[0] ?? (
               <>
-                {textoAccion} <span className="cifras">{formatearDinero(unitario * cantidad)}</span>
+                {textoAccion} <span className="cifras">{formatearDinero(nueva.importe)}</span>
               </>
             )}
           </Boton>
@@ -92,6 +101,27 @@ export function HojaPersonalizacion({
       }
     >
       <div className="flex flex-col gap-5">
+        {producto.tamanos.length > 0 && (
+          <fieldset className="flex flex-col gap-2">
+            <legend className="mb-2 text-producto font-semibold">Tamaño</legend>
+            <div className="flex flex-wrap gap-2">
+              {producto.tamanos.map((t) => (
+                <button
+                  key={t.id}
+                  type="button"
+                  aria-pressed={t.id === tamanoId}
+                  onClick={() => setTamanoId(t.id)}
+                  className={clasesOpcion(t.id === tamanoId)}
+                >
+                  {t.nombre}
+                  <span className={clasesPrecioOpcion(t.id === tamanoId)}>
+                    {formatearDineroCorto(t.precio)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        )}
         {delProducto.map((g) => {
           const elegidas = seleccion[g.id] ?? [];
           const lleno = !puedeAgregarOpcion(g, seleccion);
@@ -110,17 +140,11 @@ export function HojaPersonalizacion({
                       aria-pressed={elegida}
                       disabled={!o.disponible || (lleno && !elegida)}
                       onClick={() => setSeleccion((s) => alternarOpcion(g, s, o.id))}
-                      className={`flex min-h-14 items-center gap-2 rounded-boton border px-4 font-semibold active:scale-[0.98] disabled:opacity-40 ${
-                        elegida
-                          ? 'border-grafito bg-grafito text-papel'
-                          : 'border-linea bg-papel text-grafito'
-                      }`}
+                      className={clasesOpcion(elegida)}
                     >
                       {o.nombre}
                       {o.precioExtra > 0 && (
-                        <span
-                          className={`cifras font-normal ${elegida ? 'text-papel/80' : 'text-grafito-suave'}`}
-                        >
+                        <span className={clasesPrecioOpcion(elegida)}>
                           +{formatearDineroCorto(o.precioExtra)}
                         </span>
                       )}

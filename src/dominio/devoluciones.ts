@@ -1,4 +1,5 @@
 import { redondear, type Centavos } from './dinero';
+import { nombreLinea } from './personalizacion';
 import type { Devolucion, EstadoVenta, Turno, Venta } from './tipos';
 
 export interface LineaADevolver {
@@ -44,7 +45,7 @@ export function calcularReembolso(
     if (!linea) return { ok: false, error: 'La línea ya no existe en la venta.' };
     const disponible = linea.cantidad - (previas.get(linea.id) ?? 0);
     if (!Number.isInteger(s.cantidad) || s.cantidad > disponible) {
-      return { ok: false, error: `Solo quedan ${disponible} de ${linea.nombre} por devolver.` };
+      return { ok: false, error: `Solo quedan ${disponible} de ${nombreLinea(linea)} por devolver.` };
     }
     brutos.push({ lineaId: linea.id, cantidad: s.cantidad, bruto: linea.precioUnitario * s.cantidad });
   }

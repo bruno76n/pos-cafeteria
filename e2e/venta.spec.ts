@@ -67,18 +67,20 @@ test('abrir caja, armar venta con modificadores y descuento, recargar y el carri
   await entrarCon(page, PIN.encargada);
   await expect(page).toHaveURL(/\/venta$/);
   await expect(panel.getByPlaceholder('Nombre del cliente')).toHaveValue('Luis');
-  await expect(panel).toContainText('Mediano 16 oz, Almendra');
+  await expect(panel).toContainText('Latte Mediano 16 oz');
+  await expect(panel).toContainText('Almendra');
   await expect(panel).toContainText('Nota: calientito');
   await expect(panel).toContainText('Descuento 10%');
   await expect(panel.getByRole('button', { name: /Cobrar/ })).toHaveText('Cobrar$193.50');
 
   // editar la línea reabre la hoja con lo elegido
-  await panel.getByRole('button', { name: 'Editar Latte' }).click();
+  await panel.getByRole('button', { name: 'Editar Latte Mediano 16 oz' }).click();
   const hoja = page.getByRole('dialog', { name: 'Latte' });
   await expect(hoja.getByRole('button', { name: /Almendra/ })).toHaveAttribute('aria-pressed', 'true');
   await hoja.getByRole('button', { name: /Grande 20 oz/ }).click();
   await hoja.getByRole('button', { name: /^Guardar/ }).click();
-  await expect(panel).toContainText('Grande 20 oz, Almendra');
+  await expect(panel).toContainText('Latte Grande 20 oz');
+  await expect(panel).toContainText('Almendra');
 
   await panel.getByRole('button', { name: 'Vaciar' }).click();
   await expect(page.getByRole('dialog', { name: '¿Vaciar la venta?' })).toContainText(

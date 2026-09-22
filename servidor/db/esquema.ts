@@ -22,6 +22,7 @@ import type {
   Pago,
   RefUsuario,
   ResumenTurno,
+  Tamano,
   Venta,
 } from '../../src/dominio/tipos';
 
@@ -103,6 +104,7 @@ export const productos = pgTable(
     disponible: boolean().notNull(),
     orden: integer().notNull(),
     gruposIds: jsonb().$type<string[]>().notNull(),
+    tamanos: jsonb().$type<Tamano[]>().notNull().default([]),
     borrado: boolean().notNull().default(false),
     ...sync(),
   },

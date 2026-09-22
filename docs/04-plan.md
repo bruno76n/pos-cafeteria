@@ -140,3 +140,14 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 14.1 QR en el ticket con enlace a un ticket público `/t/:id` (ruta `GET /api/tickets/:id` sin token que solo devuelve esa venta por su UUID, con pruebas).
 - [x] 14.2 Marcar un producto como no disponible desde Nueva venta con pulsación larga (requiere `crearProductos`).
 - [x] 14.3 Tema oscuro con los mismos tokens.
+
+## Fase 15: Tamaños por producto, ingredientes y crepas
+
+- [x] 15.1 Tamaños por producto (nombre libre y precio, reordenar, quitar, "Copiar tamaños de…"); sin tamaños se usa el precio base. Migración del grupo global "Tamaño" a tamaños de cada producto. → La venta toma el precio del tamaño; "Desde $XX" en la cuadrícula.
+- [ ] 15.2 Catálogo de ingredientes (Menú › Ingredientes): alta rápida, editar, reordenar, disponible y eliminar; nombre y grupo opcional. → Sincroniza como el resto del catálogo.
+- [ ] 15.3 Productos que se arman con ingredientes: incluidos por tamaño, precio por ingrediente extra, mínimo/máximo y permitidos (todos o selección por grupo). → Se guarda y valida.
+- [ ] 15.4 "Opciones adicionales" en el producto: casillas con todos los grupos de extras/modificadores, en orden. → Un extra recién creado se asigna desde el producto.
+- [ ] 15.5 Venta: hoja Tamaño → Ingredientes → Extras → Nota → Cantidad, contador de extras, máximo y no disponibles; fusión de líneas idénticas; texto de la línea en carrito y ticket. → e2e.
+- [ ] 15.6 Cálculo en centavos (tamaño o base + extras de ingredientes + modificadores) con los casos obligatorios. → Pruebas unitarias.
+- [ ] 15.7 Datos: tabla de ingredientes y campos nuevos en servidor, Dexie y sync; migraciones; copia en las ventas sin romper las pasadas; precios solo con `modificarPrecios`. → Pruebas de API y de datos.
+- [ ] 15.8 Cierre: e2e de crepa y bebida con tamaños, docs, menú de ejemplo con Crepas e ingredientes, sin código muerto. → typecheck, lint, test y e2e.

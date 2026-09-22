@@ -58,27 +58,13 @@
   ],
   "gruposModificadores": [
     {
-      "id": "tamano",
-      "nombre": "Tamaño",
-      "tipo": "unico",
-      "obligatorio": true,
-      "min": 1,
-      "max": 1,
-      "orden": 1,
-      "opciones": [
-        { "id": "chico", "nombre": "Chico 12 oz", "precioExtra": 0, "porDefecto": true, "disponible": true },
-        { "id": "mediano", "nombre": "Mediano 16 oz", "precioExtra": 1000, "porDefecto": false, "disponible": true },
-        { "id": "grande", "nombre": "Grande 20 oz", "precioExtra": 2000, "porDefecto": false, "disponible": true }
-      ]
-    },
-    {
       "id": "leche",
       "nombre": "Leche",
       "tipo": "unico",
       "obligatorio": true,
       "min": 1,
       "max": 1,
-      "orden": 2,
+      "orden": 1,
       "opciones": [
         { "id": "entera", "nombre": "Entera", "precioExtra": 0, "porDefecto": true, "disponible": true },
         { "id": "deslactosada", "nombre": "Deslactosada", "precioExtra": 500, "porDefecto": false, "disponible": true },
@@ -95,7 +81,7 @@
       "obligatorio": false,
       "min": 0,
       "max": 1,
-      "orden": 3,
+      "orden": 2,
       "opciones": [
         { "id": "un-shot", "nombre": "1 shot extra", "precioExtra": 1500, "porDefecto": false, "disponible": true },
         { "id": "dos-shots", "nombre": "2 shots extra", "precioExtra": 3000, "porDefecto": false, "disponible": true }
@@ -108,7 +94,7 @@
       "obligatorio": false,
       "min": 0,
       "max": 2,
-      "orden": 4,
+      "orden": 3,
       "opciones": [
         { "id": "vainilla", "nombre": "Vainilla", "precioExtra": 1000, "porDefecto": false, "disponible": true },
         { "id": "caramelo", "nombre": "Caramelo", "precioExtra": 1000, "porDefecto": false, "disponible": true },
@@ -123,7 +109,7 @@
       "obligatorio": false,
       "min": 0,
       "max": 3,
-      "orden": 5,
+      "orden": 4,
       "opciones": [
         { "id": "crema-batida", "nombre": "Crema batida", "precioExtra": 1000, "porDefecto": false, "disponible": true },
         { "id": "canela", "nombre": "Canela", "precioExtra": 0, "porDefecto": false, "disponible": true },
@@ -133,37 +119,33 @@
     }
   ],
   "productos": [
-    { "id": "espresso", "nombre": "Espresso", "descripcion": "Shot doble de espresso", "categoriaId": "cafes", "precio": 4000, "gruposIds": ["extra-shot"], "orden": 1, "disponible": true },
-    { "id": "americano", "nombre": "Americano", "descripcion": "Espresso con agua caliente", "categoriaId": "cafes", "precio": 4500, "gruposIds": ["tamano", "extra-shot"], "orden": 2, "disponible": true },
-    { "id": "capuchino", "nombre": "Capuchino", "descripcion": "Espresso con leche y mucha espuma", "categoriaId": "cafes", "precio": 6200, "gruposIds": ["tamano", "leche", "extra-shot", "jarabes", "toppings"], "orden": 3, "disponible": true },
-    { "id": "latte", "nombre": "Latte", "descripcion": "Espresso con leche vaporizada", "categoriaId": "cafes", "precio": 6500, "gruposIds": ["tamano", "leche", "extra-shot", "jarabes", "toppings"], "orden": 4, "disponible": true },
-    { "id": "flat-white", "nombre": "Flat white", "descripcion": "Doble espresso con leche texturizada", "categoriaId": "cafes", "precio": 6200, "gruposIds": ["leche", "extra-shot"], "orden": 5, "disponible": true },
-    { "id": "moka", "nombre": "Moka", "descripcion": "Espresso, chocolate y leche", "categoriaId": "cafes", "precio": 7200, "gruposIds": ["tamano", "leche", "extra-shot", "toppings"], "orden": 6, "disponible": true },
-    { "id": "chai-latte", "nombre": "Chai latte", "descripcion": "Té chai especiado con leche", "categoriaId": "cafes", "precio": 6800, "gruposIds": ["tamano", "leche", "toppings"], "orden": 7, "disponible": true },
-    { "id": "chocolate-caliente", "nombre": "Chocolate caliente", "descripcion": "Chocolate de mesa con leche", "categoriaId": "cafes", "precio": 6000, "gruposIds": ["tamano", "leche", "toppings"], "orden": 8, "disponible": true },
-    { "id": "te", "nombre": "Té de la casa", "descripcion": "Manzanilla, verde o negro", "categoriaId": "cafes", "precio": 4000, "gruposIds": ["tamano"], "orden": 9, "disponible": true },
-
-    { "id": "iced-latte", "nombre": "Latte frío", "descripcion": "Espresso, leche y hielo", "categoriaId": "bebidas-frias", "precio": 7000, "gruposIds": ["tamano", "leche", "extra-shot", "jarabes"], "orden": 1, "disponible": true },
-    { "id": "cold-brew", "nombre": "Cold brew", "descripcion": "Café extraído en frío por 18 horas", "categoriaId": "bebidas-frias", "precio": 6500, "gruposIds": ["tamano"], "orden": 2, "disponible": true },
-    { "id": "frappe-cafe", "nombre": "Frappé de café", "descripcion": "Café, leche y hielo frapeado", "categoriaId": "bebidas-frias", "precio": 7800, "gruposIds": ["tamano", "leche", "toppings"], "orden": 3, "disponible": true },
-    { "id": "frappe-moka", "nombre": "Frappé de moka", "descripcion": "Café, chocolate, leche y hielo", "categoriaId": "bebidas-frias", "precio": 8200, "gruposIds": ["tamano", "leche", "toppings"], "orden": 4, "disponible": true },
-    { "id": "limonada", "nombre": "Limonada natural", "descripcion": "Con agua natural o mineral", "categoriaId": "bebidas-frias", "precio": 4500, "gruposIds": ["tamano"], "orden": 5, "disponible": true },
-    { "id": "agua", "nombre": "Agua embotellada", "descripcion": "600 ml", "categoriaId": "bebidas-frias", "precio": 2500, "gruposIds": [], "orden": 6, "disponible": true },
-
-    { "id": "croissant-jyq", "nombre": "Croissant de jamón y queso", "descripcion": "Horneado al momento", "categoriaId": "alimentos", "precio": 8500, "gruposIds": [], "orden": 1, "disponible": true },
-    { "id": "bagel", "nombre": "Bagel con queso crema", "descripcion": "Bagel tostado", "categoriaId": "alimentos", "precio": 6500, "gruposIds": [], "orden": 2, "disponible": true },
-    { "id": "sandwich-pavo", "nombre": "Sándwich de pavo", "descripcion": "Pan de caja, pavo, queso y vegetales", "categoriaId": "alimentos", "precio": 9500, "gruposIds": [], "orden": 3, "disponible": true },
-    { "id": "chapata-pollo", "nombre": "Chapata de pollo", "descripcion": "Pollo, aguacate y chipotle", "categoriaId": "alimentos", "precio": 11000, "gruposIds": [], "orden": 4, "disponible": true },
-    { "id": "molletes", "nombre": "Molletes", "descripcion": "Con frijoles, queso y pico de gallo", "categoriaId": "alimentos", "precio": 7500, "gruposIds": [], "orden": 5, "disponible": true },
-
-    { "id": "pay-queso", "nombre": "Pay de queso", "descripcion": "Rebanada", "categoriaId": "postres", "precio": 6000, "gruposIds": [], "orden": 1, "disponible": true },
-    { "id": "brownie", "nombre": "Brownie", "descripcion": "Chocolate con nuez", "categoriaId": "postres", "precio": 4500, "gruposIds": [], "orden": 2, "disponible": true },
-    { "id": "galleta", "nombre": "Galleta de chispas", "descripcion": "Chispas de chocolate", "categoriaId": "postres", "precio": 3000, "gruposIds": [], "orden": 3, "disponible": true },
-    { "id": "pan-platano", "nombre": "Pan de plátano", "descripcion": "Rebanada", "categoriaId": "postres", "precio": 5000, "gruposIds": [], "orden": 4, "disponible": true },
-    { "id": "rol-canela", "nombre": "Rol de canela", "descripcion": "Con glaseado", "categoriaId": "postres", "precio": 4800, "gruposIds": [], "orden": 5, "disponible": true },
-
-    { "id": "shot-extra", "nombre": "Shot de espresso", "descripcion": "Para agregar a cualquier bebida", "categoriaId": "extras", "precio": 1500, "gruposIds": [], "orden": 1, "disponible": true },
-    { "id": "crema-batida-extra", "nombre": "Crema batida", "descripcion": "Porción extra", "categoriaId": "extras", "precio": 1000, "gruposIds": [], "orden": 2, "disponible": true },
-    { "id": "cafe-grano", "nombre": "Café en grano 250 g", "descripcion": "Origen Chiapas", "categoriaId": "extras", "precio": 22000, "gruposIds": [], "orden": 3, "disponible": true }
+    { "id": "espresso", "nombre": "Espresso", "descripcion": "Shot doble de espresso", "categoriaId": "cafes", "precio": 4000, "gruposIds": ["extra-shot"], "orden": 1, "disponible": true, "tamanos": [] },
+    { "id": "americano", "nombre": "Americano", "descripcion": "Espresso con agua caliente", "categoriaId": "cafes", "precio": 4500, "gruposIds": ["extra-shot"], "orden": 2, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 4500 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 5500 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 6500 }] },
+    { "id": "capuchino", "nombre": "Capuchino", "descripcion": "Espresso con leche y mucha espuma", "categoriaId": "cafes", "precio": 6200, "gruposIds": ["leche", "extra-shot", "jarabes", "toppings"], "orden": 3, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 6200 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 7200 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 8200 }] },
+    { "id": "latte", "nombre": "Latte", "descripcion": "Espresso con leche vaporizada", "categoriaId": "cafes", "precio": 6500, "gruposIds": ["leche", "extra-shot", "jarabes", "toppings"], "orden": 4, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 6500 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 7500 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 8500 }] },
+    { "id": "flat-white", "nombre": "Flat white", "descripcion": "Doble espresso con leche texturizada", "categoriaId": "cafes", "precio": 6200, "gruposIds": ["leche", "extra-shot"], "orden": 5, "disponible": true, "tamanos": [] },
+    { "id": "moka", "nombre": "Moka", "descripcion": "Espresso, chocolate y leche", "categoriaId": "cafes", "precio": 7200, "gruposIds": ["leche", "extra-shot", "toppings"], "orden": 6, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 7200 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 8200 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 9200 }] },
+    { "id": "chai-latte", "nombre": "Chai latte", "descripcion": "Té chai especiado con leche", "categoriaId": "cafes", "precio": 6800, "gruposIds": ["leche", "toppings"], "orden": 7, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 6800 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 7800 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 8800 }] },
+    { "id": "chocolate-caliente", "nombre": "Chocolate caliente", "descripcion": "Chocolate de mesa con leche", "categoriaId": "cafes", "precio": 6000, "gruposIds": ["leche", "toppings"], "orden": 8, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 6000 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 7000 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 8000 }] },
+    { "id": "te", "nombre": "Té de la casa", "descripcion": "Manzanilla, verde o negro", "categoriaId": "cafes", "precio": 4000, "gruposIds": [], "orden": 9, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 4000 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 5000 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 6000 }] },
+    { "id": "iced-latte", "nombre": "Latte frío", "descripcion": "Espresso, leche y hielo", "categoriaId": "bebidas-frias", "precio": 7000, "gruposIds": ["leche", "extra-shot", "jarabes"], "orden": 1, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 7000 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 8000 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 9000 }] },
+    { "id": "cold-brew", "nombre": "Cold brew", "descripcion": "Café extraído en frío por 18 horas", "categoriaId": "bebidas-frias", "precio": 6500, "gruposIds": [], "orden": 2, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 6500 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 7500 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 8500 }] },
+    { "id": "frappe-cafe", "nombre": "Frappé de café", "descripcion": "Café, leche y hielo frapeado", "categoriaId": "bebidas-frias", "precio": 7800, "gruposIds": ["leche", "toppings"], "orden": 3, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 7800 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 8800 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 9800 }] },
+    { "id": "frappe-moka", "nombre": "Frappé de moka", "descripcion": "Café, chocolate, leche y hielo", "categoriaId": "bebidas-frias", "precio": 8200, "gruposIds": ["leche", "toppings"], "orden": 4, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 8200 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 9200 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 10200 }] },
+    { "id": "limonada", "nombre": "Limonada natural", "descripcion": "Con agua natural o mineral", "categoriaId": "bebidas-frias", "precio": 4500, "gruposIds": [], "orden": 5, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 4500 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 5500 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 6500 }] },
+    { "id": "agua", "nombre": "Agua embotellada", "descripcion": "600 ml", "categoriaId": "bebidas-frias", "precio": 2500, "gruposIds": [], "orden": 6, "disponible": true, "tamanos": [] },
+    { "id": "croissant-jyq", "nombre": "Croissant de jamón y queso", "descripcion": "Horneado al momento", "categoriaId": "alimentos", "precio": 8500, "gruposIds": [], "orden": 1, "disponible": true, "tamanos": [] },
+    { "id": "bagel", "nombre": "Bagel con queso crema", "descripcion": "Bagel tostado", "categoriaId": "alimentos", "precio": 6500, "gruposIds": [], "orden": 2, "disponible": true, "tamanos": [] },
+    { "id": "sandwich-pavo", "nombre": "Sándwich de pavo", "descripcion": "Pan de caja, pavo, queso y vegetales", "categoriaId": "alimentos", "precio": 9500, "gruposIds": [], "orden": 3, "disponible": true, "tamanos": [] },
+    { "id": "chapata-pollo", "nombre": "Chapata de pollo", "descripcion": "Pollo, aguacate y chipotle", "categoriaId": "alimentos", "precio": 11000, "gruposIds": [], "orden": 4, "disponible": true, "tamanos": [] },
+    { "id": "molletes", "nombre": "Molletes", "descripcion": "Con frijoles, queso y pico de gallo", "categoriaId": "alimentos", "precio": 7500, "gruposIds": [], "orden": 5, "disponible": true, "tamanos": [] },
+    { "id": "pay-queso", "nombre": "Pay de queso", "descripcion": "Rebanada", "categoriaId": "postres", "precio": 6000, "gruposIds": [], "orden": 1, "disponible": true, "tamanos": [] },
+    { "id": "brownie", "nombre": "Brownie", "descripcion": "Chocolate con nuez", "categoriaId": "postres", "precio": 4500, "gruposIds": [], "orden": 2, "disponible": true, "tamanos": [] },
+    { "id": "galleta", "nombre": "Galleta de chispas", "descripcion": "Chispas de chocolate", "categoriaId": "postres", "precio": 3000, "gruposIds": [], "orden": 3, "disponible": true, "tamanos": [] },
+    { "id": "pan-platano", "nombre": "Pan de plátano", "descripcion": "Rebanada", "categoriaId": "postres", "precio": 5000, "gruposIds": [], "orden": 4, "disponible": true, "tamanos": [] },
+    { "id": "rol-canela", "nombre": "Rol de canela", "descripcion": "Con glaseado", "categoriaId": "postres", "precio": 4800, "gruposIds": [], "orden": 5, "disponible": true, "tamanos": [] },
+    { "id": "shot-extra", "nombre": "Shot de espresso", "descripcion": "Para agregar a cualquier bebida", "categoriaId": "extras", "precio": 1500, "gruposIds": [], "orden": 1, "disponible": true, "tamanos": [] },
+    { "id": "crema-batida-extra", "nombre": "Crema batida", "descripcion": "Porción extra", "categoriaId": "extras", "precio": 1000, "gruposIds": [], "orden": 2, "disponible": true, "tamanos": [] },
+    { "id": "cafe-grano", "nombre": "Café en grano 250 g", "descripcion": "Origen Chiapas", "categoriaId": "extras", "precio": 22000, "gruposIds": [], "orden": 3, "disponible": true, "tamanos": [] }
   ]
 }

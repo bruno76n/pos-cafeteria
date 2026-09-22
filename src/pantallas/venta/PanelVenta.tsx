@@ -6,7 +6,7 @@ import { Confirmar } from '@/componentes/Confirmar';
 import { Hoja } from '@/componentes/Hoja';
 import { cantidadDeProductos, type LineaCarrito, type Totales } from '@/dominio/carrito';
 import { formatearDinero } from '@/dominio/dinero';
-import { resumenModificadores } from '@/dominio/modificadores';
+import { detalleLinea, nombreLinea } from '@/dominio/personalizacion';
 import { useCarrito } from '@/estado/carrito';
 
 function Fila({ etiqueta, valor, fuerte }: { etiqueta: ReactNode; valor: string; fuerte?: boolean }) {
@@ -30,12 +30,13 @@ function Linea({
   alNota: () => void;
 }) {
   const { cambiarCantidad, eliminar } = useCarrito.getState();
-  const resumen = resumenModificadores(linea.modificadores);
+  const nombre = nombreLinea(linea);
+  const resumen = detalleLinea(linea);
   return (
     <li className={`border-b border-linea px-4 py-3 ${resaltada ? 'animate-resaltar' : ''}`}>
       <div className="flex items-baseline gap-3">
         <span className="cifras w-6 shrink-0 text-right text-producto font-semibold">{linea.cantidad}</span>
-        <span className="min-w-0 flex-1 text-producto font-semibold">{linea.nombre}</span>
+        <span className="min-w-0 flex-1 text-producto font-semibold">{nombre}</span>
         <span className="cifras font-semibold">{formatearDinero(linea.importe)}</span>
       </div>
       <div className="ml-9 flex flex-col text-etiqueta text-grafito-suave">
@@ -50,37 +51,32 @@ function Linea({
       <div className="mt-2 flex gap-1">
         <Boton
           className="w-12 px-0"
-          aria-label={`Quitar uno de ${linea.nombre}`}
+          aria-label={`Quitar uno de ${nombre}`}
           onClick={() => cambiarCantidad(linea.id, -1)}
         >
           <Minus aria-hidden size={20} />
         </Boton>
         <Boton
           className="w-12 px-0"
-          aria-label={`Agregar uno de ${linea.nombre}`}
+          aria-label={`Agregar uno de ${nombre}`}
           onClick={() => cambiarCantidad(linea.id, 1)}
         >
           <Plus aria-hidden size={20} />
         </Boton>
         {alEditar && (
-          <Boton
-            variante="fantasma"
-            className="px-3"
-            aria-label={`Editar ${linea.nombre}`}
-            onClick={alEditar}
-          >
+          <Boton variante="fantasma" className="px-3" aria-label={`Editar ${nombre}`} onClick={alEditar}>
             <Pencil aria-hidden size={18} />{' '}
             <span className="max-[1100px]:hidden portrait:inline">Editar</span>
           </Boton>
         )}
-        <Boton variante="fantasma" className="px-3" aria-label={`Nota de ${linea.nombre}`} onClick={alNota}>
+        <Boton variante="fantasma" className="px-3" aria-label={`Nota de ${nombre}`} onClick={alNota}>
           <StickyNote aria-hidden size={18} />{' '}
           <span className="max-[1100px]:hidden portrait:inline">Nota</span>
         </Boton>
         <Boton
           variante="fantasma"
           className="ml-auto w-12 px-0 text-faltante"
-          aria-label={`Eliminar ${linea.nombre}`}
+          aria-label={`Eliminar ${nombre}`}
           onClick={() => eliminar(linea.id)}
         >
           <Trash aria-hidden size={20} />
@@ -98,7 +94,7 @@ function DialogoNota({ linea, alCerrar }: { linea: LineaCarrito; alCerrar: () =>
   };
   return (
     <Hoja
-      titulo={`Nota para ${linea.nombre}`}
+      titulo={`Nota para ${nombreLinea(linea)}`}
       centrada
       ancho="max-w-md"
       alCerrar={alCerrar}

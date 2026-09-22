@@ -2,7 +2,7 @@ import { tipoDiferencia } from '@/dominio/caja';
 import { NOMBRE_METODO } from '@/dominio/cobro';
 import { formatearDinero } from '@/dominio/dinero';
 import { formatearFechaHora } from '@/dominio/fechas';
-import { resumenModificadores } from '@/dominio/modificadores';
+import { detalleLinea, nombreLinea } from '@/dominio/personalizacion';
 import type { ConfigGeneral, ConfigTicket, Turno, Venta } from '@/dominio/tipos';
 
 // Ticket como datos puros; los renderizadores (HTML y ESC/POS) solo lo dibujan.
@@ -79,9 +79,9 @@ export function construirTicketVenta(
   l.push(SEPARADOR);
 
   for (const linea of venta.lineas) {
-    l.push(columnas(`${linea.cantidad} ${linea.nombre}`, formatearDinero(linea.importe)));
+    l.push(columnas(`${linea.cantidad} ${nombreLinea(linea)}`, formatearDinero(linea.importe)));
     if (linea.cantidad > 1) l.push(texto(`  ${linea.cantidad} x ${formatearDinero(linea.precioUnitario)}`));
-    const resumen = resumenModificadores(linea.modificadores);
+    const resumen = detalleLinea(linea);
     if (resumen) l.push(texto(`  ${resumen}`));
     if (linea.nota) l.push(texto(`  Nota: ${linea.nota}`));
   }

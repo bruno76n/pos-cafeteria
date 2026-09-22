@@ -28,7 +28,7 @@ test('sembrar dos veces no duplica nada', async () => {
     productos: (await conexion.db.select().from(productos)).length,
   });
   const primera = await contar();
-  expect(primera).toEqual({ cuentas: 1, config: 1, usuarios: 3, categorias: 5, grupos: 5, productos: 28 });
+  expect(primera).toEqual({ cuentas: 1, config: 1, usuarios: 3, categorias: 5, grupos: 4, productos: 28 });
   await sembrar(conexion.db);
   expect(await contar()).toEqual(primera);
   const [general] = await conexion.db.select().from(config);

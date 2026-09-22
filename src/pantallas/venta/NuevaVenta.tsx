@@ -14,7 +14,7 @@ import { calcularTotales, cantidadDeProductos, crearLinea, type LineaCarrito } f
 import { armarVenta } from '@/dominio/cobro';
 import { formatearDinero } from '@/dominio/dinero';
 import { ahoraISO, diaLocal } from '@/dominio/fechas';
-import { gruposDelProducto } from '@/dominio/modificadores';
+import { sePersonaliza } from '@/dominio/personalizacion';
 import type { Pago, Producto } from '@/dominio/tipos';
 import { useCarrito } from '@/estado/carrito';
 import { useDispositivoActual } from '@/estado/dispositivo';
@@ -118,7 +118,7 @@ export function NuevaVenta() {
   }
 
   function tocarProducto(producto: Producto) {
-    if (gruposDelProducto(producto, grupos!).length > 0) return setPersonalizando({ producto });
+    if (sePersonaliza(producto, grupos!)) return setPersonalizando({ producto });
     const categoria = categorias!.find((c) => c.id === producto.categoriaId);
     agregar(crearLinea({ producto, categoria, grupos: grupos! }));
   }
@@ -138,7 +138,7 @@ export function NuevaVenta() {
       }
       puedeEditar={(l) => {
         const p = productoDe(l);
-        return Boolean(p && gruposDelProducto(p, grupos).length > 0);
+        return Boolean(p && sePersonaliza(p, grupos));
       }}
       alEditar={(linea) => {
         const producto = productoDe(linea);

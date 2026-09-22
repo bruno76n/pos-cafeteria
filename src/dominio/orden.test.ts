@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { mover, siguienteOrden } from './orden';
+import { mover, moverEn, siguienteOrden } from './orden';
 
 const lista = [
   { id: 'a', orden: 1 },
@@ -29,4 +29,11 @@ test('mover sube o baja y renumera solo lo que cambia', () => {
   ]);
   expect(siguienteOrden(lista)).toBe(4);
   expect(siguienteOrden([])).toBe(1);
+});
+
+test('moverEn intercambia con el vecino y no se sale de la lista', () => {
+  expect(moverEn(['a', 'b', 'c'], 0, 1)).toEqual(['b', 'a', 'c']);
+  expect(moverEn(['a', 'b', 'c'], 2, -1)).toEqual(['a', 'c', 'b']);
+  expect(moverEn(['a', 'b'], 0, -1)).toEqual(['a', 'b']);
+  expect(moverEn(['a', 'b'], 1, 1)).toEqual(['a', 'b']);
 });

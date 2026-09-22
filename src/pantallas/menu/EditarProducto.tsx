@@ -13,11 +13,12 @@ import { useCategorias, useGruposModificadores, useProductos } from '@/datos/con
 import { borrar, guardar } from '@/datos/escrituras';
 import { esquemaProducto } from '@/dominio/esquemas';
 import { indicacionGrupo } from '@/dominio/modificadores';
-import { siguienteOrden } from '@/dominio/orden';
+import { moverEn, siguienteOrden } from '@/dominio/orden';
 import type { Categoria, GrupoModificadores, Producto } from '@/dominio/tipos';
 import { pedirAutorizacion } from '@/estado/autorizacion';
 import { useUsuarioActivo } from '@/estado/sesion';
 import { BotonProducto } from '@/pantallas/venta/Catalogo';
+import { TamanosProducto } from './TamanosProducto';
 
 type ProductoEditable = Omit<Producto, 'actualizadoEn'>;
 
@@ -48,14 +49,6 @@ function Formulario({
   const asignados = p.gruposIds.flatMap((id) => grupos.filter((g) => g.id === id));
   const libres = grupos.filter((g) => !p.gruposIds.includes(g.id));
 
-  function moverGrupo(i: number, delta: -1 | 1) {
-    const ids = [...p.gruposIds];
-    const j = i + delta;
-    if (j < 0 || j >= ids.length) return;
-    [ids[i], ids[j]] = [ids[j]!, ids[i]!];
-    cambiar({ gruposIds: ids });
-  }
-
   async function elegirImagen(archivo: File | undefined) {
     if (!archivo) return;
     setErrorImagen(null);
@@ -67,8 +60,14 @@ function Formulario({
   }
 
   async function guardarProducto() {
-    const listo = { ...p, nombre: p.nombre.trim(), descripcion: p.descripcion.trim() };
+    const listo = {
+      ...p,
+      nombre: p.nombre.trim(),
+      descripcion: p.descripcion.trim(),
+      tamanos: p.tamanos.map((t) => ({ ...t, nombre: t.nombre.trim() })),
+    };
     if (!listo.nombre) return setError('Escribe el nombre.');
+    if (listo.tamanos.some((t) => !t.nombre)) return setError('Escribe el nombre de cada tamaño.');
     if (!listo.categoriaId) return setError('Elige la categoría.');
     if (esNuevo || listo.categoriaId !== inicial.categoriaId) {
       listo.orden = siguienteOrden(
@@ -110,13 +109,15 @@ function Formulario({
             <p>Categoría: {categoria?.nombre}</p>
           )}
           <div className="flex flex-wrap items-end gap-3">
-            <CampoDinero
-              etiqueta="Precio"
-              className="w-48"
-              valor={p.precio}
-              disabled={!editaPrecio}
-              alCambiar={(precio) => cambiar({ precio: precio ?? 0 })}
-            />
+            {p.tamanos.length === 0 && (
+              <CampoDinero
+                etiqueta="Precio"
+                className="w-48"
+                valor={p.precio}
+                disabled={!editaPrecio}
+                alCambiar={(precio) => cambiar({ precio: precio ?? 0 })}
+              />
+            )}
             {!editaPrecio && (
               <Boton
                 onClick={async () =>
@@ -127,6 +128,13 @@ function Formulario({
               </Boton>
             )}
           </div>
+          <TamanosProducto
+            tamanos={p.tamanos}
+            otrosProductos={productos.filter((x) => x.id !== p.id)}
+            editaMenu={editaMenu}
+            editaPrecio={editaPrecio}
+            alCambiar={(tamanos) => cambiar({ tamanos })}
+          />
           <Campo
             etiqueta="Descripción"
             value={p.descripcion}
@@ -186,7 +194,7 @@ function Formulario({
                       className="w-12 px-0"
                       aria-label={`Subir ${g.nombre}`}
                       disabled={i === 0}
-                      onClick={() => moverGrupo(i, -1)}
+                      onClick={() => cambiar({ gruposIds: moverEn(p.gruposIds, i, -1) })}
                     >
                       <ChevronUp aria-hidden size={24} />
                     </Boton>
@@ -195,7 +203,7 @@ function Formulario({
                       className="w-12 px-0"
                       aria-label={`Bajar ${g.nombre}`}
                       disabled={i === asignados.length - 1}
-                      onClick={() => moverGrupo(i, 1)}
+                      onClick={() => cambiar({ gruposIds: moverEn(p.gruposIds, i, 1) })}
                     >
                       <ChevronDown aria-hidden size={24} />
                     </Boton>
@@ -299,6 +307,7 @@ export function EditarProducto() {
     disponible: true,
     orden: 0,
     gruposIds: [],
+    tamanos: [],
   };
   return (
     <Formulario
