@@ -19,6 +19,7 @@ No hace falta Docker ni una base de datos: en desarrollo la API usa PGlite en `.
 
 ```bash
 npm install
+cp .env.example .env.development   # pon un JWT_SECRET cualquiera; DATABASE_URL se deja vacío
 npm run seed      # datos demo en la base local (se puede correr varias veces)
 npm run dev       # API en :8787 + Vite en :5173 (proxy de /api)
 ```

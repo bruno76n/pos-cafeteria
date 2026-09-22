@@ -8,6 +8,7 @@ test-results
 .vercel
 *.log
 .env*.local
+.env.development
 .claude/.hook-estado
 .claude/DETENER
 .DS_Store
