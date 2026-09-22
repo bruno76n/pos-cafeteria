@@ -23,6 +23,7 @@ for (const t of TAMANOS) {
     await entrarCon(page, PIN.dueno);
     expect(await sinDesborde(page)).toBe(true);
     await irAVentaConCajaAbierta(page);
+    await page.getByRole('tab', { name: 'Cafés' }).click();
     await page.getByRole('button', { name: /^Espresso/ }).click();
     await page
       .getByRole('dialog', { name: 'Espresso' })

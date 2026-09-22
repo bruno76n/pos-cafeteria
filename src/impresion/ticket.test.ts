@@ -40,6 +40,37 @@ describe('ticket de venta', () => {
     expect(texto).toMatchSnapshot();
   });
 
+  test('crepa con tamaño e ingredientes', () => {
+    const [latte] = venta.lineas;
+    const crepa = {
+      ...latte!,
+      id: 'l-crepa',
+      productoId: 'crepa-dulce',
+      nombre: 'Crepa dulce',
+      precioBase: 7500,
+      tamano: { nombre: 'Grande', precio: 7500 },
+      ingredientes: {
+        nombres: ['Nutella', 'Plátano', 'Fresa', 'Nuez'],
+        incluidos: 2,
+        extras: 2,
+        precioExtra: 500,
+      },
+      modificadores: [],
+      precioUnitario: 8500,
+      cantidad: 1,
+      importe: 8500,
+    };
+    const renglones = ticketATexto(construirTicketVenta({ ...venta, lineas: [crepa] }, config)).split('\n');
+    expect(renglones.every((r) => r.length <= 32)).toBe(true);
+    expect(renglones).toEqual(
+      expect.arrayContaining([
+        '1 Crepa dulce Grande      $85.00',
+        '  Nutella, Plátano, Fresa, Nuez',
+        '  (2 extra)',
+      ]),
+    );
+  });
+
   test('80 mm (48 columnas)', () => {
     const texto = ticketATexto(
       construirTicketVenta(venta, { ...config, ticket: { ...config.ticket, ancho: 80 } }),

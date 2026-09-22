@@ -29,6 +29,7 @@ test('presupuesto de toques y efectivo con cambio', async ({ page, request }) =>
   await prepararDispositivo(page, 'H');
   await entrarCon(page, PIN.cajero);
   await irAVentaConCajaAbierta(page);
+  await page.getByRole('tab', { name: 'Cafés' }).click();
 
   // Americano chico, efectivo exacto: ≤ 5 toques
   let c = contador();
@@ -97,6 +98,7 @@ test('pagos combinados (casos E y F) y volver a la venta sin perder el carrito',
   await prepararDispositivo(page, 'J');
   await entrarCon(page, PIN.cajero);
   await irAVentaConCajaAbierta(page);
+  await page.getByRole('tab', { name: 'Cafés' }).click();
   await page.getByRole('tab', { name: 'Alimentos' }).click();
   await page.getByRole('button', { name: /^Molletes/ }).click();
   await page.getByRole('button', { name: /^Molletes/ }).click();
