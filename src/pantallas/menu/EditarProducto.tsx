@@ -9,15 +9,16 @@ import { comprimirImagen } from '@/componentes/imagen';
 import { Interruptor } from '@/componentes/Interruptor';
 import { Pantalla } from '@/componentes/Pantalla';
 import { Segmentos } from '@/componentes/Segmentos';
-import { useCategorias, useGruposModificadores, useProductos } from '@/datos/consultas';
+import { useCategorias, useGruposModificadores, useIngredientes, useProductos } from '@/datos/consultas';
 import { borrar, guardar } from '@/datos/escrituras';
 import { esquemaProducto } from '@/dominio/esquemas';
 import { indicacionGrupo } from '@/dominio/modificadores';
 import { moverEn, siguienteOrden } from '@/dominio/orden';
-import type { Categoria, GrupoModificadores, Producto } from '@/dominio/tipos';
+import type { Categoria, GrupoModificadores, Ingrediente, Producto } from '@/dominio/tipos';
 import { pedirAutorizacion } from '@/estado/autorizacion';
 import { useUsuarioActivo } from '@/estado/sesion';
 import { BotonProducto } from '@/pantallas/venta/Catalogo';
+import { ArmadoProducto } from './ArmadoProducto';
 import { TamanosProducto } from './TamanosProducto';
 
 type ProductoEditable = Omit<Producto, 'actualizadoEn'>;
@@ -27,12 +28,14 @@ function Formulario({
   esNuevo,
   categorias,
   grupos,
+  ingredientes,
   productos,
 }: {
   inicial: ProductoEditable;
   esNuevo: boolean;
   categorias: Categoria[];
   grupos: GrupoModificadores[];
+  ingredientes: Ingrediente[];
   productos: Producto[];
 }) {
   const navegar = useNavigate();
@@ -65,9 +68,15 @@ function Formulario({
       nombre: p.nombre.trim(),
       descripcion: p.descripcion.trim(),
       tamanos: p.tamanos.map((t) => ({ ...t, nombre: t.nombre.trim() })),
+      armado: p.armado && {
+        ...p.armado,
+        permitidos:
+          p.armado.permitidos && p.armado.permitidos.filter((id) => ingredientes.some((i) => i.id === id)),
+      },
     };
     if (!listo.nombre) return setError('Escribe el nombre.');
     if (listo.tamanos.some((t) => !t.nombre)) return setError('Escribe el nombre de cada tamaño.');
+    if (listo.armado?.permitidos?.length === 0) return setError('Elige al menos un ingrediente permitido.');
     if (!listo.categoriaId) return setError('Elige la categoría.');
     if (esNuevo || listo.categoriaId !== inicial.categoriaId) {
       listo.orden = siguienteOrden(
@@ -134,6 +143,13 @@ function Formulario({
             editaMenu={editaMenu}
             editaPrecio={editaPrecio}
             alCambiar={(tamanos) => cambiar({ tamanos })}
+          />
+          <ArmadoProducto
+            producto={p}
+            ingredientes={ingredientes}
+            editaMenu={editaMenu}
+            editaPrecio={editaPrecio}
+            alCambiar={cambiar}
           />
           <Campo
             etiqueta="Descripción"
@@ -284,9 +300,10 @@ export function EditarProducto() {
   const { id } = useParams();
   const categorias = useCategorias();
   const grupos = useGruposModificadores();
+  const ingredientes = useIngredientes();
   const productos = useProductos();
   const [idNuevo] = useState(() => crypto.randomUUID());
-  if (!categorias || !grupos || !productos) return null;
+  if (!categorias || !grupos || !ingredientes || !productos) return null;
 
   const esNuevo = id === 'nuevo';
   const existente = productos.find((p) => p.id === id);
@@ -308,6 +325,7 @@ export function EditarProducto() {
     orden: 0,
     gruposIds: [],
     tamanos: [],
+    armado: null,
   };
   return (
     <Formulario
@@ -316,6 +334,7 @@ export function EditarProducto() {
       esNuevo={esNuevo}
       categorias={categorias}
       grupos={grupos}
+      ingredientes={ingredientes}
       productos={productos}
     />
   );

@@ -23,6 +23,7 @@ export type Categoria = z.infer<typeof e.esquemaCategoria>;
 export type OpcionModificador = z.infer<typeof e.esquemaOpcionModificador>;
 export type GrupoModificadores = z.infer<typeof e.esquemaGrupoModificadores>;
 export type Ingrediente = z.infer<typeof e.esquemaIngrediente>;
+export type Armado = z.infer<typeof e.esquemaArmado>;
 export type Tamano = z.infer<typeof e.esquemaTamano>;
 export type Producto = z.infer<typeof e.esquemaProducto>;
 export type Usuario = z.infer<typeof e.esquemaUsuario>;

@@ -150,7 +150,27 @@ export const esquemaTamano = z.object({
   id,
   nombre: z.string().trim().min(1),
   precio: centavosPositivos,
+  /** Ingredientes incluidos en este tamaño (solo cuenta si el producto se arma con ingredientes). */
+  incluidos: z.number().int().nonnegative().default(0),
 });
+
+/** Producto que se arma con ingredientes del catálogo (crepas, baguettes…). */
+export const esquemaArmado = z
+  .object({
+    /** Incluidos cuando el producto no tiene tamaños (con tamaños, cada tamaño trae los suyos). */
+    incluidos: z.number().int().nonnegative(),
+    /** Precio de cada ingrediente después de los incluidos. */
+    precioExtra: centavosPositivos,
+    min: z.number().int().nonnegative(),
+    /** null = sin límite. */
+    max: z.number().int().positive().nullable(),
+    /** Ids de ingredientes permitidos; null = todos. */
+    permitidos: z.array(id).nullable(),
+  })
+  .refine((a) => a.max === null || a.min <= a.max, {
+    message: 'El mínimo de ingredientes no puede ser mayor que el máximo',
+    path: ['min'],
+  });
 
 export const esquemaProducto = z
   .object({
@@ -165,6 +185,8 @@ export const esquemaProducto = z
     orden: z.number().int(),
     gruposIds: z.array(id),
     tamanos: z.array(esquemaTamano).default([]),
+    /** null = no se arma con ingredientes. */
+    armado: esquemaArmado.nullable().default(null),
     ...sincronizable,
   })
   .refine((p) => new Set(p.tamanos.map((t) => t.nombre.toLowerCase())).size === p.tamanos.length, {
@@ -267,6 +289,16 @@ export const esquemaLineaVenta = z.object({
   precioBase: centavosPositivos,
   /** Copia del tamaño elegido (ventas anteriores a los tamaños no lo traen). */
   tamano: z.object({ nombre: z.string(), precio: centavosPositivos }).optional(),
+  /** Copia de los ingredientes elegidos y de cómo se cobraron. */
+  ingredientes: z
+    .object({
+      nombres: z.array(z.string()),
+      incluidos: z.number().int().nonnegative(),
+      /** Ingredientes cobrados como extra. */
+      extras: z.number().int().nonnegative(),
+      precioExtra: centavosPositivos,
+    })
+    .optional(),
   modificadores: z.array(z.object({ grupo: z.string(), opcion: z.string(), precioExtra: centavosPositivos })),
   precioUnitario: centavosPositivos,
   cantidad: z.number().int().positive(),

@@ -134,8 +134,8 @@ test('el grupo global "Tamaño" pasa a tamaños de cada producto y se elimina', 
 
   const [latte] = await conexion.db.select().from(productos).where(eq(productos.id, 'latte'));
   expect(latte!.tamanos).toEqual([
-    { id: 'chico', nombre: 'Chico', precio: 6500 },
-    { id: 'grande', nombre: 'Grande', precio: 8500 },
+    { id: 'chico', nombre: 'Chico', precio: 6500, incluidos: 0 },
+    { id: 'grande', nombre: 'Grande', precio: 8500, incluidos: 0 },
   ]);
   expect(latte!.gruposIds).toEqual(['g-leche']);
   expect(latte!.rev).toBeGreaterThan(revAntes);

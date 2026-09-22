@@ -8,7 +8,7 @@ import { formatearDineroCorto } from '@/dominio/dinero';
 import { moverEn } from '@/dominio/orden';
 import type { Producto, Tamano } from '@/dominio/tipos';
 
-const tamanoNuevo = (): Tamano => ({ id: crypto.randomUUID(), nombre: '', precio: 0 });
+const tamanoNuevo = (): Tamano => ({ id: crypto.randomUUID(), nombre: '', precio: 0, incluidos: 0 });
 
 /**
  * Tamaños propios del producto: nombre libre y precio, en orden (el primero viene elegido en la

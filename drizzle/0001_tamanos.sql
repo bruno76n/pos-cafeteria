@@ -5,7 +5,12 @@ ALTER TABLE "productos" ADD COLUMN "tamanos" jsonb DEFAULT '[]'::jsonb NOT NULL;
 UPDATE "productos" AS p SET
   "tamanos" = (
     SELECT jsonb_agg(
-      jsonb_build_object('id', o->>'id', 'nombre', o->>'nombre', 'precio', p."precio" + (o->>'precioExtra')::int)
+      jsonb_build_object(
+        'id', o->>'id',
+        'nombre', o->>'nombre',
+        'precio', p."precio" + (o->>'precioExtra')::int,
+        'incluidos', 0
+      )
       ORDER BY (o->>'porDefecto')::boolean DESC, n
     )
     FROM jsonb_array_elements(g."opciones") WITH ORDINALITY AS t(o, n)

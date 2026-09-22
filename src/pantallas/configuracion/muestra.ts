@@ -25,6 +25,7 @@ export function ventaDeMuestra(config: ConfigGeneral, productos: Producto[], cat
           orden: 1,
           gruposIds: [],
           tamanos: [],
+          armado: null,
           actualizadoEn: '',
         },
         categoria: undefined,

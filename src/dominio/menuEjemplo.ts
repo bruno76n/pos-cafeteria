@@ -1,5 +1,6 @@
 // Menú y configuración de ejemplo (seed/menu-demo.json). Lo usan el seed y "Cargar menú de ejemplo".
 import menu from '../../seed/menu-demo.json';
+import { esquemaProducto } from './esquemas';
 import { ROLES_POR_DEFECTO } from './permisos';
 import type { Categoria, ConfigGeneral, GrupoModificadores, Ingrediente, Producto } from './tipos';
 
@@ -19,7 +20,8 @@ export function menuDeEjemplo(actualizadoEn: string): MenuEjemplo {
       actualizadoEn,
     })),
     ingredientes: menu.ingredientes.map((i) => ({ ...i, actualizadoEn })),
-    productos: menu.productos.map((p) => ({ ...p, imagen: null, actualizadoEn })),
+    // Con el esquema: completa los campos opcionales (tamaños, armado) y valida el ejemplo.
+    productos: menu.productos.map((p) => esquemaProducto.parse({ ...p, imagen: null, actualizadoEn })),
   };
 }
 

@@ -8,7 +8,7 @@ import { Insignia } from '@/componentes/Insignia';
 import { Interruptor } from '@/componentes/Interruptor';
 import { Pantalla } from '@/componentes/Pantalla';
 import { RequierePermiso } from '@/componentes/RequierePermiso';
-import { useIngredientes } from '@/datos/consultas';
+import { useIngredientes, useProductos } from '@/datos/consultas';
 import { borrar, guardar, guardarVarios } from '@/datos/escrituras';
 import { mover, siguienteOrden } from '@/dominio/orden';
 import type { Ingrediente } from '@/dominio/tipos';
@@ -72,12 +72,14 @@ function FormularioIngrediente({ inicial, alCerrar }: { inicial: SinFecha; alCer
 /** Catálogo de ingredientes: alta rápida, editar, ordenar, disponible y eliminar. */
 export function Ingredientes() {
   const ingredientes = useIngredientes();
+  const productos = useProductos();
   const [nombre, setNombre] = useState('');
   const [grupo, setGrupo] = useState('');
   const [editando, setEditando] = useState<Ingrediente | null>(null);
   const [eliminando, setEliminando] = useState<Ingrediente | null>(null);
   const campoNombre = useRef<HTMLInputElement>(null);
-  if (!ingredientes) return null;
+  if (!ingredientes || !productos) return null;
+  const usanIngrediente = (id: string) => productos.filter((p) => p.armado?.permitidos?.includes(id));
   const grupos = [...new Set(ingredientes.flatMap((i) => (i.grupo ? [i.grupo] : [])))];
 
   async function agregar() {
@@ -91,6 +93,20 @@ export function Ingredientes() {
     });
     setNombre('');
     campoNombre.current?.focus();
+  }
+
+  /** Lo quita también de los productos que lo tenían permitido. */
+  async function eliminar(ing: Ingrediente) {
+    setEliminando(null);
+    const afectados = usanIngrediente(ing.id).map(({ actualizadoEn: _, ...p }) => ({
+      ...p,
+      armado: p.armado && {
+        ...p.armado,
+        permitidos: p.armado.permitidos?.filter((id) => id !== ing.id) ?? null,
+      },
+    }));
+    if (afectados.length) await guardarVarios('productos', afectados);
+    await borrar('ingredientes', ing.id);
   }
 
   return (
@@ -200,13 +216,15 @@ export function Ingredientes() {
           titulo={`¿Eliminar ${eliminando.nombre}?`}
           textoAccion="Eliminar"
           textoCancelar="Conservar"
-          alConfirmar={() => {
-            void borrar('ingredientes', eliminando.id);
-            setEliminando(null);
-          }}
+          alConfirmar={() => void eliminar(eliminando)}
           alCancelar={() => setEliminando(null)}
         >
-          <p>Las ventas pasadas no cambian: guardan su propia copia.</p>
+          <p>
+            {usanIngrediente(eliminando.id).length > 0
+              ? `Se quitará de ${usanIngrediente(eliminando.id).length === 1 ? '1 producto' : `${usanIngrediente(eliminando.id).length} productos`}. `
+              : ''}
+            Las ventas pasadas no cambian: guardan su propia copia.
+          </p>
         </Confirmar>
       )}
     </RequierePermiso>

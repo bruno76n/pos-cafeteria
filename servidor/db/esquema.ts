@@ -13,6 +13,7 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import type {
+  Armado,
   Cancelacion,
   ConfigGeneral,
   DescuentoVenta,
@@ -119,6 +120,7 @@ export const productos = pgTable(
     orden: integer().notNull(),
     gruposIds: jsonb().$type<string[]>().notNull(),
     tamanos: jsonb().$type<Tamano[]>().notNull().default([]),
+    armado: jsonb().$type<Armado>(),
     borrado: boolean().notNull().default(false),
     ...sync(),
   },

@@ -101,6 +101,7 @@ export class BaseLocal extends Dexie {
           .toCollection()
           .modify((p: Partial<Producto>) => {
             p.tamanos ??= [];
+            p.armado ??= null;
           }),
       );
   }

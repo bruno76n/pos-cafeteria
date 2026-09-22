@@ -113,6 +113,14 @@ describe('compatibilidad con datos anteriores', () => {
   test('un producto sin tamaños (guardado antes) queda con la lista vacía', () => {
     expect(esquemaProducto.parse(productoValido).tamanos).toEqual([]);
   });
+  test('tamaños sin incluidos y producto sin armado toman sus valores por defecto', () => {
+    const p = esquemaProducto.parse({
+      ...productoValido,
+      tamanos: [{ id: 't', nombre: 'Chica', precio: 5500 }],
+    });
+    expect(p.tamanos[0]?.incluidos).toBe(0);
+    expect(p.armado).toBeNull();
+  });
   test('una venta anterior a los tamaños sigue siendo válida', () => {
     expect(esquemaVenta.safeParse(venta).success).toBe(true);
   });
@@ -305,6 +313,15 @@ describe('esquemas inválidos', () => {
         actualizadoEn: ahora,
       }).success,
     ).toBe(false);
+  });
+  test('armado con mínimo mayor que el máximo', () => {
+    const armado = { incluidos: 2, precioExtra: 500, min: 3, max: 2, permitidos: null };
+    expect(esquemaProducto.safeParse({ ...productoValido, armado }).error?.issues[0]?.message).toBe(
+      'El mínimo de ingredientes no puede ser mayor que el máximo',
+    );
+    expect(esquemaProducto.safeParse({ ...productoValido, armado: { ...armado, max: null } }).success).toBe(
+      true,
+    );
   });
   test('dos tamaños con el mismo nombre', () => {
     const r = esquemaProducto.safeParse({

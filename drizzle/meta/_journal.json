@@ -22,6 +22,13 @@
       "when": 1790066676444,
       "tag": "0002_ingredientes",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790066845745,
+      "tag": "0003_armado",
+      "breakpoints": true
     }
   ]
 }
