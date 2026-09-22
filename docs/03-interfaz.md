@@ -186,8 +186,7 @@ Teclas de 64 px; el cambio en 48 px. El botón de acción vive en el panel de ca
 ### Caja actual y cierre
 
 - Caja cerrada: "La caja está cerrada" + campo "Fondo inicial" + botón "Abrir caja".
-- Caja abierta: encabezado "Abierta por Ana desde las 7:02"; tabla de totales del turno (ventas por método, entradas, retiros, gastos, devoluciones); efectivo esperado solo con `verReportes`; botones "Registrar entrada", "Registrar retiro", "Registrar gasto" y "Cerrar caja" (este último en Grafito, no en verde).
-- Cerrar caja, paso 1: tabla de denominaciones con teclado numérico (piezas por fila y subtotal) o "Capturar total". Paso 2: esperado, contado y diferencia grande ("Faltan $15.00" en Faltante / "Sobran $20.00" en Cafeto / "Cuadra exacto"). Paso 3: "Cerrar caja" → "Imprimir corte".
+- Caja abierta y cierre **en la misma pantalla**: encabezado "Abierta por Ana desde las 7:02" y botones "Registrar entrada", "Registrar retiro", "Registrar gasto". A la izquierda, "Cerrar caja · Contar efectivo": tabla de denominaciones con teclado numérico (piezas por fila y subtotal) o "Capturar total". A la derecha (fija al desplazar): efectivo esperado, efectivo contado, diferencia grande en vivo ("Cuenta el efectivo" antes de contar; luego "Faltan $15.00" en Faltante / "Sobran $20.00" en Cafeto / "Cuadra exacto"), nota, botón "Cerrar caja" en Grafito (deshabilitado hasta contar) y debajo los totales del turno. Sin `cerrarCaja`: "Pedir autorización para cerrar caja" y el esperado solo con `verReportes`. Al cerrar: "Caja cerrada. Diferencia: …" → "Imprimir corte".
 
 ### Historial y detalle
 

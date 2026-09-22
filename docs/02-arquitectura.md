@@ -84,7 +84,7 @@ Para `@point-of-sale/*` y el adaptador de Hono para Vercel consulta la documenta
 | `/venta` | Nueva venta (el cobro es una capa dentro de esta ruta) |
 | `/ventas`, `/ventas/:id`, `/ventas/devoluciones` | Historial, detalle, devoluciones |
 | `/menu/productos`, `/menu/productos/:id`, `/menu/categorias`, `/menu/ingredientes`, `/menu/modificadores` | Menú |
-| `/caja`, `/caja/movimientos`, `/caja/cerrar`, `/caja/cortes`, `/caja/cortes/:id` | Caja |
+| `/caja` (caja actual y cierre), `/caja/movimientos`, `/caja/cortes`, `/caja/cortes/:id` | Caja (`/caja/cerrar` redirige a `/caja`) |
 | `/reportes` | Reportes (pestañas internas) |
 | `/usuarios`, `/usuarios/roles` | Usuarios y permisos |
 | `/configuracion/negocio`, `/impuestos`, `/pagos`, `/ticket`, `/dispositivo` | Configuración |

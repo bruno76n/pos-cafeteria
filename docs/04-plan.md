@@ -151,3 +151,7 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 15.6 Cálculo en centavos (tamaño o base + extras de ingredientes + modificadores) con los casos obligatorios. → Pruebas unitarias.
 - [x] 15.7 Datos: tabla de ingredientes y campos nuevos en servidor, Dexie y sync; migraciones; copia en las ventas sin romper las pasadas; precios solo con `modificarPrecios`. → Pruebas de API y de datos.
 - [x] 15.8 Cierre: e2e de crepa y bebida con tamaños, docs, menú de ejemplo con Crepas e ingredientes, sin código muerto. → typecheck, lint, test y e2e.
+
+## Fase 16: Ajustes pedidos por Bruno
+
+- [x] 16.1 Caja actual y cerrar caja en la misma pantalla, con el efectivo esperado a la vista mientras se cuenta. → e2e de caja.

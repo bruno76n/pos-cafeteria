@@ -1,5 +1,4 @@
 import { Printer } from 'lucide-react';
-import { useNavigate } from 'react-router';
 import { Boton } from '@/componentes/Boton';
 import { Pantalla } from '@/componentes/Pantalla';
 import { useConfig } from '@/datos/consultas';
@@ -10,8 +9,7 @@ import { useImpresora } from '@/impresion/usarImpresora';
 import { textoDiferencia } from './diferencia';
 
 /** Paso final del cierre: "Caja cerrada. Diferencia: …" e "Imprimir corte". */
-export function CorteCerrado({ turno }: { turno: Turno }) {
-  const navegar = useNavigate();
+export function CorteCerrado({ turno, alSalir }: { turno: Turno; alSalir: () => void }) {
   const config = useConfig();
   const { imprimir, error, imprimiendo } = useImpresora();
   const diferencia = textoDiferencia(turno.resumen?.diferencia ?? 0);
@@ -37,7 +35,7 @@ export function CorteCerrado({ turno }: { turno: Turno }) {
         >
           <Printer aria-hidden /> {error ? 'Reintentar' : 'Imprimir corte'}
         </Boton>
-        <Boton tamano="grande" onClick={() => navegar('/caja')}>
+        <Boton tamano="grande" onClick={alSalir}>
           Ir a Caja
         </Boton>
       </div>

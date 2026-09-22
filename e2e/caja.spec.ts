@@ -86,22 +86,20 @@ test('abrir, vender, registrar gasto y cerrar con faltante; el corte muestra la 
   await page.getByRole('dialog', { name: 'Cobro' }).getByRole('button', { name: 'Confirmar cobro' }).click();
 
   await page.getByRole('navigation', { name: 'Secciones' }).getByRole('link', { name: 'Caja' }).click();
-  // el cajero no ve el efectivo esperado (corte ciego)
-  await expect(page.getByText('Efectivo esperado')).toHaveCount(0);
   await page.getByRole('button', { name: 'Registrar gasto' }).click();
   await page.getByRole('dialog').getByLabel('Concepto').fill('Hielo');
   await page.getByRole('dialog').getByLabel('Monto').fill('80');
   await page.getByRole('dialog').getByRole('button', { name: 'Registrar gasto' }).click();
 
-  // esperado: 500 + 45 − 80 = 465; se cuentan 450 → faltan 15
-  await page.getByRole('button', { name: 'Cerrar caja' }).click();
+  // Caja y cierre en la misma pantalla: mientras cuenta, ve cuánto debe haber (500 + 45 − 80 = 465)
+  const resumen = page.getByRole('region', { name: 'Resumen del turno' });
+  await expect(resumen).toContainText('Efectivo esperado$465.00');
+  await expect(resumen.getByRole('status', { name: 'Diferencia' })).toHaveText('Cuenta el efectivo');
+  await expect(resumen.getByRole('button', { name: 'Cerrar caja' })).toBeDisabled();
   await page.getByLabel('Piezas de Billete de $200', { exact: true }).fill('2');
   await page.getByLabel('Piezas de Billete de $50', { exact: true }).fill('1');
-  await expect(page.getByText('Contado: $450.00')).toBeVisible();
-  await expect(page.getByText('Efectivo esperado')).toHaveCount(0);
-  await page.getByRole('button', { name: 'Continuar' }).click();
-  await expect(page.getByRole('region', { name: 'Diferencia' })).toContainText('Efectivo esperado$465.00');
-  await expect(page.getByRole('region', { name: 'Diferencia' })).toContainText('Faltan $15.00');
+  await expect(resumen).toContainText('Efectivo contado$450.00');
+  await expect(resumen.getByRole('status', { name: 'Diferencia' })).toHaveText('Faltan $15.00');
   await page.getByLabel('Nota (opcional)').fill('Faltó cambio');
   await page.getByRole('button', { name: 'Cerrar caja' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Caja cerrada.' })).toHaveText(

@@ -16,7 +16,6 @@ import { Bienvenida } from '@/pantallas/acceso/Bienvenida';
 import { Bloqueo } from '@/pantallas/acceso/Bloqueo';
 import { ConfigurarDispositivo } from '@/pantallas/acceso/ConfigurarDispositivo';
 import { CajaActual } from '@/pantallas/caja/CajaActual';
-import { CerrarCaja } from '@/pantallas/caja/CerrarCaja';
 import { Cortes } from '@/pantallas/caja/Cortes';
 import { DetalleCorte } from '@/pantallas/caja/DetalleCorte';
 import { Movimientos } from '@/pantallas/caja/Movimientos';
@@ -214,7 +213,7 @@ export const router = createBrowserRouter([
                   { path: 'cortes/:id', element: <DetalleCorte /> },
                 ],
               },
-              { path: 'cerrar', element: <CerrarCaja /> },
+              { path: 'cerrar', element: <Navigate to="/caja" replace /> },
             ],
           },
           {

@@ -178,14 +178,14 @@ Ejemplo:
 
 **Abrir caja:** monto inicial (fondo). Un solo turno abierto por dispositivo. Requiere `abrirCaja`.
 
-**Caja actual:** estado, quién abrió y cuándo, fondo inicial, ventas del turno (número y total por método), entradas, retiros, gastos, devoluciones en efectivo y **efectivo esperado** (solo visible con `verReportes`, para que el corte sea ciego). Botones: "Registrar entrada", "Registrar retiro", "Registrar gasto", "Cerrar caja".
+**Caja actual y cierre (una sola pantalla):** estado, quién abrió y cuándo, fondo inicial, ventas del turno (número y total por método), entradas, retiros, gastos, devoluciones en efectivo y **efectivo esperado**, junto al conteo para cerrar. El esperado lo ve quien puede cerrar caja (`cerrarCaja`, o con autorización) o ver reportes. Botones: "Registrar entrada", "Registrar retiro", "Registrar gasto" y "Cerrar caja".
 
 **Movimientos:** requieren turno abierto y `registrarGastos`. Tipos: entrada (por ejemplo, cambio o fondo adicional), retiro (por ejemplo, el dueño se lleva efectivo) y gasto (categoría + concepto + monto, por ejemplo hielo, insumos o pago pequeño a proveedor). Categorías de gasto configurables. Un movimiento equivocado se **anula** (queda visible y tachado, no suma); nunca se borra.
 
 **Cerrar caja** (requiere `cerrarCaja`):
 
 1. Contar efectivo: por denominaciones (billetes de 1000, 500, 200, 100, 50, 20; monedas de 20, 10, 5, 2, 1 y 0.50) o capturando el total directo.
-2. Resultado (el esperado se muestra hasta después de capturar el conteo): efectivo esperado, efectivo contado, diferencia (sobrante en verde, faltante en rojo), total vendido, total por efectivo, tarjeta y transferencia, número de ventas, cancelaciones, devoluciones, gastos y usuario que cierra. Nota opcional.
+2. En la misma pantalla, mientras se cuenta: efectivo esperado, efectivo contado y diferencia en vivo (sobrante en verde, faltante en rojo), con los totales del turno. Nota opcional. (Ya no es corte ciego: a pedido de Bruno, quien cierra ve cuánto debe haber.)
 3. Confirmar: el turno queda cerrado con su resumen guardado (ya no cambia). Opción de imprimir el corte. Si hay ventas por subir: "Hay 3 ventas por subir; se subirán solas." (no impide cerrar).
 
 **Cortes de caja:** historial (fecha, dispositivo, quién abrió y cerró, total vendido, diferencia) y detalle con reimpresión.

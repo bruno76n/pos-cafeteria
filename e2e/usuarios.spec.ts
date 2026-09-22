@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { entrarCon, escribirPin, irAVentaConCajaAbierta, PIN, prepararDispositivo } from './ayudas';
+import { entrarCon, irAVentaConCajaAbierta, PIN, prepararDispositivo } from './ayudas';
 
 const cambiarUsuario = async (page: Page, actual: string, pin: string) => {
   await page.getByRole('button', { name: actual, exact: true }).click();
@@ -59,7 +59,8 @@ test('quitar un permiso al cajero hace que pida autorización', async ({ page })
     .click();
   const autorizacion = page.getByRole('dialog', { name: 'Pedir autorización' });
   await expect(autorizacion).toContainText('registrar movimientos de caja');
-  await escribirPin(page, PIN.encargada);
+  // En Caja también está el teclado del conteo: el PIN se escribe en el del diálogo
+  for (const d of PIN.encargada) await autorizacion.getByRole('button', { name: d, exact: true }).click();
   await expect(autorizacion).toBeHidden();
   await expect(page.getByText('Gastos').locator('..')).toContainText('$20.00');
 
