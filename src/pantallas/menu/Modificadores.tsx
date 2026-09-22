@@ -11,9 +11,8 @@ import { RequierePermiso } from '@/componentes/RequierePermiso';
 import { Segmentos } from '@/componentes/Segmentos';
 import { useGruposModificadores, useProductos } from '@/datos/consultas';
 import { borrar, guardar, guardarVarios } from '@/datos/escrituras';
-import { formatearDineroCorto } from '@/dominio/dinero';
 import { esquemaGrupoModificadores } from '@/dominio/esquemas';
-import { indicacionGrupo } from '@/dominio/modificadores';
+import { indicacionGrupo, resumenOpciones } from '@/dominio/modificadores';
 import { mover, siguienteOrden } from '@/dominio/orden';
 import type { GrupoModificadores, OpcionModificador } from '@/dominio/tipos';
 
@@ -262,11 +261,7 @@ export function Modificadores() {
                   <span className="text-producto font-semibold">{g.nombre}</span>{' '}
                   <span className="text-grafito-suave">{indicacionGrupo(g)}</span>
                   <span className="block truncate text-etiqueta text-grafito-suave">
-                    {g.opciones
-                      .map((o) =>
-                        o.precioExtra ? `${o.nombre} +${formatearDineroCorto(o.precioExtra)}` : o.nombre,
-                      )
-                      .join(', ')}
+                    {resumenOpciones(g)}
                   </span>
                 </span>
                 <span className="text-etiqueta text-grafito-suave">

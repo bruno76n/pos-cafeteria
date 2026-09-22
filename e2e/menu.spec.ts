@@ -57,7 +57,10 @@ test('crear categoría, grupo y producto con imagen y venderlo', async ({ page, 
     'src',
     /^data:image\/webp/,
   );
-  await page.getByRole('button', { name: 'Temperatura' }).click();
+  // El grupo recién creado aparece en Opciones adicionales y se asigna con su casilla
+  const opciones = page.getByRole('group', { name: 'Opciones adicionales' });
+  await opciones.getByRole('checkbox', { name: /^Temperatura/ }).check();
+  await expect(opciones.getByRole('checkbox', { name: /^Temperatura/ })).toBeChecked();
   await expect(page.getByRole('complementary', { name: 'Vista previa' })).toContainText(
     'Ponche de frutas$55.00',
   );

@@ -1,3 +1,4 @@
+import { formatearDineroCorto } from './dinero';
 import type { GrupoModificadores, LineaVenta, Producto } from './tipos';
 
 /** Opciones elegidas por grupo: grupoId → ids de opción. */
@@ -126,4 +127,11 @@ export function indicacionGrupo(grupo: GrupoModificadores): string {
   if (grupo.tipo === 'unico') return min > 0 ? '(elige 1)' : '(opcional)';
   if (min === 0) return `(hasta ${max})`;
   return min === max ? `(elige ${min})` : `(elige de ${min} a ${max})`;
+}
+
+/** "Caliente, Frío +$5" */
+export function resumenOpciones(grupo: GrupoModificadores): string {
+  return grupo.opciones
+    .map((o) => (o.precioExtra ? `${o.nombre} +${formatearDineroCorto(o.precioExtra)}` : o.nombre))
+    .join(', ');
 }

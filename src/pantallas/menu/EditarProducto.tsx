@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronDown, ChevronUp, ImagePlus, Plus, Trash, X } from 'lucide-react';
+import { ArrowLeft, ImagePlus, Trash } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router';
 import { Boton, clasesBoton } from '@/componentes/Boton';
@@ -12,13 +12,13 @@ import { Segmentos } from '@/componentes/Segmentos';
 import { useCategorias, useGruposModificadores, useIngredientes, useProductos } from '@/datos/consultas';
 import { borrar, guardar } from '@/datos/escrituras';
 import { esquemaProducto } from '@/dominio/esquemas';
-import { indicacionGrupo } from '@/dominio/modificadores';
-import { moverEn, siguienteOrden } from '@/dominio/orden';
+import { siguienteOrden } from '@/dominio/orden';
 import type { Categoria, GrupoModificadores, Ingrediente, Producto } from '@/dominio/tipos';
 import { pedirAutorizacion } from '@/estado/autorizacion';
 import { useUsuarioActivo } from '@/estado/sesion';
 import { BotonProducto } from '@/pantallas/venta/Catalogo';
 import { ArmadoProducto } from './ArmadoProducto';
+import { OpcionesAdicionales } from './OpcionesAdicionales';
 import { TamanosProducto } from './TamanosProducto';
 
 type ProductoEditable = Omit<Producto, 'actualizadoEn'>;
@@ -49,8 +49,6 @@ function Formulario({
   const editaPrecio = puede('modificarPrecios') || precioAutorizado;
   const cambiar = (cambios: Partial<ProductoEditable>) => setP((x) => ({ ...x, ...cambios }));
   const categoria = categorias.find((c) => c.id === p.categoriaId);
-  const asignados = p.gruposIds.flatMap((id) => grupos.filter((g) => g.id === id));
-  const libres = grupos.filter((g) => !p.gruposIds.includes(g.id));
 
   async function elegirImagen(archivo: File | undefined) {
     if (!archivo) return;
@@ -193,58 +191,12 @@ function Formulario({
               alCambiar={(disponible) => cambiar({ disponible })}
             />
           </div>
-          <fieldset className="flex flex-col gap-2">
-            <legend className="mb-1 text-producto font-semibold">Modificadores (en orden)</legend>
-            {asignados.length === 0 && (
-              <p className="text-grafito-suave">Sin modificadores: se agrega con un toque.</p>
-            )}
-            {asignados.map((g, i) => (
-              <div key={g.id} className="flex items-center gap-2 rounded-boton border border-linea px-3 py-1">
-                <span className="flex-1">
-                  {g.nombre} <span className="text-grafito-suave">{indicacionGrupo(g)}</span>
-                </span>
-                {editaMenu && (
-                  <>
-                    <Boton
-                      variante="fantasma"
-                      className="w-12 px-0"
-                      aria-label={`Subir ${g.nombre}`}
-                      disabled={i === 0}
-                      onClick={() => cambiar({ gruposIds: moverEn(p.gruposIds, i, -1) })}
-                    >
-                      <ChevronUp aria-hidden size={24} />
-                    </Boton>
-                    <Boton
-                      variante="fantasma"
-                      className="w-12 px-0"
-                      aria-label={`Bajar ${g.nombre}`}
-                      disabled={i === asignados.length - 1}
-                      onClick={() => cambiar({ gruposIds: moverEn(p.gruposIds, i, 1) })}
-                    >
-                      <ChevronDown aria-hidden size={24} />
-                    </Boton>
-                    <Boton
-                      variante="fantasma"
-                      className="w-12 px-0"
-                      aria-label={`Quitar ${g.nombre}`}
-                      onClick={() => cambiar({ gruposIds: p.gruposIds.filter((id) => id !== g.id) })}
-                    >
-                      <X aria-hidden />
-                    </Boton>
-                  </>
-                )}
-              </div>
-            ))}
-            {editaMenu && libres.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {libres.map((g) => (
-                  <Boton key={g.id} onClick={() => cambiar({ gruposIds: [...p.gruposIds, g.id] })}>
-                    <Plus aria-hidden size={18} /> {g.nombre}
-                  </Boton>
-                ))}
-              </div>
-            )}
-          </fieldset>
+          <OpcionesAdicionales
+            grupos={grupos}
+            gruposIds={p.gruposIds}
+            editaMenu={editaMenu}
+            alCambiar={(gruposIds) => cambiar({ gruposIds })}
+          />
           {error && (
             <p className="text-faltante" role="alert">
               {error}
