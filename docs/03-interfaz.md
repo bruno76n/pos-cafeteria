@@ -59,13 +59,13 @@ Tablet horizontal (1280×800 y 1180×820 como referencia; mínimo 1024×768).
 
 - **Barra superior (56 px):** a la izquierda, nombre del negocio y del dispositivo; a la derecha, indicador de conexión y el usuario activo (al tocarlo: "Cambiar usuario" y "Bloquear").
 - **Riel lateral (80 px):** íconos con etiqueta debajo: Inicio, Venta, Ventas, Menú, Caja, Reportes, Usuarios, Configuración. Solo se muestran las secciones permitidas al usuario activo.
-- **Subsecciones como pestañas** arriba del contenido (por ejemplo, en Menú: Productos, Categorías y Modificadores). Así respetamos el menú final sin menús anidados:
+- **Subsecciones como pestañas** arriba del contenido (por ejemplo, en Menú: Productos, Categorías, Ingredientes y Modificadores). Así respetamos el menú final sin menús anidados:
 
 ```
 INICIO
 NUEVA VENTA
 VENTAS         → Historial | Devoluciones
-MENÚ           → Productos | Categorías | Modificadores
+MENÚ           → Productos | Categorías | Ingredientes | Modificadores
 CAJA           → Caja actual | Movimientos | Cortes de caja
 REPORTES
 USUARIOS       → Usuarios | Roles y permisos
@@ -99,13 +99,13 @@ Teclas de 72 px. Se valida sola al completar un PIN que coincide (4–6 dígitos
 
 ```
 ┌─────┬────────────────────────────────────────────────┬──────────────────────────┐
-│     │ [Cafés] [Bebidas frías] [Alimentos] [Postres]  │ Venta actual             │
-│ Ini │ [Extras]                        [ Buscar… ]    │ Para: [______________]   │
+│     │ [Crepas] [Cafés] [Bebidas frías] [Alimentos]   │ Venta actual             │
+│ Ini │ [Postres] [Extras]              [ Buscar… ]    │ Para: [______________]   │
 │     │                                                │                          │
-│ Ven │ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────┐ │ 2  Latte        $170.00  │
-│     │ ▌Espresso │ ▌Americano│ ▌Capuchino│ ▌Latte │ │    Mediano, Almendra     │
+│ Ven │ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌─────┐ │ 2  Latte Mediano 16 oz   │
+│     │ ▌Espresso │ ▌Americano│ ▌Capuchino│ ▌Latte │ │    Almendra     $170.00  │
 │ Vtas│ ▌         │ ▌         │ ▌         │ ▌      │ │    [−] [+]  Nota  [🗑]   │
-│     │ ▌$40.00   │ ▌$45.00   │ ▌$62.00   │ ▌$65.00│ │ 1  Brownie       $45.00  │
+│     │ ▌$40.00   │ ▌Desde $45│ ▌Desde $62│ ▌Desde │ │ 1  Brownie       $45.00  │
 │ Menú│ └──────────┘ └──────────┘ └──────────┘ └─────┘ │                          │
 │     │ ┌──────────┐ ┌──────────┐ ┌──────────┐         │ Subtotal        $215.00  │
 │ Caja│ ▌Flat white│ ▌Moka     │ ▌Chai latte│         │ Descuento 10%   −$21.50  │
@@ -117,17 +117,35 @@ Teclas de 72 px. Se valida sola al completar un PIN que coincide (4–6 dígitos
 └─────┴────────────────────────────────────────────────┴──────────────────────────┘
 ```
 
-- Cuadrícula `repeat(auto-fill, minmax(140px, 1fr))`, botones de 104 px de alto: nombre (hasta 2 líneas) arriba, precio abajo a la izquierda, franja de color de categoría a la izquierda. Imagen opcional pequeña a la derecha si el producto tiene. No disponible: 40 % de opacidad y etiqueta "No disponible".
+- Cuadrícula `repeat(auto-fill, minmax(140px, 1fr))`, botones de 104 px de alto: nombre (hasta 2 líneas) arriba, precio abajo a la izquierda ("Desde $55.00" si tiene tamaños), franja de color de categoría a la izquierda. Imagen opcional pequeña a la derecha si el producto tiene. No disponible: 40 % de opacidad y etiqueta "No disponible".
 - Carrito de 380 px (340 px en 1024). La barra Cobrar mide 72 px, fondo Cafeto, texto blanco, total a 40 px. Deshabilitada con carrito vacío.
 - Carrito vacío después de una venta: muestra "Venta A-000123", la etiqueta "Cambio" con **$6.50** a 64 px y los botones "Imprimir ticket" y "Compartir". Desaparece al agregar el siguiente producto.
 - Carrito vacío sin venta previa: "Toca un producto para empezar."
 
 ### Hoja de personalización
 
+Orden fijo: **Tamaño → Ingredientes → Extras → Nota → Cantidad**. Cada sección aparece solo si el producto la usa.
+
 ```
-┌───────────────────────────── Latte  $65.00 ───────────────────── [✕] ┐
-│ Tamaño (elige 1)                                                     │
-│ [ Chico 12 oz ] [■ Mediano 16 oz  +$10 ] [ Grande 20 oz  +$20 ]      │
+┌──────────────────────── Crepa dulce  $75.00 ──────────────────── [✕] ┐
+│ Tamaño                                                               │
+│ [ Chica $55 ] [■ Grande $75 ]                                        │
+│ Ingredientes                                                         │
+│ Incluye 2. Cada extra +$5.00. Máximo 5          3 elegidos: 1 extra  │
+│ Dulces                                                               │
+│ [■ Nutella ] [ Cajeta ] [ Lechera ] [■ Plátano ] [■ Fresa ] …        │
+│ Toppings (hasta 3)                                                   │
+│ [ Crema batida +$10 ] [ Canela ] [ Cocoa ] …                         │
+│ Nota  [____________________________]                                 │
+│                                                                      │
+│ Cantidad  [ − ]  1  [ + ]                   [   Agregar  $80.00   ]  │
+└──────────────────────────────────────────────────────────────────────┘
+```
+
+```
+┌───────────────────────────── Latte  $75.00 ───────────────────── [✕] ┐
+│ Tamaño                                                               │
+│ [ Chico 12 oz $65 ] [■ Mediano 16 oz $75 ] [ Grande 20 oz $85 ]      │
 │ Leche (elige 1)                                                      │
 │ [■ Entera ] [ Deslactosada +$5 ] [ Light ] [ Almendra +$10 ] …       │
 │ Extra shot (opcional)                                                │
@@ -140,7 +158,7 @@ Teclas de 72 px. Se valida sola al completar un PIN que coincide (4–6 dígitos
 └──────────────────────────────────────────────────────────────────────┘
 ```
 
-Opciones como botones de 56 px; la elegida en Grafito con texto blanco. Los precios extra en Grafito suave. Si falta una opción obligatoria, el botón Agregar dice "Elige tamaño" y está deshabilitado. En tablet es una hoja que sube desde abajo, de máximo 760 px de ancho.
+Opciones como botones de 56 px; la elegida en Grafito con texto blanco. Los precios en Grafito suave (el tamaño con su precio; los extras con "+"). Ingredientes como botones de 64 px en cuadrícula, agrupados por grupo; al llegar al máximo los demás se apagan y los no disponibles salen apagados. Si falta algo obligatorio, el botón Agregar dice qué falta ("Elige al menos 1 ingrediente", "Elige leche") y está deshabilitado. En tablet es una hoja que sube desde abajo, de máximo 760 px de ancho.
 
 ### Cobro
 
@@ -177,7 +195,7 @@ Tabla con filas de 56 px: folio, hora, productos (una línea, truncada), total (
 
 ### Menú
 
-Lista de productos con miniatura, nombre, categoría, precio, interruptor "Disponible" y botones subir/bajar. Formulario en panel lateral con vista previa del botón como se verá en Nueva venta. Categorías: lista con color, activa y orden. Modificadores: lista de grupos; al editar, tabla de opciones con precio extra y "por defecto".
+Lista de productos con miniatura, nombre, categoría, precio ("Desde $55.00" si tiene tamaños), interruptor "Disponible" y botones subir/bajar. Formulario con vista previa del botón como se verá en Nueva venta y, en este orden: nombre, categoría, precio base (se oculta si hay tamaños), **Tamaños** (filas nombre + precio, subir/bajar, quitar, "Agregar tamaño", "Copiar tamaños de…"), **Se arma con ingredientes** (interruptor; incluidos por tamaño, "Precio por ingrediente extra", Mínimo, Máximo con "Sin límite", permitidos Todos/Elegir con filtro por grupo y casillas), descripción, imagen, disponible y **Opciones adicionales** (todos los grupos con casilla; los marcados primero, con subir/bajar). Categorías: lista con color, activa y orden. Ingredientes: alta rápida arriba (nombre, grupo con sugerencias, Agregar) y lista con grupo, disponible, subir/bajar, editar y eliminar. Modificadores: lista de grupos; al editar, tabla de opciones con precio extra y "por defecto".
 
 ### Inicio y reportes
 

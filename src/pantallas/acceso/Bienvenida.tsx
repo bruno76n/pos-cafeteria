@@ -63,7 +63,7 @@ export function Bienvenida() {
         </div>
         <Interruptor
           etiqueta="Cargar menú de ejemplo"
-          descripcion="Cafés, bebidas frías, alimentos y postres con sus modificadores. Lo puedes editar después."
+          descripcion="Crepas con ingredientes, cafés con tamaños, bebidas frías, alimentos y postres. Lo puedes editar después."
           activo={cargarMenu}
           alCambiar={setCargarMenu}
         />

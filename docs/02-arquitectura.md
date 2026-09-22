@@ -52,7 +52,7 @@ Para `@point-of-sale/*` y el adaptador de Hono para Vercel consulta la documenta
     ├── estilos/global.css          # Tailwind + tokens de diseño
     ├── dominio/                    # lógica pura + pruebas (sin React, sin Dexie, sin red)
     │   ├── dinero.ts  fechas.ts  tipos.ts  esquemas.ts
-    │   ├── modificadores.ts  carrito.ts  cobro.ts  caja.ts
+    │   ├── modificadores.ts  personalizacion.ts  carrito.ts  cobro.ts  caja.ts
     │   ├── devoluciones.ts  folios.ts  permisos.ts  pin.ts
     │   └── reportes.ts  csv.ts  reglasServidor.ts
     ├── datos/                      # único lugar que toca Dexie y la red
@@ -83,7 +83,7 @@ Para `@point-of-sale/*` y el adaptador de Hono para Vercel consulta la documenta
 | `/inicio` | Inicio |
 | `/venta` | Nueva venta (el cobro es una capa dentro de esta ruta) |
 | `/ventas`, `/ventas/:id`, `/ventas/devoluciones` | Historial, detalle, devoluciones |
-| `/menu/productos`, `/menu/productos/:id`, `/menu/categorias`, `/menu/modificadores` | Menú |
+| `/menu/productos`, `/menu/productos/:id`, `/menu/categorias`, `/menu/ingredientes`, `/menu/modificadores` | Menú |
 | `/caja`, `/caja/movimientos`, `/caja/cerrar`, `/caja/cortes`, `/caja/cortes/:id` | Caja |
 | `/reportes` | Reportes (pestañas internas) |
 | `/usuarios`, `/usuarios/roles` | Usuarios y permisos |
@@ -131,7 +131,8 @@ Cada tabla sincronizable tiene además:
 | `config` | Una fila (`id = 'general'`) con `datos jsonb`: negocio, impuestos, descuentos, pagos, ticket, categorías de gasto, roles |
 | `categorias` | Categorías del menú |
 | `grupos_modificadores` | Grupos con sus opciones (`opciones jsonb`) |
-| `productos` | Productos (`grupos_ids jsonb`, `imagen text` con data URL) |
+| `ingredientes` | Catálogo de ingredientes (nombre, grupo opcional, orden, disponible; sin precio) |
+| `productos` | Productos (`grupos_ids jsonb`, `tamanos jsonb`, `armado jsonb` o null, `imagen text` con data URL) |
 | `usuarios` | Usuarios con PIN (hash) |
 | `dispositivos` | Dispositivos y espejo del contador de folios |
 | `turnos` | Turnos de caja (abiertos y cerrados, con `resumen jsonb`) |
@@ -171,10 +172,19 @@ interface GrupoModificadores {
   opciones: { id: string; nombre: string; precioExtra: Centavos; porDefecto: boolean; disponible: boolean }[];
 }
 
+interface Ingrediente { id: string; nombre: string; grupo: string | null; orden: number; disponible: boolean }
+
 interface Producto {
-  id: string; nombre: string; descripcion: string; categoriaId: string; precio: Centavos;
+  id: string; nombre: string; descripcion: string; categoriaId: string;
+  precio: Centavos;                           // precio base (se usa solo si no hay tamaños)
   imagen: string | null;                      // data URL WebP 256×256
   disponible: boolean; orden: number; gruposIds: string[];
+  tamanos: { id: string; nombre: string; precio: Centavos; incluidos: number }[];  // el primero viene elegido
+  armado: {                                   // null = no se arma con ingredientes
+    incluidos: number;                        // sin tamaños (con tamaños, cada tamaño trae los suyos)
+    precioExtra: Centavos; min: number; max: number | null;   // max null = sin límite
+    permitidos: string[] | null;              // ids de ingredientes; null = todos
+  } | null;
 }
 
 interface Usuario { id: string; nombre: string; rol: Rol; pinHash: string; pinSal: string; activo: boolean }
@@ -197,7 +207,10 @@ interface Movimiento {
 
 interface LineaVenta {
   id: string; productoId: string; nombre: string; categoriaId: string; categoriaNombre: string;
-  precioBase: Centavos; modificadores: { grupo: string; opcion: string; precioExtra: Centavos }[];
+  precioBase: Centavos;                       // precio del tamaño elegido o precio base
+  tamano?: { nombre: string; precio: Centavos };  // ausente en ventas anteriores a los tamaños
+  ingredientes?: { nombres: string[]; incluidos: number; extras: number; precioExtra: Centavos };
+  modificadores: { grupo: string; opcion: string; precioExtra: Centavos }[];
   precioUnitario: Centavos; cantidad: number; nota: string | null; importe: Centavos;
 }
 
@@ -225,7 +238,11 @@ interface Devolucion {
 
 `ResumenTurno` lo defines en `src/dominio/caja.ts`: totales por método, ventas, cancelaciones, devoluciones, entradas, retiros, gastos (total y por categoría), efectivo esperado, contado, diferencia, y ventas por producto, categoría y cajero. Se calcula con funciones puras y se guarda al cerrar.
 
-Todo se valida con esquemas Zod (`src/dominio/esquemas.ts`), que usan igual la app y la API.
+Todo se valida con esquemas Zod (`src/dominio/esquemas.ts`), que usan igual la app y la API. Los campos agregados después (`tamanos`, `armado`, `tamano.incluidos`) tienen valor por defecto en el esquema, así que un producto guardado por una versión anterior sigue siendo válido; Dexie v2 los rellena en la tablet al actualizar la base.
+
+La personalización (tamaño, ingredientes y modificadores), su validación y el precio unitario viven en `src/dominio/personalizacion.ts`. La línea del carrito guarda además lo elegido (`tamanoId`, `ingredientesIds`, `seleccion`) para poder editarla; eso no pasa a la venta.
+
+Migraciones: `0001_tamanos` agrega `productos.tamanos` y convierte un grupo global "Tamaño" (si existe) en tamaños de cada producto que lo usaba (precio base + precio extra; la opción por defecto primero), lo quita de `grupos_ids` y lo marca borrado, subiendo `rev` para que llegue a las tablets. `0002_ingredientes` crea la tabla y `0003_armado` agrega `productos.armado`.
 
 ## 6. Estrategia offline y sincronización
 
@@ -256,7 +273,7 @@ Viven en `src/dominio/reglasServidor.ts` (funciones puras, con pruebas) y las us
 - **ventas `actualizar`:** solo `estado`, `cancelacion`, `devuelto`. Cualquier otro campo se rechaza.
 - **movimientos `actualizar`:** solo `anulado`, `anulado_por`, `anulado_en`.
 - **turnos `actualizar`:** solo si en el servidor sigue `abierto`.
-- **config, categorías, grupos, productos, usuarios, dispositivos:** `crear`/`actualizar` como upsert; gana el `actualizado_en` más reciente (si el servidor tiene uno más nuevo, responde `duplicada` y el pull traerá la versión ganadora). Se permite borrar categorías y productos (`tipo: 'borrar'`), porque las ventas guardan copia.
+- **config, categorías, grupos, ingredientes, productos, usuarios, dispositivos:** `crear`/`actualizar` como upsert; gana el `actualizado_en` más reciente (si el servidor tiene uno más nuevo, responde `duplicada` y el pull traerá la versión ganadora). Se permite borrar categorías, grupos, ingredientes y productos (`tipo: 'borrar'`, lápida con `borrado = true`), porque las ventas guardan copia.
 - Validación con Zod. **Poco estricta a propósito en `crear` de ventas**: rechazar una venta al sincronizar es peor que aceptar un dato raro.
 - Cada inserción o actualización asigna `rev = nextval('rev_global')`.
 - Sin transacciones interactivas (el driver HTTP de Neon no las soporta): cada operación es una sentencia idempotente. Si hace falta agrupar, `db.batch()`.
@@ -340,10 +357,10 @@ Los drivers USB y Bluetooth no se pueden probar sin la impresora: impleméntalos
 
 ## 13. Pruebas
 
-- **Unitarias (Vitest)** en `src/dominio/`: dinero, fechas (incluye cruce de medianoche UTC), modificadores, carrito, cobro, caja, devoluciones, folios, permisos, PIN, reportes, CSV, reglas del servidor y constructores de ticket (snapshot). Los casos A–J de `01-especificacion.md` §6 son obligatorios.
+- **Unitarias (Vitest)** en `src/dominio/`: dinero, fechas (incluye cruce de medianoche UTC), modificadores, personalización (tamaños e ingredientes), carrito, cobro, caja, devoluciones, folios, permisos, PIN, reportes, CSV, reglas del servidor y constructores de ticket (snapshot). Los casos A–M de `01-especificacion.md` §6 son obligatorios.
 - **Datos locales:** `src/datos/` con `fake-indexeddb`: escritura + outbox en una transacción, motor de sync contra un servidor simulado (red caída, 5xx, 401, rechazo, duplicado, orden de operaciones, pull que no pisa cambios pendientes).
 - **API:** Vitest con PGlite en memoria y migraciones aplicadas (casos de §11).
-- **E2E (Playwright, Chromium, viewport 1280×800):** `webServer` levanta la API local con una base PGlite nueva (seed incluido) y Vite. Flujos mínimos: acceso con PIN y cambio de usuario; cajero sin acceso a Reportes; abrir caja; venta con modificadores y descuento; presupuesto de toques (`01-especificacion.md` §7); efectivo con cambio; pago combinado; cancelar; devolución; corte con faltante; crear producto y venderlo; autorización con PIN; **offline** (`context.setOffline(true)` → vender → volver en línea → verificar que la venta llegó a la base); **dos dispositivos** (dos contextos del navegador: lo que vende uno aparece en el otro tras el pull); **PWA** (build + preview → cargar → sin red → recargar → la app abre y deja vender).
+- **E2E (Playwright, Chromium, viewport 1280×800):** `webServer` levanta la API local con una base PGlite nueva (seed incluido) y Vite. Flujos mínimos: acceso con PIN y cambio de usuario; cajero sin acceso a Reportes; abrir caja; venta con modificadores y descuento; presupuesto de toques (`01-especificacion.md` §7); efectivo con cambio; pago combinado; cancelar; devolución; corte con faltante; crear producto y venderlo; crear ingredientes y una crepa con dos tamaños y venderla con 4 ingredientes; bebida con tamaños y un extra; autorización con PIN; **offline** (`context.setOffline(true)` → vender → volver en línea → verificar que la venta llegó a la base); **dos dispositivos** (dos contextos del navegador: lo que vende uno aparece en el otro tras el pull); **PWA** (build + preview → cargar → sin red → recargar → la app abre y deja vender).
 - Datos demo (seed): cuenta `caja@demo.test` / `demo1234`; usuarios Dueño (PIN 1234, admin), Encargada (2222, encargado) y Cajero (1111, cajero); menú y configuración de `seed/menu-demo.json`.
 
 ## 14. Qué no se prueba en la noche
