@@ -6,7 +6,7 @@ import {
   leerFolio,
   prefijoEnUso,
   siguienteFolio,
-} from './folios';
+} from './folios.js';
 
 describe('folios', () => {
   test('formato A-000123', () => {

@@ -1,4 +1,4 @@
-import type { Centavos } from './dinero';
+import type { Centavos } from './dinero.js';
 
 export type Celda = string | number | null;
 

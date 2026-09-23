@@ -1,6 +1,6 @@
 import { expect, test } from 'vitest';
-import { ventaPrueba } from './datosPrueba';
-import { cajerosDe, filtrarVentas, resumenProductos, SIN_FILTROS } from './historial';
+import { ventaPrueba } from './datosPrueba.js';
+import { cajerosDe, filtrarVentas, resumenProductos, SIN_FILTROS } from './historial.js';
 
 const a = ventaPrueba({ id: 'a', folio: 'A-000123', fecha: '2026-09-19T14:00:00.000Z' });
 const b = ventaPrueba({

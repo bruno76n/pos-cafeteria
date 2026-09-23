@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { autorizarConPin, esAdmin, puede, ROLES_POR_DEFECTO, validarUltimoAdmin } from './permisos';
-import { crearPin } from './pin';
+import { autorizarConPin, esAdmin, puede, ROLES_POR_DEFECTO, validarUltimoAdmin } from './permisos.js';
+import { crearPin } from './pin.js';
 
 const usuario = (rol: 'admin' | 'encargado' | 'cajero', activo = true) => ({ rol, activo });
 

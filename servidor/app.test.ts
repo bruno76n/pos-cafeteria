@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from 'vitest';
-import { conectarBaseDatos, type ConexionBaseDatos } from './db/cliente';
-import { crearApp } from './app';
+import { conectarBaseDatos, type ConexionBaseDatos } from './db/cliente.js';
+import { crearApp } from './app.js';
 
 describe('GET /api/salud', () => {
   let conexion: ConexionBaseDatos;

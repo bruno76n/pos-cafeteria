@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { ventaPrueba } from './datosPrueba';
-import { calcularReporte } from './reportes';
-import type { Devolucion, Movimiento, Turno } from './tipos';
+import { ventaPrueba } from './datosPrueba.js';
+import { calcularReporte } from './reportes.js';
+import type { Devolucion, Movimiento, Turno } from './tipos.js';
 
 const ana = { id: 'cajero', nombre: 'Ana' };
 const rangoDia = { desde: '2026-09-19', hasta: '2026-09-19' };

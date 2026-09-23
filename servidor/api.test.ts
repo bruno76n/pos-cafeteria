@@ -1,13 +1,13 @@
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
-import { categoriaPrueba, configPrueba, ventaPrueba } from '../src/dominio/datosPrueba';
-import { diaLocal, sumarDias } from '../src/dominio/fechas';
-import type { Operacion, RespuestaPull, RespuestaPush, Venta } from '../src/dominio/tipos';
-import { crearApp } from './app';
-import { firmarToken, hashContrasena } from './auth';
-import { crearBasePrueba } from './db/basePrueba';
-import type { ConexionBaseDatos } from './db/cliente';
-import { config, cuentas, ventas } from './db/esquema';
+import { categoriaPrueba, configPrueba, ventaPrueba } from '../src/dominio/datosPrueba.js';
+import { diaLocal, sumarDias } from '../src/dominio/fechas.js';
+import type { Operacion, RespuestaPull, RespuestaPush, Venta } from '../src/dominio/tipos.js';
+import { crearApp } from './app.js';
+import { firmarToken, hashContrasena } from './auth.js';
+import { crearBasePrueba } from './db/basePrueba.js';
+import type { ConexionBaseDatos } from './db/cliente.js';
+import { config, cuentas, ventas } from './db/esquema.js';
 
 const SECRETO = 'secreto-de-prueba';
 let conexion: ConexionBaseDatos;

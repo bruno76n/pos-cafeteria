@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { mover, moverEn, siguienteOrden } from './orden';
+import { mover, moverEn, siguienteOrden } from './orden.js';
 
 const lista = [
   { id: 'a', orden: 1 },

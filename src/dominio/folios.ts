@@ -1,4 +1,4 @@
-import type { Dispositivo } from './tipos';
+import type { Dispositivo } from './tipos.js';
 
 /** A + 123 → "A-000123" */
 export function formatearFolio(prefijo: string, numero: number): string {

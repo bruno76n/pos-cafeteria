@@ -9,8 +9,8 @@ import {
   fecha,
   id,
   refUsuario,
-} from './esquemas';
-import type { Operacion, TablaSync } from './tipos';
+} from './esquemas.js';
+import type { Operacion, TablaSync } from './tipos.js';
 
 // Qué operación se permite en qué tabla (docs/02-arquitectura.md §6). Funciones puras: las usa
 // servidor/rutas/sync.ts para decidir la sentencia SQL de cada operación.

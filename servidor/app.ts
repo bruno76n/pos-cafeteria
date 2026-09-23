@@ -1,11 +1,11 @@
 import { Hono } from 'hono';
-import { requiereCuenta } from './auth';
-import type { BaseDatos } from './db/cliente';
-import { rutasAcceso } from './rutas/acceso';
-import { rutasReportes } from './rutas/reportes';
-import { rutasSalud } from './rutas/salud';
-import { rutasSync } from './rutas/sync';
-import { rutasTickets } from './rutas/tickets';
+import { requiereCuenta } from './auth.js';
+import type { BaseDatos } from './db/cliente.js';
+import { rutasAcceso } from './rutas/acceso.js';
+import { rutasReportes } from './rutas/reportes.js';
+import { rutasSalud } from './rutas/salud.js';
+import { rutasSync } from './rutas/sync.js';
+import { rutasTickets } from './rutas/tickets.js';
 
 export interface DependenciasApp {
   db: BaseDatos;

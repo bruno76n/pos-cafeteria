@@ -355,6 +355,9 @@ Los drivers USB y Bluetooth no se pueden probar sin la impresora: impleméntalos
 - `vercel.json`: reescritura de todo lo que **no** empiece con `/api/` hacia `/index.html`; `Cache-Control: public, max-age=0, must-revalidate` para `/sw.js`, `/registerSW.js` y `/manifest.webmanifest`; `public, max-age=31536000, immutable` para `/assets/*`.
 - `api/[[...ruta]].ts` exporta la app de Hono con el adaptador que indique la documentación actual de Hono para Vercel (runtime Node). No se puede probar de noche: anótalo en "Para probar a mano".
 
+
+**Imports con extensión.** El proyecto es ESM (`"type": "module"`). La Vercel Function de `api/` no se empaqueta: cada archivo se transpila y Node resuelve los imports en tiempo de ejecución, así que **todo import relativo de `api/`, `servidor/` y `src/dominio/` lleva su extensión `.js`** (TypeScript la mapea al `.ts` real) y el JSON del menú se importa con `with { type: 'json' }`. Sin eso, la función truena con `ERR_MODULE_NOT_FOUND: Cannot find module '/var/task/servidor/app'`.
+
 ## 13. Pruebas
 
 - **Unitarias (Vitest)** en `src/dominio/`: dinero, fechas (incluye cruce de medianoche UTC), modificadores, personalización (tamaños e ingredientes), carrito, cobro, caja, devoluciones, folios, permisos, PIN, reportes, CSV, reglas del servidor y constructores de ticket (snapshot). Los casos A–M de `01-especificacion.md` §6 son obligatorios.

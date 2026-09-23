@@ -1,6 +1,6 @@
-import { PERMISOS } from './esquemas';
-import { buscarUsuarioPorPin } from './pin';
-import type { Permiso, PermisosPorRol, Rol, Usuario } from './tipos';
+import { PERMISOS } from './esquemas.js';
+import { buscarUsuarioPorPin } from './pin.js';
+import type { Permiso, PermisosPorRol, Rol, Usuario } from './tipos.js';
 
 export const NOMBRE_PERMISO: Record<Permiso, string> = {
   vender: 'Vender',

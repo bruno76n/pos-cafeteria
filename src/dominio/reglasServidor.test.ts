@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { categoriaPrueba, ventaPrueba } from './datosPrueba';
-import { evaluarOperacion } from './reglasServidor';
+import { categoriaPrueba, ventaPrueba } from './datosPrueba.js';
+import { evaluarOperacion } from './reglasServidor.js';
 
 const ahora = '2026-09-19T15:00:00.000Z';
 const ana = { id: 'u1', nombre: 'Ana' };

@@ -1,8 +1,8 @@
-import type { Centavos } from './dinero';
-import { formatearFecha, sumarDias } from './fechas';
-import type { Devolucion, MetodoPago, Movimiento, ResumenTurno, Turno, Venta } from './tipos';
+import type { Centavos } from './dinero.js';
+import { formatearFecha, sumarDias } from './fechas.js';
+import type { Devolucion, MetodoPago, Movimiento, ResumenTurno, Turno, Venta } from './tipos.js';
 
-export type { ResumenTurno } from './tipos';
+export type { ResumenTurno } from './tipos.js';
 
 /** Denominaciones para contar el efectivo al cerrar caja (clave → valor en centavos). */
 export const DENOMINACIONES: { clave: string; nombre: string; valor: Centavos }[] = [

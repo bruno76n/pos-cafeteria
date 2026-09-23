@@ -11,7 +11,7 @@ import {
   inicioDelDia,
   rangoPredefinido,
   sumarDias,
-} from './fechas';
+} from './fechas.js';
 
 describe('diaLocal', () => {
   test('usa la zona de México, no UTC', () => {

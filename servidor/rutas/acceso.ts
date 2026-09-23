@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
-import { esquemaPeticionAcceso } from '../../src/dominio/esquemas';
-import { firmarToken, LimiteIntentos, verificarContrasena } from '../auth';
-import type { BaseDatos } from '../db/cliente';
-import { cuentas } from '../db/esquema';
+import { esquemaPeticionAcceso } from '../../src/dominio/esquemas.js';
+import { firmarToken, LimiteIntentos, verificarContrasena } from '../auth.js';
+import type { BaseDatos } from '../db/cliente.js';
+import { cuentas } from '../db/esquema.js';
 
 export function rutasAcceso(db: BaseDatos, secreto: string, limite = new LimiteIntentos()) {
   return new Hono().post('/', async (c) => {

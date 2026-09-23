@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'vitest';
-import { gruposPrueba, ingredientesPrueba, productoPrueba } from './datosPrueba';
-import { gruposDelProducto, modificadoresElegidos, seleccionPorDefecto } from './modificadores';
+import { gruposPrueba, ingredientesPrueba, productoPrueba } from './datosPrueba.js';
+import { gruposDelProducto, modificadoresElegidos, seleccionPorDefecto } from './modificadores.js';
 import {
   alternarIngrediente,
   contadorIngredientes,
@@ -19,7 +19,7 @@ import {
   textoPrecio,
   validarEleccion,
   type Eleccion,
-} from './personalizacion';
+} from './personalizacion.js';
 
 const latte = productoPrueba('latte');
 const brownie = productoPrueba('brownie');

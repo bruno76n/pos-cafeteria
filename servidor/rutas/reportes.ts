@@ -1,11 +1,11 @@
 import { and, gte, lte } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
-import { dia } from '../../src/dominio/esquemas';
-import { diasEntre } from '../../src/dominio/fechas';
-import type { BaseDatos } from '../db/cliente';
-import { devoluciones, movimientos, turnos, ventas } from '../db/esquema';
-import { aRegistro } from '../db/registros';
+import { dia } from '../../src/dominio/esquemas.js';
+import { diasEntre } from '../../src/dominio/fechas.js';
+import type { BaseDatos } from '../db/cliente.js';
+import { devoluciones, movimientos, turnos, ventas } from '../db/esquema.js';
+import { aRegistro } from '../db/registros.js';
 
 export const MAXIMO_DIAS_REPORTE = 92;
 

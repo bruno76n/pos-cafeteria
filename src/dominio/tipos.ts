@@ -1,9 +1,9 @@
 import type { z } from 'zod';
-import type * as e from './esquemas';
+import type * as e from './esquemas.js';
 
 // Tipos del dominio (camelCase), derivados de los esquemas Zod para tener una sola fuente de verdad.
 
-export type { Centavos } from './dinero';
+export type { Centavos } from './dinero.js';
 
 export type Permiso = (typeof e.PERMISOS)[number];
 export type Rol = (typeof e.ROLES)[number];

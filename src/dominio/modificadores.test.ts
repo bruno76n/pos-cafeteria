@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { gruposPrueba, grupoPrueba, productoPrueba } from './datosPrueba';
+import { gruposPrueba, grupoPrueba, productoPrueba } from './datosPrueba.js';
 import {
   alternarOpcion,
   claveSeleccion,
@@ -10,7 +10,7 @@ import {
   resumenModificadores,
   seleccionPorDefecto,
   validarSeleccion,
-} from './modificadores';
+} from './modificadores.js';
 
 const latte = productoPrueba('latte');
 const gruposLatte = gruposDelProducto(latte, gruposPrueba);

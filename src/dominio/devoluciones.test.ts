@@ -1,12 +1,12 @@
 import { describe, expect, test } from 'vitest';
-import { ventaPrueba } from './datosPrueba';
+import { ventaPrueba } from './datosPrueba.js';
 import {
   aplicarDevolucion,
   calcularReembolso,
   devolverTodo,
   puedeCancelar,
   puedeDevolver,
-} from './devoluciones';
+} from './devoluciones.js';
 
 const ventaB = ventaPrueba();
 

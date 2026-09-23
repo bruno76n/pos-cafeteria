@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
-import { avisoCajaAbierta, DENOMINACIONES, resumirTurno, tipoDiferencia, totalConteo } from './caja';
-import { ventaPrueba } from './datosPrueba';
-import type { Devolucion, Movimiento, Venta } from './tipos';
+import { avisoCajaAbierta, DENOMINACIONES, resumirTurno, tipoDiferencia, totalConteo } from './caja.js';
+import { ventaPrueba } from './datosPrueba.js';
+import type { Devolucion, Movimiento, Venta } from './tipos.js';
 
 const ana = { id: 'cajero', nombre: 'Ana' };
 const turno = { id: 'turno-1', fondoInicial: 50000 };

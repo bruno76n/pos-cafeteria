@@ -1,4 +1,4 @@
-import type { Usuario } from './tipos';
+import type { Usuario } from './tipos.js';
 
 // PIN: hash = SHA-256(sal + ':' + pin) en hexadecimal, sal aleatoria de 16 bytes por usuario (Web Crypto).
 

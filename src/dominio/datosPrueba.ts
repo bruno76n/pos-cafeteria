@@ -1,6 +1,6 @@
 // Menú, configuración y una venta para las pruebas (a partir de seed/menu-demo.json).
-import { configInicial, menuDeEjemplo } from './menuEjemplo';
-import type { Categoria, ConfigGeneral, GrupoModificadores, Producto, Venta } from './tipos';
+import { configInicial, menuDeEjemplo } from './menuEjemplo.js';
+import type { Categoria, ConfigGeneral, GrupoModificadores, Producto, Venta } from './tipos.js';
 
 const menu = menuDeEjemplo('2026-09-19T12:00:00.000Z');
 export const categoriasPrueba = menu.categorias;

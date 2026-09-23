@@ -7,7 +7,7 @@ import {
   hashPin,
   pinEnUso,
   verificarPin,
-} from './pin';
+} from './pin.js';
 
 describe('PIN', () => {
   test('formato de 4 a 6 dígitos', () => {

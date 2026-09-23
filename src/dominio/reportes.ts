@@ -4,10 +4,10 @@ import {
   montoPorMetodo,
   sumarMovimientos,
   ventaCuenta,
-} from './caja';
-import { redondear, type Centavos } from './dinero';
-import { diaLocal, diasDelRango, horaLocal, type RangoDias } from './fechas';
-import type { Devolucion, MetodoPago, Movimiento, Turno, Venta } from './tipos';
+} from './caja.js';
+import { redondear, type Centavos } from './dinero.js';
+import { diaLocal, diasDelRango, horaLocal, type RangoDias } from './fechas.js';
+import type { Devolucion, MetodoPago, Movimiento, Turno, Venta } from './tipos.js';
 
 // Reportes con funciones puras: sirven igual con los datos de la tablet (35 días) o con los que
 // regresa GET /api/reportes para rangos más largos.

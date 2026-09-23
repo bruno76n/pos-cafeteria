@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { coincide, normalizarBusqueda } from './texto';
+import { coincide, normalizarBusqueda } from './texto.js';
 
 test('busca sin acentos ni mayúsculas', () => {
   expect(normalizarBusqueda('  Frappé de CAFÉ ')).toBe('frappe de cafe');

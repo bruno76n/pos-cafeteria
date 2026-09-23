@@ -1,10 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { eq, sql } from 'drizzle-orm';
 import { afterAll, beforeAll, expect, test } from 'vitest';
-import { crearBasePrueba } from './basePrueba';
-import type { ConexionBaseDatos } from './cliente';
-import { categorias, gruposModificadores, productos, ventas } from './esquema';
-import { migrarBaseDatos } from './migrar';
+import { crearBasePrueba } from './basePrueba.js';
+import type { ConexionBaseDatos } from './cliente.js';
+import { categorias, gruposModificadores, productos, ventas } from './esquema.js';
+import { migrarBaseDatos } from './migrar.js';
 
 let conexion: ConexionBaseDatos;
 beforeAll(async () => {

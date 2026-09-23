@@ -16,15 +16,15 @@ import {
   validarDescuento,
   type Carrito,
   type LineaCarrito,
-} from './carrito';
+} from './carrito.js';
 import {
   categoriaPrueba,
   configPrueba,
   gruposPrueba,
   ingredientesPrueba,
   productoPrueba,
-} from './datosPrueba';
-import { seleccionPorDefecto, gruposDelProducto } from './modificadores';
+} from './datosPrueba.js';
+import { seleccionPorDefecto, gruposDelProducto } from './modificadores.js';
 
 const cafes = categoriaPrueba('cafes');
 const postres = categoriaPrueba('postres');

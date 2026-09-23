@@ -2,7 +2,7 @@
 import { fileURLToPath } from 'node:url';
 import type { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import type { PgliteDatabase } from 'drizzle-orm/pglite';
-import { conectarBaseDatos, type ConexionBaseDatos } from './cliente';
+import { conectarBaseDatos, type ConexionBaseDatos } from './cliente.js';
 
 const carpetaMigraciones = fileURLToPath(new URL('../../drizzle', import.meta.url));
 

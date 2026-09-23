@@ -25,7 +25,7 @@ import type {
   ResumenTurno,
   Tamano,
   Venta,
-} from '../../src/dominio/tipos';
+} from '../../src/dominio/tipos.js';
 
 // Mismas entidades que la tablet (docs/02-arquitectura.md §5). Columnas en snake_case
 // (drizzle las traduce con casing: 'snake_case'); los campos del objeto van en camelCase.

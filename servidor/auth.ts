@@ -2,8 +2,8 @@ import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { createMiddleware } from 'hono/factory';
 import { jwtVerify, SignJWT } from 'jose';
-import type { BaseDatos } from './db/cliente';
-import { cuentas } from './db/esquema';
+import type { BaseDatos } from './db/cliente.js';
+import { cuentas } from './db/esquema.js';
 
 // Cuenta por dispositivo: JWT HS256 de 1 año con el id de la cuenta (docs/02-arquitectura.md §7).
 

@@ -1,5 +1,5 @@
-import { coincide } from './texto';
-import type { EstadoVenta, MetodoPago, Venta } from './tipos';
+import { coincide } from './texto.js';
+import type { EstadoVenta, MetodoPago, Venta } from './tipos.js';
 
 export const NOMBRE_ESTADO: Record<EstadoVenta, string> = {
   pagada: 'Pagada',

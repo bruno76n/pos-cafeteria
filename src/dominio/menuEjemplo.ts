@@ -1,8 +1,8 @@
 // Menú y configuración de ejemplo (seed/menu-demo.json). Lo usan el seed y "Cargar menú de ejemplo".
-import menu from '../../seed/menu-demo.json';
-import { esquemaProducto } from './esquemas';
-import { ROLES_POR_DEFECTO } from './permisos';
-import type { Categoria, ConfigGeneral, GrupoModificadores, Ingrediente, Producto } from './tipos';
+import menu from '../../seed/menu-demo.json' with { type: 'json' };
+import { esquemaProducto } from './esquemas.js';
+import { ROLES_POR_DEFECTO } from './permisos.js';
+import type { Categoria, ConfigGeneral, GrupoModificadores, Ingrediente, Producto } from './tipos.js';
 
 export interface MenuEjemplo {
   categorias: Categoria[];

@@ -1,4 +1,4 @@
-import type { TablaSync } from '../../src/dominio/tipos';
+import type { TablaSync } from '../../src/dominio/tipos.js';
 
 // Traducción entre registros del dominio (fechas ISO, opcionales ausentes) y filas de Drizzle
 // (Date en columnas timestamptz, null en opcionales).

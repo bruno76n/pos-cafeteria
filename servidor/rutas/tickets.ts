@@ -1,9 +1,9 @@
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
-import { id as esquemaId } from '../../src/dominio/esquemas';
-import type { BaseDatos } from '../db/cliente';
-import { config, ventas } from '../db/esquema';
-import { aRegistro } from '../db/registros';
+import { id as esquemaId } from '../../src/dominio/esquemas.js';
+import type { BaseDatos } from '../db/cliente.js';
+import { config, ventas } from '../db/esquema.js';
+import { aRegistro } from '../db/registros.js';
 
 /**
  * Ticket digital público (enlace del QR): sin token, solo devuelve la venta pedida por su id

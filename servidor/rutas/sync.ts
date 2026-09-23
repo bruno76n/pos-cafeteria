@@ -1,14 +1,14 @@
 import { and, asc, eq, gt, gte, lte, or, sql, type SQL } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
-import { esquemaPeticionPush, TABLAS_SYNC } from '../../src/dominio/esquemas';
-import { DIAS_LOCALES, diaLocal, sumarDias } from '../../src/dominio/fechas';
-import { evaluarOperacion, TABLAS_BORRABLES, TABLAS_CON_ALCANCE } from '../../src/dominio/reglasServidor';
-import type { FilaPull, Operacion, ResultadoOperacion, TablaSync } from '../../src/dominio/tipos';
-import type { BaseDatos } from '../db/cliente';
-import type { categorias } from '../db/esquema';
-import { operacionesAplicadas, TABLAS, turnos } from '../db/esquema';
-import { aFila, aRegistro } from '../db/registros';
+import { esquemaPeticionPush, TABLAS_SYNC } from '../../src/dominio/esquemas.js';
+import { DIAS_LOCALES, diaLocal, sumarDias } from '../../src/dominio/fechas.js';
+import { evaluarOperacion, TABLAS_BORRABLES, TABLAS_CON_ALCANCE } from '../../src/dominio/reglasServidor.js';
+import type { FilaPull, Operacion, ResultadoOperacion, TablaSync } from '../../src/dominio/tipos.js';
+import type { BaseDatos } from '../db/cliente.js';
+import type { categorias } from '../db/esquema.js';
+import { operacionesAplicadas, TABLAS, turnos } from '../db/esquema.js';
+import { aFila, aRegistro } from '../db/registros.js';
 
 /** Todas las tablas sincronizables tienen id, rev y actualizadoEn; para consultas genéricas. */
 type TablaGenerica = typeof categorias;

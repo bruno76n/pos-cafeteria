@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest';
-import { aCSV, pesosCSV } from './csv';
+import { aCSV, pesosCSV } from './csv.js';
 
 test('CSV con BOM, escapado y CRLF', () => {
   const csv = aCSV(

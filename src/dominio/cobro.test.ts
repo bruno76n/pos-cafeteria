@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { agregarLinea, carritoVacio, crearLinea } from './carrito';
+import { agregarLinea, carritoVacio, crearLinea } from './carrito.js';
 import {
   agregarPago,
   armarVenta,
@@ -9,9 +9,9 @@ import {
   pendiente,
   quitarPago,
   totalPagado,
-} from './cobro';
-import { categoriaPrueba, configPrueba, productoPrueba } from './datosPrueba';
-import type { Pago } from './tipos';
+} from './cobro.js';
+import { categoriaPrueba, configPrueba, productoPrueba } from './datosPrueba.js';
+import type { Pago } from './tipos.js';
 
 function pagar(total: number, ...nuevos: Parameters<typeof agregarPago>[2][]): Pago[] {
   return nuevos.reduce<Pago[]>((pagos, n) => {

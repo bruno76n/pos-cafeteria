@@ -1,12 +1,12 @@
-import { redondear, type Centavos } from './dinero';
-import { claveSeleccion, gruposDelProducto, modificadoresElegidos } from './modificadores';
+import { redondear, type Centavos } from './dinero.js';
+import { claveSeleccion, gruposDelProducto, modificadoresElegidos } from './modificadores.js';
 import {
   ingredientesElegidos,
   precioBaseDe,
   precioUnitario,
   tamanoDe,
   type Eleccion,
-} from './personalizacion';
+} from './personalizacion.js';
 import type {
   Categoria,
   ConfigGeneral,
@@ -15,7 +15,7 @@ import type {
   LineaVenta,
   Producto,
   RefUsuario,
-} from './tipos';
+} from './tipos.js';
 
 /** Línea del carrito: la copia que irá a la venta más lo elegido, para poder editarla. */
 export interface LineaCarrito extends LineaVenta, Eleccion {}

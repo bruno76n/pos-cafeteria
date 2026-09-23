@@ -1,12 +1,12 @@
-import { formatearDinero, type Centavos } from './dinero';
+import { formatearDinero, type Centavos } from './dinero.js';
 import {
   gruposDelProducto,
   resumenModificadores,
   validarSeleccion,
   type ModificadorElegido,
   type Seleccion,
-} from './modificadores';
-import type { GrupoModificadores, Ingrediente, LineaVenta, Producto, Tamano } from './tipos';
+} from './modificadores.js';
+import type { GrupoModificadores, Ingrediente, LineaVenta, Producto, Tamano } from './tipos.js';
 
 // Personalización de un producto en la venta: tamaño, ingredientes y modificadores. Funciones puras.
 

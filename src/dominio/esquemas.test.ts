@@ -12,8 +12,8 @@ import {
   esquemaTurno,
   esquemaUsuario,
   esquemaVenta,
-} from './esquemas';
-import type { Config, Venta } from './tipos';
+} from './esquemas.js';
+import type { Config, Venta } from './tipos.js';
 
 const ahora = '2026-09-19T14:42:10.123Z';
 const ana = { id: 'u1', nombre: 'Ana' };

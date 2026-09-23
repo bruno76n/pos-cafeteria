@@ -7,7 +7,7 @@ import {
   leerCaptura,
   pesos,
   redondear,
-} from './dinero';
+} from './dinero.js';
 
 describe('redondear', () => {
   test('mitades hacia arriba', () => {

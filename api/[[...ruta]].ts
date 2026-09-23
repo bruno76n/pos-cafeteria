@@ -1,7 +1,7 @@
 // Vercel Function (runtime Node): expone la app de Hono de servidor/app.ts.
 import { handle } from 'hono/vercel';
-import { crearApp } from '../servidor/app';
-import { conectarBaseDatos } from '../servidor/db/cliente';
+import { crearApp } from '../servidor/app.js';
+import { conectarBaseDatos } from '../servidor/db/cliente.js';
 
 let app: ReturnType<typeof crearApp> | undefined;
 

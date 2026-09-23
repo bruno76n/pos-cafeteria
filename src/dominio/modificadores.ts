@@ -1,5 +1,5 @@
-import { formatearDineroCorto } from './dinero';
-import type { GrupoModificadores, LineaVenta, Producto } from './tipos';
+import { formatearDineroCorto } from './dinero.js';
+import type { GrupoModificadores, LineaVenta, Producto } from './tipos.js';
 
 /** Opciones elegidas por grupo: grupoId → ids de opción. */
 export type Seleccion = Record<string, string[]>;

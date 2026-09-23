@@ -1,6 +1,6 @@
-import { redondear, type Centavos } from './dinero';
-import { nombreLinea } from './personalizacion';
-import type { Devolucion, EstadoVenta, Turno, Venta } from './tipos';
+import { redondear, type Centavos } from './dinero.js';
+import { nombreLinea } from './personalizacion.js';
+import type { Devolucion, EstadoVenta, Turno, Venta } from './tipos.js';
 
 export interface LineaADevolver {
   lineaId: string;

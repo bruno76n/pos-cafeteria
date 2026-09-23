@@ -1,5 +1,5 @@
 import type { PgDatabase, PgQueryResultHKT } from 'drizzle-orm/pg-core';
-import * as esquema from './esquema';
+import * as esquema from './esquema.js';
 
 export type BaseDatos = PgDatabase<PgQueryResultHKT, typeof esquema>;
 

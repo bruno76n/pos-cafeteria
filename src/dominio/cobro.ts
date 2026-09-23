@@ -1,6 +1,6 @@
-import { calcularTotales, lineasParaVenta, type Carrito, type ConfigVentas } from './carrito';
-import type { Centavos } from './dinero';
-import type { Dispositivo, MetodoPago, Pago, RefUsuario, Turno, Venta } from './tipos';
+import { calcularTotales, lineasParaVenta, type Carrito, type ConfigVentas } from './carrito.js';
+import type { Centavos } from './dinero.js';
+import type { Dispositivo, MetodoPago, Pago, RefUsuario, Turno, Venta } from './tipos.js';
 
 export const NOMBRE_METODO: Record<MetodoPago, string> = {
   efectivo: 'Efectivo',
