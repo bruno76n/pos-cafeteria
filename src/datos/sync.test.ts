@@ -267,18 +267,23 @@ describe('pull', () => {
       tipo: 'caja',
       prefijo: 'A',
       ultimoFolio: 50,
+      activo: true,
       actualizadoEn: '2026-09-19T00:00:00.000Z',
     };
     await bd.dispositivos.put(disp as never);
     servidor.paginas = [
       {
-        filas: [fila('dispositivos', { ...disp, ultimoFolio: 40, nombre: 'Caja uno' }, 3)],
+        filas: [fila('dispositivos', { ...disp, ultimoFolio: 40, activo: true, nombre: 'Caja uno' }, 3)],
         rev: 3,
         hayMas: false,
       },
     ];
     await motor.pull();
-    expect(await bd.dispositivos.get('caja-1')).toMatchObject({ ultimoFolio: 50, nombre: 'Caja uno' });
+    expect(await bd.dispositivos.get('caja-1')).toMatchObject({
+      ultimoFolio: 50,
+      activo: true,
+      nombre: 'Caja uno',
+    });
   });
 
   test('401 en el pull también expira la sesión', async () => {

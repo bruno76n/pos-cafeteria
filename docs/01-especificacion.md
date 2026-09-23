@@ -180,6 +180,8 @@ Ejemplo:
 
 **Caja actual y cierre (una sola pantalla):** estado, quién abrió y cuándo, fondo inicial, ventas del turno (número y total por método), entradas, retiros, gastos, devoluciones en efectivo y **efectivo esperado**, junto al conteo para cerrar. El esperado lo ve quien puede cerrar caja (`cerrarCaja`, o con autorización) o ver reportes. Botones: "Registrar entrada", "Registrar retiro", "Registrar gasto" y "Cerrar caja".
 
+**Dispositivos:** el Administrador ve en Configuración › Dispositivo la lista de las demás tablets (nombre, tipo, letra y último folio) y puede **desactivarlas**. Una tablet desactivada deja de vender y de abrir caja (se comporta como de consulta); sus ventas, turnos y folios se conservan. Los dispositivos nunca se borran.
+
 **Movimientos:** requieren turno abierto y `registrarGastos`. Tipos: entrada (por ejemplo, cambio o fondo adicional), retiro (por ejemplo, el dueño se lleva efectivo) y gasto (categoría + concepto + monto, por ejemplo hielo, insumos o pago pequeño a proveedor). Categorías de gasto configurables. Un movimiento equivocado se **anula** (queda visible y tachado, no suma); nunca se borra.
 
 **Cerrar caja** (requiere `cerrarCaja`):

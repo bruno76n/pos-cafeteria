@@ -213,6 +213,8 @@ export const esquemaDispositivo = z.object({
     .regex(/^[A-Z]$/)
     .nullable(),
   ultimoFolio: z.number().int().nonnegative(),
+  /** Una tablet retirada se desactiva: deja de vender, pero su historial se conserva. */
+  activo: z.boolean().default(true),
   ...sincronizable,
 });
 

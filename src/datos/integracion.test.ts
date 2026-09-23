@@ -52,6 +52,7 @@ test('una venta hecha en un dispositivo llega a la base y al otro dispositivo', 
     tipo: 'caja',
     prefijo: 'A',
     ultimoFolio: 0,
+    activo: true,
   });
   const turno = await crear('turnos', {
     id: crypto.randomUUID(),

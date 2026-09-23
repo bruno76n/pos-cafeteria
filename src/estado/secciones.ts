@@ -6,6 +6,10 @@ import { useUsuarioActivo } from './sesion';
 export function useSeccionesPermitidas() {
   const { puede, esAdmin } = useUsuarioActivo();
   const dispositivo = useDispositivoActual();
-  const contexto: ContextoSeccion = { puede, esAdmin, esCaja: dispositivo?.tipo === 'caja' };
+  const contexto: ContextoSeccion = {
+    puede,
+    esAdmin,
+    esCaja: dispositivo?.tipo === 'caja' && dispositivo.activo,
+  };
   return SECCIONES.filter((s) => s.visible(contexto));
 }

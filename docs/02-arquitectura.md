@@ -134,7 +134,7 @@ Cada tabla sincronizable tiene además:
 | `ingredientes` | Catálogo de ingredientes (nombre, grupo opcional, orden, disponible; sin precio) |
 | `productos` | Productos (`grupos_ids jsonb`, `tamanos jsonb`, `armado jsonb` o null, `imagen text` con data URL) |
 | `usuarios` | Usuarios con PIN (hash) |
-| `dispositivos` | Dispositivos y espejo del contador de folios |
+| `dispositivos` | Dispositivos, espejo del contador de folios y `activo` (una tablet retirada se desactiva; no se borra) |
 | `turnos` | Turnos de caja (abiertos y cerrados, con `resumen jsonb`) |
 | `movimientos` | Entradas, retiros y gastos |
 | `ventas` | Ventas (inmutables salvo estado); `lineas`, `pagos`, `descuento`, `iva`, `cancelacion` en `jsonb`; índice único en `folio` |
@@ -189,7 +189,10 @@ interface Producto {
 
 interface Usuario { id: string; nombre: string; rol: Rol; pinHash: string; pinSal: string; activo: boolean }
 
-interface Dispositivo { id: string; nombre: string; tipo: 'caja' | 'consulta'; prefijo: string | null; ultimoFolio: number }
+interface Dispositivo {
+  id: string; nombre: string; tipo: 'caja' | 'consulta'; prefijo: string | null;
+  ultimoFolio: number; activo: boolean;
+}
 
 interface Turno {
   id: string; dispositivoId: string; dispositivoNombre: string; estado: 'abierto' | 'cerrado';

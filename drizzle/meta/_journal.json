@@ -29,6 +29,13 @@
       "when": 1790066845745,
       "tag": "0003_armado",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790129586031,
+      "tag": "0004_dispositivo-activo",
+      "breakpoints": true
     }
   ]
 }

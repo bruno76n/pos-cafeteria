@@ -192,11 +192,13 @@ export function CajaActual() {
   const [cerrado, setCerrado] = useState<Turno | null>(null);
 
   if (cerrado) return <CorteCerrado turno={cerrado} alSalir={() => setCerrado(null)} />;
-  if (dispositivo?.tipo === 'consulta') {
+  if (dispositivo && (dispositivo.tipo === 'consulta' || !dispositivo.activo)) {
     return (
       <Pantalla titulo="Caja actual">
         <p className="text-grafito-suave">
-          Este dispositivo es de consulta: no tiene caja. Revisa los cortes de caja.
+          {dispositivo.activo
+            ? 'Este dispositivo es de consulta: no tiene caja. Revisa los cortes de caja.'
+            : 'Esta tablet está desactivada: no vende ni abre caja. Actívala desde otra tablet en Configuración › Dispositivo.'}
         </p>
       </Pantalla>
     );

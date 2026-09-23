@@ -174,7 +174,13 @@ export async function configurarDispositivo(datos: {
       folios,
     );
   }
-  const registro = await guardar('dispositivos', { id, ...datos, nombre: datos.nombre.trim(), ultimoFolio });
+  const registro = await guardar('dispositivos', {
+    id,
+    ...datos,
+    nombre: datos.nombre.trim(),
+    ultimoFolio,
+    activo: actual?.activo ?? true,
+  });
   await guardarMeta('dispositivoId', id);
   return registro;
 }

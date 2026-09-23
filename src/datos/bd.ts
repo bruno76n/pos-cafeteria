@@ -1,6 +1,13 @@
 import Dexie, { type Table } from 'dexie';
 import type { Carrito } from '@/dominio/carrito';
-import type { Operacion, Producto, RegistrosPorTabla, RespuestaAcceso, TablaSync } from '@/dominio/tipos';
+import type {
+  Dispositivo,
+  Operacion,
+  Producto,
+  RegistrosPorTabla,
+  RespuestaAcceso,
+  TablaSync,
+} from '@/dominio/tipos';
 
 // Base local (IndexedDB): fuente de verdad de la tablet. Mismas tablas que el servidor
 // más la cola de salida (outbox), metadatos y errores de sincronización.
@@ -102,6 +109,17 @@ export class BaseLocal extends Dexie {
           .modify((p: Partial<Producto>) => {
             p.tamanos ??= [];
             p.armado ??= null;
+          }),
+      );
+    // Dispositivos que se pueden desactivar.
+    this.version(3)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table('dispositivos')
+          .toCollection()
+          .modify((d: Partial<Dispositivo>) => {
+            d.activo ??= true;
           }),
       );
   }

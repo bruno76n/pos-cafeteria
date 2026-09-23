@@ -121,6 +121,18 @@ describe('compatibilidad con datos anteriores', () => {
     expect(p.tamanos[0]?.incluidos).toBe(0);
     expect(p.armado).toBeNull();
   });
+  test('un dispositivo guardado antes queda activo', () => {
+    const d = {
+      id: 'caja-1',
+      nombre: 'Caja 1',
+      tipo: 'caja' as const,
+      prefijo: 'A',
+      ultimoFolio: 3,
+      actualizadoEn: ahora,
+    };
+    expect(esquemaDispositivo.parse(d).activo).toBe(true);
+    expect(esquemaDispositivo.parse({ ...d, activo: false }).activo).toBe(false);
+  });
   test('una venta anterior a los tamaños sigue siendo válida', () => {
     expect(esquemaVenta.safeParse(venta).success).toBe(true);
   });

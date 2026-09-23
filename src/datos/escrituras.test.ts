@@ -24,7 +24,14 @@ beforeEach(async () => {
   await Promise.all(bd.tables.map((t) => t.clear()));
 });
 
-const dispositivo = { id: 'caja-1', nombre: 'Caja 1', tipo: 'caja' as const, prefijo: 'A', ultimoFolio: 122 };
+const dispositivo = {
+  id: 'caja-1',
+  nombre: 'Caja 1',
+  tipo: 'caja' as const,
+  prefijo: 'A',
+  ultimoFolio: 122,
+  activo: true,
+};
 
 function ventaSinFolio(): VentaNueva {
   const {
@@ -117,7 +124,12 @@ describe('registrarVenta', () => {
   });
 
   test('folios concurrentes no se repiten', async () => {
-    await bd.dispositivos.put({ ...dispositivo, ultimoFolio: 0, actualizadoEn: '2026-09-19T00:00:00.000Z' });
+    await bd.dispositivos.put({
+      ...dispositivo,
+      ultimoFolio: 0,
+      activo: true,
+      actualizadoEn: '2026-09-19T00:00:00.000Z',
+    });
     const ventas = await Promise.all(Array.from({ length: 5 }, () => registrarVenta(ventaSinFolio())));
     expect(new Set(ventas.map((v) => v.folio)).size).toBe(5);
   });
@@ -143,6 +155,7 @@ describe('configurarDispositivo', () => {
       id: 'vieja',
       prefijo: 'B',
       ultimoFolio: 40,
+      activo: true,
       actualizadoEn: '2026-09-19T00:00:00.000Z',
     });
     await bd.ventas.put(ventaPrueba({ id: 'v1', folio: 'B-000045', folioNumero: 45 }));

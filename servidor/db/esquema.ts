@@ -149,6 +149,7 @@ export const dispositivos = pgTable(
     tipo: text().$type<'caja' | 'consulta'>().notNull(),
     prefijo: text(),
     ultimoFolio: integer().notNull(),
+    activo: boolean().notNull().default(true),
     ...sync(),
   },
   (t) => [index().on(t.rev)],
