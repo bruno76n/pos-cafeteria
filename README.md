@@ -73,7 +73,7 @@ Los íconos de la PWA salen de `public/icono.svg`; si lo cambias, regenéralos c
 6. En la tablet, abre la URL (HTTPS). Android: Chrome › Instalar app. iPad: Safari › Compartir › Agregar a inicio. Inicia sesión **dentro** de la app instalada (tiene su propio almacenamiento), configura el dispositivo y sigue el asistente inicial si la base está vacía.
 7. Configuración › Dispositivo › Impresora › "Imprimir prueba".
 
-Cada push a la rama principal redepliega app y API. Si cambia el esquema: `npm run db:generar` en desarrollo, commit de la migración y `npm run db:migrar` contra Neon antes o junto con el despliegue.
+Cada push a la rama principal redepliega app y API. Si cambia el esquema: `npm run db:generar` en desarrollo, commit de la migración y `npm run db:migrar` contra Neon antes o junto con el despliegue. **Si se te olvida, la API responde 500 en `/api/sync/pull`** (la columna nueva no existe) y la app se queda en "Descargando datos del servidor… Error del servidor."; se arregla corriendo las migraciones.
 
 ## Limitaciones conocidas
 
