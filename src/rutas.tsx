@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { createBrowserRouter, Navigate, Outlet, useLocation } from 'react-router';
 import { Boton } from '@/componentes/Boton';
 import { Cargando } from '@/componentes/Cargando';
@@ -8,6 +8,7 @@ import { SinAcceso } from '@/componentes/SinAcceso';
 import { useConfig, useMeta } from '@/datos/consultas';
 import { useEstadoSync } from '@/datos/estadoSync';
 import { motorSync } from '@/datos/sync';
+import { useBaseBloqueada } from '@/estado/baseLocal';
 import { useDispositivoActual } from '@/estado/dispositivo';
 import { useSeccionesPermitidas } from '@/estado/secciones';
 import { useUsuarioActivo } from '@/estado/sesion';
@@ -69,6 +70,27 @@ function useEstadoAcceso(): EstadoAcceso {
   return 'listo';
 }
 
+/** Espera inicial. Si la base local no se puede actualizar, explica qué hacer. */
+function Esperando() {
+  const bloqueada = useBaseBloqueada();
+  const [tarda, setTarda] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setTarda(true), 8000);
+    return () => clearTimeout(t);
+  }, []);
+  if (!bloqueada && !tarda) return <Cargando />;
+  return (
+    <Cargando mensaje={bloqueada ? 'Hay que terminar de actualizar la app' : 'Esto está tardando'}>
+      <p className="max-w-sm text-grafito-suave">
+        Cierra las otras pestañas o ventanas de la app (incluida la app instalada) y vuelve a abrir esta.
+      </p>
+      <Boton variante="oscuro" onClick={() => location.reload()}>
+        Recargar
+      </Boton>
+    </Cargando>
+  );
+}
+
 function Descargando() {
   const error = useEstadoSync((s) => s.ultimoError);
   return (
@@ -97,7 +119,7 @@ function Guardian() {
     return () => motorSync.detener();
   }, [conSesion]);
 
-  if (estado === 'cargando') return <Cargando />;
+  if (estado === 'cargando') return <Esperando />;
   if (estado === 'descargando') return <Descargando />;
   const puerta = PUERTAS[estado];
   const enPuerta = Object.values(PUERTAS).includes(pathname);

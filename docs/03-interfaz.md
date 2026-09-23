@@ -218,6 +218,7 @@ Sentence case, verbos concretos, sin relleno. Una acción conserva su nombre en 
 | Cancelar venta | "Cancelar la venta A-000123 por $193.50" + campo "Motivo" | "Cancelar venta", "Volver" |
 | Caja cerrada | "Caja cerrada. Diferencia: faltan $15.00." | "Imprimir corte" |
 | Actualización | "Hay una versión nueva." | "Actualizar" |
+| Base local bloqueada | "Hay que terminar de actualizar la app. Cierra las otras pestañas o ventanas de la app (incluida la app instalada) y vuelve a abrir esta." | "Recargar" |
 
 Los errores explican qué pasó y qué hacer, sin disculpas. Los estados vacíos invitan a la acción.
 

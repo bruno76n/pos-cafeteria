@@ -359,6 +359,8 @@ Los drivers USB y Bluetooth no se pueden probar sin la impresora: impleméntalos
 - `api/index.ts` exporta la app de Hono con el adaptador que indique la documentación actual de Hono para Vercel (runtime Node). No se puede probar de noche: anótalo en "Para probar a mano".
 
 
+**Actualizar la base local.** Cuando una versión nueva cambia el esquema de Dexie, la pestaña vieja suelta la base con `versionchange` (se cierra y recarga) y la nueva avisa con `blocked` si alguien no la suelta: la pantalla de espera explica que hay que cerrar las otras pestañas, en vez de quedarse en "Cargando" para siempre. La misma pantalla muestra esa ayuda si la espera pasa de 8 segundos.
+
 **Imports con extensión.** El proyecto es ESM (`"type": "module"`). La Vercel Function de `api/` no se empaqueta: cada archivo se transpila y Node resuelve los imports en tiempo de ejecución, así que **todo import relativo de `api/`, `servidor/` y `src/dominio/` lleva su extensión `.js`** (TypeScript la mapea al `.ts` real) y el JSON del menú se importa con `with { type: 'json' }`. Sin eso, la función truena con `ERR_MODULE_NOT_FOUND: Cannot find module '/var/task/servidor/app'`.
 
 ## 13. Pruebas

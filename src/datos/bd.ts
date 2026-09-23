@@ -131,6 +131,27 @@ export class BaseLocal extends Dexie {
 
 export const bd = new BaseLocal();
 
+/** Se enciende si otra pestaña con la versión anterior impide actualizar la base local. */
+export const baseBloqueada = { valor: false };
+const oyentesBloqueo = new Set<(bloqueada: boolean) => void>();
+
+export function alCambiarBloqueo(oyente: (bloqueada: boolean) => void): () => void {
+  oyentesBloqueo.add(oyente);
+  return () => oyentesBloqueo.delete(oyente);
+}
+
+// Al llegar una versión nueva, esta pestaña suelta la base (si no, bloquearía a la otra).
+bd.on('versionchange', () => {
+  bd.close();
+  location.reload();
+});
+
+// Si otra pestaña con la versión vieja no suelta la base, avisamos en lugar de quedarnos cargando.
+bd.on('blocked', () => {
+  baseBloqueada.valor = true;
+  for (const o of oyentesBloqueo) o(true);
+});
+
 export async function leerMeta<K extends ClaveMeta>(clave: K): Promise<Meta[K] | undefined> {
   return (await bd.meta.get(clave))?.valor as Meta[K] | undefined;
 }
