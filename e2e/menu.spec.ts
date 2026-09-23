@@ -134,3 +134,38 @@ test('sin modificarPrecios no se tocan precios de tamaños ni del ingrediente ex
   await expect(page.getByLabel('Precio por ingrediente extra')).toBeEnabled();
   await expect(page.getByRole('button', { name: 'Agregar tamaño' })).toBeVisible();
 });
+
+test('eliminar un producto desde la lista lo quita y lo marca borrado en el servidor', async ({
+  page,
+  request,
+}) => {
+  await prepararDispositivo(page, 'D', 'Caja menú');
+  await entrarCon(page, PIN.dueno);
+  await page.getByRole('navigation', { name: 'Secciones' }).getByRole('link', { name: 'Menú' }).click();
+  const fila = page.getByRole('listitem').filter({ hasText: 'Galleta de chispas' });
+  await fila.getByRole('button', { name: 'Eliminar Galleta de chispas' }).click();
+  await page
+    .getByRole('dialog', { name: '¿Eliminar Galleta de chispas?' })
+    .getByRole('button', { name: 'Eliminar' })
+    .click();
+  await expect(fila).toHaveCount(0);
+
+  const acceso = await request.post('/api/acceso', {
+    data: { correo: 'caja@demo.test', contrasena: 'demo1234' },
+  });
+  const { token } = (await acceso.json()) as { token: string };
+  await expect
+    .poll(
+      async () => {
+        const res = await request.get('/api/sync/pull?desde=0', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const { filas } = (await res.json()) as {
+          filas: { tabla: string; borrado: boolean; registro: { id: string } }[];
+        };
+        return filas.find((f) => f.tabla === 'productos' && f.registro.id === 'galleta')?.borrado;
+      },
+      { timeout: 15_000 },
+    )
+    .toBe(true);
+});

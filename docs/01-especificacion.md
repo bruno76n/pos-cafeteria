@@ -156,7 +156,7 @@ Ejemplos: **Latte**, tamaños Chico 12 oz $65, Mediano 16 oz $75 y Grande 20 oz 
 - Lista con buscador y filtro por categoría; interruptor de disponible directo en la lista; reordenar con botones subir/bajar.
 - Los precios (base, de cada tamaño y del ingrediente extra) solo se editan con `modificarPrecios` (o autorización por PIN); sin ese permiso son de solo lectura y no se pueden agregar, quitar ni copiar tamaños. El resto (nombres de tamaños, orden, incluidos, mínimo, máximo, permitidos) requiere `crearProductos`.
 - Imagen: tomar foto o elegir archivo, recorte cuadrado, se guarda comprimida (256×256, WebP, ~60 KB máximo) dentro del producto.
-- Eliminar con confirmación. Las ventas pasadas no se afectan porque guardan copia.
+- Eliminar con confirmación, desde la lista o desde el producto. Las ventas pasadas no se afectan porque guardan copia.
 - Los cambios se ven al instante en Nueva venta, incluso sin conexión en el mismo dispositivo.
 
 ### 5.6 Menú: categorías, ingredientes y modificadores

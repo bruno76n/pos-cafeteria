@@ -1,15 +1,17 @@
-import { ChevronDown, ChevronUp, Pencil, Plus } from 'lucide-react';
+import { ChevronDown, ChevronUp, Pencil, Plus, Trash } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router';
 import { Boton, clasesBoton } from '@/componentes/Boton';
 import { clasesEntrada } from '@/componentes/Campo';
+import { Confirmar } from '@/componentes/Confirmar';
 import { Interruptor } from '@/componentes/Interruptor';
 import { Pantalla } from '@/componentes/Pantalla';
 import { useCategorias, useProductos } from '@/datos/consultas';
-import { cargarMenuDeEjemplo, guardar, guardarVarios } from '@/datos/escrituras';
+import { borrar, cargarMenuDeEjemplo, guardar, guardarVarios } from '@/datos/escrituras';
 import { mover } from '@/dominio/orden';
 import { textoPrecio } from '@/dominio/personalizacion';
 import { coincide } from '@/dominio/texto';
+import type { Producto } from '@/dominio/tipos';
 import { useUsuarioActivo } from '@/estado/sesion';
 
 /** Lista de productos con buscador, filtro por categoría, disponible y orden dentro de su categoría. */
@@ -19,6 +21,7 @@ export function Productos() {
   const { puede } = useUsuarioActivo();
   const [busqueda, setBusqueda] = useState('');
   const [categoriaId, setCategoriaId] = useState<string | null>(null);
+  const [eliminando, setEliminando] = useState<Producto | null>(null);
   const editaMenu = puede('crearProductos');
 
   const visibles = useMemo(() => {
@@ -149,6 +152,16 @@ export function Productos() {
                   >
                     <Pencil aria-hidden size={18} /> Editar
                   </Link>
+                  {editaMenu && (
+                    <Boton
+                      variante="fantasma"
+                      className="w-12 px-0 text-faltante"
+                      aria-label={`Eliminar ${p.nombre}`}
+                      onClick={() => setEliminando(p)}
+                    >
+                      <Trash aria-hidden size={20} />
+                    </Boton>
+                  )}
                 </li>
               );
             })}
@@ -157,6 +170,20 @@ export function Productos() {
             )}
           </ul>
         </>
+      )}
+      {eliminando && (
+        <Confirmar
+          titulo={`¿Eliminar ${eliminando.nombre}?`}
+          textoAccion="Eliminar"
+          textoCancelar="Conservar"
+          alConfirmar={async () => {
+            await borrar('productos', eliminando.id);
+            setEliminando(null);
+          }}
+          alCancelar={() => setEliminando(null)}
+        >
+          <p>Las ventas pasadas no cambian: guardan su propia copia del producto.</p>
+        </Confirmar>
       )}
     </Pantalla>
   );

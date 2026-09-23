@@ -155,4 +155,5 @@ Cada tarea incluye su criterio de terminado después de "→".
 ## Fase 16: Ajustes pedidos por Bruno
 
 - [x] 16.2 Desactivar dispositivos desde otra tablet (el Administrador los ve en Configuración › Dispositivo). → Una tablet desactivada no vende ni abre caja.
+- [x] 16.3 Eliminar productos desde la lista (antes solo dentro del producto). → e2e: se quita y queda como lápida en el servidor.
 - [x] 16.1 Caja actual y cerrar caja en la misma pantalla, con el efectivo esperado a la vista mientras se cuenta. → e2e de caja.
