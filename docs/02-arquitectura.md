@@ -35,7 +35,7 @@ Para `@point-of-sale/*` y el adaptador de Hono para Vercel consulta la documenta
 ├── vercel.json                     # reescritura SPA (excepto /api) y caché del service worker
 ├── drizzle.config.ts
 ├── drizzle/                        # migraciones SQL generadas por drizzle-kit
-├── api/[[...ruta]].ts              # adaptador: expone servidor/app.ts como Vercel Function
+├── api/[...ruta].ts                # adaptador: expone servidor/app.ts como Vercel Function
 ├── servidor/                       # API (Node); puede importar de src/dominio/
 │   ├── app.ts                      # app Hono con todas las rutas
 │   ├── auth.ts                     # JWT, middleware, bcrypt
@@ -353,7 +353,7 @@ Los drivers USB y Bluetooth no se pueden probar sin la impresora: impleméntalos
 - Actualización: aviso "Hay una versión nueva." con botón "Actualizar", solo cuando el carrito está vacío. **Nunca** recargar solo.
 - iPad: se instala desde Safari › Compartir › "Agregar a inicio". La app instalada tiene su propio almacenamiento, separado de la pestaña de Safari (hay que iniciar sesión dentro de la app instalada).
 - `vercel.json`: reescritura de todo lo que **no** empiece con `/api/` hacia `/index.html`; `Cache-Control: public, max-age=0, must-revalidate` para `/sw.js`, `/registerSW.js` y `/manifest.webmanifest`; `public, max-age=31536000, immutable` para `/assets/*`.
-- `api/[[...ruta]].ts` exporta la app de Hono con el adaptador que indique la documentación actual de Hono para Vercel (runtime Node). No se puede probar de noche: anótalo en "Para probar a mano".
+- `api/[...ruta].ts` (comodín de Vercel: `[[...x]]` solo enruta un segmento) exporta la app de Hono con el adaptador que indique la documentación actual de Hono para Vercel (runtime Node). No se puede probar de noche: anótalo en "Para probar a mano".
 
 
 **Imports con extensión.** El proyecto es ESM (`"type": "module"`). La Vercel Function de `api/` no se empaqueta: cada archivo se transpila y Node resuelve los imports en tiempo de ejecución, así que **todo import relativo de `api/`, `servidor/` y `src/dominio/` lleva su extensión `.js`** (TypeScript la mapea al `.ts` real) y el JSON del menú se importa con `with { type: 'json' }`. Sin eso, la función truena con `ERR_MODULE_NOT_FOUND: Cannot find module '/var/task/servidor/app'`.
