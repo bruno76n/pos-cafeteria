@@ -118,6 +118,17 @@ export class BaseLocal extends Dexie {
             d.activo ??= true;
           }),
       );
+    // Productos que van (o no) a la comanda de cocina.
+    this.version(4)
+      .stores({})
+      .upgrade((tx) =>
+        tx
+          .table('productos')
+          .toCollection()
+          .modify((p: Partial<Producto>) => {
+            p.vaACocina ??= true;
+          }),
+      );
   }
 
   tabla<T extends TablaSync>(nombre: T): TablasSync[T] {

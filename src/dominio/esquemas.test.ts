@@ -119,6 +119,22 @@ describe('compatibilidad con datos anteriores', () => {
     expect(p.tamanos[0]?.incluidos).toBe(0);
     expect(p.armado).toBeNull();
   });
+  test('un producto guardado antes va a cocina; la configuración anterior no trae comanda', () => {
+    const p = esquemaProducto.parse({
+      id: 'latte',
+      nombre: 'Latte',
+      descripcion: '',
+      categoriaId: 'cafes',
+      precio: 6500,
+      imagen: null,
+      disponible: true,
+      orden: 1,
+      gruposIds: [],
+      actualizadoEn: ahora,
+    });
+    expect(p.vaACocina).toBe(true);
+    expect(esquemaConfig.parse(config).datos.ticket.comanda).toBeUndefined();
+  });
   test('un dispositivo guardado antes queda activo', () => {
     const d = {
       id: 'caja-1',

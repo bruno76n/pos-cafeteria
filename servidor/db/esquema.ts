@@ -121,6 +121,7 @@ export const productos = pgTable(
     gruposIds: jsonb().$type<string[]>().notNull(),
     tamanos: jsonb().$type<Tamano[]>().notNull().default([]),
     armado: jsonb().$type<Armado>(),
+    vaACocina: boolean().notNull().default(true),
     borrado: boolean().notNull().default(false),
     ...sync(),
   },

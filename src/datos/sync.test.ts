@@ -173,6 +173,7 @@ describe('push', () => {
         gruposIds: [],
         tamanos: [],
         armado: null,
+        vaACocina: true,
       });
     }
     await motor.push();

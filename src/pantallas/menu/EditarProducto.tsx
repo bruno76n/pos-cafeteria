@@ -190,6 +190,13 @@ function Formulario({
               deshabilitado={!editaMenu}
               alCambiar={(disponible) => cambiar({ disponible })}
             />
+            <Interruptor
+              etiqueta="Va a cocina"
+              descripcion="Sale en la comanda de cocina. Apágalo si no se prepara (agua embotellada, café en grano)."
+              activo={p.vaACocina}
+              deshabilitado={!editaMenu}
+              alCambiar={(vaACocina) => cambiar({ vaACocina })}
+            />
           </div>
           <OpcionesAdicionales
             grupos={grupos}
@@ -278,6 +285,7 @@ export function EditarProducto() {
     gruposIds: [],
     tamanos: [],
     armado: null,
+    vaACocina: true,
   };
   return (
     <Formulario

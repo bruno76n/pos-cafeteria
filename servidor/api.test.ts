@@ -344,7 +344,30 @@ describe('pull', () => {
     const { rev: antes } = await pullCompleto(0);
     await push([op({ tabla: 'productos', tipo: 'crear', registroId: producto.id, datos: producto })]);
     const { filas } = await pull(antes);
-    expect(filas.find((f) => f.registro.id === producto.id)?.registro).toMatchObject({ tamanos: [] });
+    expect(filas.find((f) => f.registro.id === producto.id)?.registro).toMatchObject({
+      tamanos: [],
+      vaACocina: true,
+    });
+  });
+
+  test('"Va a cocina" apagado sube y baja', async () => {
+    const producto = {
+      id: 'agua-api',
+      nombre: 'Agua embotellada',
+      descripcion: '',
+      categoriaId: 'bebidas',
+      precio: 2500,
+      imagen: null,
+      disponible: true,
+      orden: 1,
+      gruposIds: [],
+      vaACocina: false,
+      actualizadoEn: ahora(),
+    };
+    const { rev: antes } = await pullCompleto(0);
+    await push([op({ tabla: 'productos', tipo: 'crear', registroId: producto.id, datos: producto })]);
+    const { filas } = await pull(antes);
+    expect(filas.find((f) => f.registro.id === producto.id)?.registro).toMatchObject({ vaACocina: false });
   });
 
   test('los ingredientes suben, bajan y se borran como el resto del catálogo', async () => {

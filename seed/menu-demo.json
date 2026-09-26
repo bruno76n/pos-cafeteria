@@ -153,7 +153,7 @@
     { "id": "frappe-cafe", "nombre": "Frappé de café", "descripcion": "Café, leche y hielo frapeado", "categoriaId": "bebidas-frias", "precio": 7800, "gruposIds": ["leche", "toppings"], "orden": 3, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 7800 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 8800 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 9800 }] },
     { "id": "frappe-moka", "nombre": "Frappé de moka", "descripcion": "Café, chocolate, leche y hielo", "categoriaId": "bebidas-frias", "precio": 8200, "gruposIds": ["leche", "toppings"], "orden": 4, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 8200 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 9200 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 10200 }] },
     { "id": "limonada", "nombre": "Limonada natural", "descripcion": "Con agua natural o mineral", "categoriaId": "bebidas-frias", "precio": 4500, "gruposIds": [], "orden": 5, "disponible": true, "tamanos": [{ "id": "chico", "nombre": "Chico 12 oz", "precio": 4500 }, { "id": "mediano", "nombre": "Mediano 16 oz", "precio": 5500 }, { "id": "grande", "nombre": "Grande 20 oz", "precio": 6500 }] },
-    { "id": "agua", "nombre": "Agua embotellada", "descripcion": "600 ml", "categoriaId": "bebidas-frias", "precio": 2500, "gruposIds": [], "orden": 6, "disponible": true, "tamanos": [] },
+    { "id": "agua", "nombre": "Agua embotellada", "descripcion": "600 ml", "categoriaId": "bebidas-frias", "precio": 2500, "gruposIds": [], "orden": 6, "disponible": true, "tamanos": [], "vaACocina": false },
     { "id": "croissant-jyq", "nombre": "Croissant de jamón y queso", "descripcion": "Horneado al momento", "categoriaId": "alimentos", "precio": 8500, "gruposIds": [], "orden": 1, "disponible": true, "tamanos": [] },
     { "id": "bagel", "nombre": "Bagel con queso crema", "descripcion": "Bagel tostado", "categoriaId": "alimentos", "precio": 6500, "gruposIds": [], "orden": 2, "disponible": true, "tamanos": [] },
     { "id": "sandwich-pavo", "nombre": "Sándwich de pavo", "descripcion": "Pan de caja, pavo, queso y vegetales", "categoriaId": "alimentos", "precio": 9500, "gruposIds": [], "orden": 3, "disponible": true, "tamanos": [] },
@@ -161,11 +161,11 @@
     { "id": "molletes", "nombre": "Molletes", "descripcion": "Con frijoles, queso y pico de gallo", "categoriaId": "alimentos", "precio": 7500, "gruposIds": [], "orden": 5, "disponible": true, "tamanos": [] },
     { "id": "pay-queso", "nombre": "Pay de queso", "descripcion": "Rebanada", "categoriaId": "postres", "precio": 6000, "gruposIds": [], "orden": 1, "disponible": true, "tamanos": [] },
     { "id": "brownie", "nombre": "Brownie", "descripcion": "Chocolate con nuez", "categoriaId": "postres", "precio": 4500, "gruposIds": [], "orden": 2, "disponible": true, "tamanos": [] },
-    { "id": "galleta", "nombre": "Galleta de chispas", "descripcion": "Chispas de chocolate", "categoriaId": "postres", "precio": 3000, "gruposIds": [], "orden": 3, "disponible": true, "tamanos": [] },
+    { "id": "galleta", "nombre": "Galleta de chispas", "descripcion": "Chispas de chocolate", "categoriaId": "postres", "precio": 3000, "gruposIds": [], "orden": 3, "disponible": true, "tamanos": [], "vaACocina": false },
     { "id": "pan-platano", "nombre": "Pan de plátano", "descripcion": "Rebanada", "categoriaId": "postres", "precio": 5000, "gruposIds": [], "orden": 4, "disponible": true, "tamanos": [] },
     { "id": "rol-canela", "nombre": "Rol de canela", "descripcion": "Con glaseado", "categoriaId": "postres", "precio": 4800, "gruposIds": [], "orden": 5, "disponible": true, "tamanos": [] },
     { "id": "shot-extra", "nombre": "Shot de espresso", "descripcion": "Para agregar a cualquier bebida", "categoriaId": "extras", "precio": 1500, "gruposIds": [], "orden": 1, "disponible": true, "tamanos": [] },
     { "id": "crema-batida-extra", "nombre": "Crema batida", "descripcion": "Porción extra", "categoriaId": "extras", "precio": 1000, "gruposIds": [], "orden": 2, "disponible": true, "tamanos": [] },
-    { "id": "cafe-grano", "nombre": "Café en grano 250 g", "descripcion": "Origen Chiapas", "categoriaId": "extras", "precio": 22000, "gruposIds": [], "orden": 3, "disponible": true, "tamanos": [] }
+    { "id": "cafe-grano", "nombre": "Café en grano 250 g", "descripcion": "Origen Chiapas", "categoriaId": "extras", "precio": 22000, "gruposIds": [], "orden": 3, "disponible": true, "tamanos": [], "vaACocina": false }
   ]
 }

@@ -36,6 +36,13 @@
       "when": 1790129586031,
       "tag": "0004_dispositivo-activo",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790385724992,
+      "tag": "0005_producto-va-a-cocina",
+      "breakpoints": true
     }
   ]
 }

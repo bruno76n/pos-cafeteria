@@ -90,6 +90,14 @@ export const esquemaConfigGeneral = z.object({
     mensajeFinal: z.string(),
     /** QR con enlace al ticket digital (opcional; configuraciones anteriores no lo traen). */
     mostrarQR: z.boolean().optional(),
+    /** Comanda de cocina (opcional; sin él se imprime, cocina primero, 1 copia). */
+    comanda: z
+      .object({
+        imprimir: z.boolean(),
+        orden: z.enum(['cocina', 'cliente']),
+        copias: z.number().int().min(1).max(3),
+      })
+      .optional(),
   }),
   gastos: z.object({ categorias: z.array(z.string().min(1)) }),
   roles: z.object({ encargado: permisosDeRol, cajero: permisosDeRol }),
@@ -186,6 +194,8 @@ export const esquemaProducto = z
     tamanos: z.array(esquemaTamano).default([]),
     /** null = no se arma con ingredientes. */
     armado: esquemaArmado.nullable().default(null),
+    /** Sale en la comanda de cocina (apagado: agua embotellada, café en grano…). */
+    vaACocina: z.boolean().default(true),
     ...sincronizable,
   })
   .refine((p) => new Set(p.tamanos.map((t) => t.nombre.toLowerCase())).size === p.tamanos.length, {
@@ -305,6 +315,8 @@ export const esquemaLineaVenta = z.object({
   cantidad: z.number().int().positive(),
   nota: z.string().nullable(),
   importe: centavosPositivos,
+  /** Copia de "Va a cocina" del producto (ventas anteriores no lo traen: cuentan como sí). */
+  vaACocina: z.boolean().optional(),
 });
 
 export const esquemaDescuento = z.object({

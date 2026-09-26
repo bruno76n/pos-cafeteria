@@ -100,6 +100,7 @@ export function crearLinea(params: {
     cantidad,
     nota,
     importe: unitario * cantidad,
+    vaACocina: producto.vaACocina,
     tamanoId,
     ingredientesIds,
     seleccion,

@@ -1,0 +1,1 @@
+ALTER TABLE "productos" ADD COLUMN "va_a_cocina" boolean DEFAULT true NOT NULL;
