@@ -158,7 +158,8 @@ interface ConfigGeneral {
   pagos: { tarjeta: boolean; transferencia: boolean; referenciaTransferenciaObligatoria: boolean;
            cuentas: { id: string; banco: string; titular: string; clabe: string; cuenta: string; alias: string }[] };
   ticket: { mostrarLogo: boolean; mostrarDireccion: boolean; mostrarTelefono: boolean;
-            mostrarRFC: boolean; mostrarCajero: boolean; mensajeFinal: string; mostrarQR?: boolean };
+            mostrarRFC: boolean; mostrarCajero: boolean; mensajeFinal: string; mostrarQR?: boolean;
+            comanda?: { imprimir: boolean; orden: 'cocina' | 'cliente'; copias: number } };  // sin él: sí, cocina primero, 1
             // El ancho del papel e "imprimir al cobrar" son de cada dispositivo (§10, ConfigImpresora).
   gastos: { categorias: string[] };
   roles: Record<'encargado' | 'cajero', Record<Permiso, boolean>>;
@@ -186,6 +187,7 @@ interface Producto {
     precioExtra: Centavos; min: number; max: number | null;   // max null = sin límite
     permitidos: string[] | null;              // ids de ingredientes; null = todos
   } | null;
+  vaACocina: boolean;                         // sale en la comanda de cocina (por defecto true)
 }
 
 interface Usuario { id: string; nombre: string; rol: Rol; pinHash: string; pinSal: string; activo: boolean }
@@ -216,6 +218,7 @@ interface LineaVenta {
   ingredientes?: { nombres: string[]; incluidos: number; extras: number; precioExtra: Centavos };
   modificadores: { grupo: string; opcion: string; precioExtra: Centavos }[];
   precioUnitario: Centavos; cantidad: number; nota: string | null; importe: Centavos;
+  vaACocina?: boolean;                        // copia del producto; ausente en ventas anteriores = true
 }
 
 interface Venta {
@@ -242,7 +245,7 @@ interface Devolucion {
 
 `ResumenTurno` lo defines en `src/dominio/caja.ts`: totales por método, ventas, cancelaciones, devoluciones, entradas, retiros, gastos (total y por categoría), efectivo esperado, contado, diferencia, y ventas por producto, categoría y cajero. Se calcula con funciones puras y se guarda al cerrar.
 
-Todo se valida con esquemas Zod (`src/dominio/esquemas.ts`), que usan igual la app y la API. Los campos agregados después (`tamanos`, `armado`, `tamano.incluidos`) tienen valor por defecto en el esquema, así que un producto guardado por una versión anterior sigue siendo válido; Dexie v2 los rellena en la tablet al actualizar la base.
+Todo se valida con esquemas Zod (`src/dominio/esquemas.ts`), que usan igual la app y la API. Los campos agregados después (`tamanos`, `armado`, `tamano.incluidos`, `vaACocina`) tienen valor por defecto en el esquema, así que un producto guardado por una versión anterior sigue siendo válido; Dexie v2 y v4 los rellenan en la tablet al actualizar la base (migración 0005 en Postgres: `va_a_cocina` con default true).
 
 La personalización (tamaño, ingredientes y modificadores), su validación y el precio unitario viven en `src/dominio/personalizacion.ts`. La línea del carrito guarda además lo elegido (`tamanoId`, `ingredientesIds`, `seleccion`) para poder editarla; eso no pasa a la venta.
 
@@ -323,13 +326,17 @@ Si el rango pedido cabe en los 35 días locales, Reportes calcula con los datos 
 ### Capas
 
 1. **`TicketDocumento`** (datos puros): `{ columnas: 32 | 48, lineas: LineaTicket[] }`, donde cada línea es texto (alineación, negrita, tamaño doble), columnas izquierda/derecha, separador, logo, QR o espacio. El avance y el corte no son parte del ticket: los agrega la impresora del dispositivo.
-2. **Constructores puros:** `construirTicketVenta(venta, config, { columnas, reimpresion, qr })` y `construirTicketCorte(turno, config, { columnas, reimpresion })`. El mismo documento sirve para venta, reimpresión y corte; `columnas` sale del ancho de papel de la impresora de la tablet (`useImpresora().columnas`). Pruebas con snapshot.
+2. **Constructores puros:** `construirTicketVenta(venta, config, { columnas, reimpresion, qr })`, `construirTicketCorte(turno, config, { columnas, reimpresion })` y `construirComanda(venta, config, { columnas, reimpresion, cancelada })` (`src/impresion/comanda.ts`; `null` si ninguna línea va a cocina). La comanda es otro `TicketDocumento`: mismo renderizador, mismos drivers. Las líneas de texto pueden ser `doble` (encabezado, folio, cliente, productos) o `chica` (fuente B en ESC/POS, `ESC M 1`). El mismo documento sirve para venta, reimpresión y corte; `columnas` sale del ancho de papel de la impresora de la tablet (`useImpresora().columnas`). Pruebas con snapshot.
 3. **Renderizadores:** `html.tsx` (vista previa en pantalla e impresión del sistema con `@page { size: 58mm auto }` o `80mm`) y `escpos.ts` (bytes ESC/POS con `ReceiptPrinterEncoder`, detalle abajo).
 4. **Drivers** (`src/impresion/drivers/`) con la misma interfaz `DriverImpresora`: `soportado()`, `estado()` (`conectada | desconectada | buscando`) y `suscribir()`, `conectar()` (desde un toque), `reconectar(config)`, `imprimir(doc, config)` y `olvidar(config)`. Los errores son `ErrorImpresion` con el mensaje para la pantalla y, si aplica, una `ayuda` (p. ej. "Cambia el tipo de conexión a RawBT.").
    - `bluetooth` (Web Bluetooth, propio, sin librería): `requestDevice({ acceptAllDevices: true, optionalServices })` con los servicios seriales comunes de las térmicas baratas (`0000ff00`, `0000ffe0`, `000018f0`, `49535343-fe7d-4ae5-8fa9-9fafd205e455`, `e7810a71-…`); recorre los servicios y usa la característica de escritura sin respuesta (o con respuesta si no hay). Manda los bytes en trozos de 20 (el navegador no expone el MTU) con 20 ms de pausa, o el ticket sale cortado. Guarda `{ id, nombre }` del dispositivo; al abrir la app (`useReconexionImpresora` en el Shell) reconecta con `navigator.bluetooth.getDevices()` (permisos persistentes de Chrome) y al imprimir reintenta si se perdió la conexión. `NotFoundError` al buscar → "No se encontró la impresora…" + sugerencia de RawBT (probablemente es Bluetooth clásico). Solo Chrome (Android o computadora) en contexto seguro.
    - `rawbt` (Android): abre `intent:base64,<ESC/POS en base64>#Intent;scheme=rawbt;end;`; la app RawBT recibe los bytes y los manda a la impresora Bluetooth clásico emparejada. Sin `package` en el intent: si la app no está, Chrome no hace nada; si en 2.5 s la página no pierde el foco (`blur`/`visibilitychange`), se muestra "No se pudo abrir RawBT…". Se ofrece solo si el user agent es Android.
    - `sistema`: `window.print()` sobre un iframe oculto con el HTML del ticket. Funciona en todos lados (en iPad, AirPrint o PDF); ahí las copias se eligen en el diálogo.
 5. Solo se ofrecen las conexiones que el dispositivo soporta. Si no hay ninguna directa, queda Sistema con la explicación en pantalla. Si la guardada deja de estar disponible, se imprime con Sistema.
+
+### Trabajos de impresión
+
+`trabajosDeVenta(venta, config, ticket, columnas)` arma la lista de trabajos al cobrar (`{ tipo: 'ticket' | 'comanda' | 'corte', doc, copias? }`) en el orden de `config.ticket.comanda`. `useImpresora().imprimirTrabajos(trabajos)` los manda uno por uno al driver de la tablet con `PAUSA_ENTRE_TRABAJOS_MS` (1 s) entre ellos; si uno falla sigue con el siguiente. `falloDeTrabajos` decide el mensaje: si no salió nada, el error de la impresora; si falló uno solo, cuál ("No se pudo imprimir la comanda de cocina." / "…el ticket del cliente."), con el error de la impresora como ayuda. La comanda usa sus propias copias; el ticket, las de la impresora. "Imprimir automáticamente al cobrar" (de la impresora de la tablet) controla los dos.
 
 ### ESC/POS
 
@@ -391,7 +398,7 @@ Web Bluetooth y el service worker exigen HTTPS (o localhost). Los drivers no se 
 - **Unitarias (Vitest)** en `src/dominio/`: dinero, fechas (incluye cruce de medianoche UTC), modificadores, personalización (tamaños e ingredientes), carrito, cobro, caja, devoluciones, folios, permisos, PIN, reportes, CSV, reglas del servidor y constructores de ticket (snapshot). Los casos A–M de `01-especificacion.md` §6 son obligatorios.
 - **Datos locales:** `src/datos/` con `fake-indexeddb`: escritura + outbox en una transacción, motor de sync contra un servidor simulado (red caída, 5xx, 401, rechazo, duplicado, orden de operaciones, pull que no pisa cambios pendientes).
 - **API:** Vitest con PGlite en memoria y migraciones aplicadas (casos de §11).
-- **E2E (Playwright, Chromium, viewport 1280×800):** `webServer` levanta la API local con una base PGlite nueva (seed incluido) y Vite. Flujos mínimos: acceso con PIN y cambio de usuario; cajero sin acceso a Reportes; abrir caja; venta con modificadores y descuento; presupuesto de toques (`01-especificacion.md` §7); efectivo con cambio; pago combinado; cancelar; devolución; corte con faltante; crear producto y venderlo; crear ingredientes y una crepa con dos tamaños y venderla con 4 ingredientes; bebida con tamaños y un extra; autorización con PIN; **offline** (`context.setOffline(true)` → vender → volver en línea → verificar que la venta llegó a la base); **dos dispositivos** (dos contextos del navegador: lo que vende uno aparece en el otro tras el pull); **PWA** (build + preview → cargar → sin red → recargar → la app abre y deja vender).
+- **E2E (Playwright, Chromium, viewport 1280×800):** `webServer` levanta la API local con una base PGlite nueva (seed incluido) y Vite. Flujos mínimos: acceso con PIN y cambio de usuario; cajero sin acceso a Reportes; abrir caja; venta con modificadores y descuento; presupuesto de toques (`01-especificacion.md` §7); efectivo con cambio; pago combinado; cancelar; devolución; corte con faltante; crear producto y venderlo; crear ingredientes y una crepa con dos tamaños y venderla con 4 ingredientes; bebida con tamaños y un extra; comanda de cocina (crepa + agua embotellada: dos trabajos en el orden configurado, la comanda solo con la crepa, reimpresión y aviso de cancelación); impresora Bluetooth simulada; autorización con PIN; **offline** (`context.setOffline(true)` → vender → volver en línea → verificar que la venta llegó a la base); **dos dispositivos** (dos contextos del navegador: lo que vende uno aparece en el otro tras el pull); **PWA** (build + preview → cargar → sin red → recargar → la app abre y deja vender).
 - Datos demo (seed): cuenta `caja@demo.test` / `demo1234`; usuarios Dueño (PIN 1234, admin), Encargada (2222, encargado) y Cajero (1111, cajero); menú y configuración de `seed/menu-demo.json`.
 
 ## 14. Qué no se prueba en la noche

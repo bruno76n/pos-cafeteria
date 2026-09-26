@@ -141,11 +141,28 @@ Cambio                     $6.50
     ¡Gracias por tu visita!
 ```
 
-Opciones: imprimir (automático al cobrar o con botón), ticket digital (compartir el texto del ticket con la hoja de compartir del sistema; si no existe, copiar al portapapeles o abrir WhatsApp con el texto) y QR (fase opcional del plan). Una reimpresión lleva la marca `*** REIMPRESIÓN ***`; una venta cancelada, `*** VENTA CANCELADA ***`. También se imprime el **ticket de corte** (ver 5.7).
+**Comanda de cocina.** Al cobrar salen dos impresos: el ticket del cliente (arriba, sin cambios) y la comanda para cocina, como dos trabajos separados a la misma impresora, en el orden configurado y con una pausa breve (1 s) entre ellos. La comanda lleva "COCINA" y el folio en grande, la hora, "Para: Luis" en grande si hay cliente, cajero y caja en letra chica y, separados por una raya, solo los productos que van a cocina: cantidad y nombre en grande ("2x Crepa dulce") y debajo tamaño, ingredientes, extras/modificadores y la nota destacada (">> NOTA: …"). Sin precios, subtotales, totales, IVA ni datos fiscales. Mismo ancho, avance y corte que el ticket. Si ninguna línea va a cocina, no hay comanda. Si falla un impreso, el otro se intenta igual y el error dice cuál falló ("No se pudo imprimir la comanda de cocina."). Las ventas anteriores a "Va a cocina" cuentan todas sus líneas como de cocina.
+
+```
+     COCINA          (doble)
+    A-000123         (doble)
+      08:42
+Para: Luis           (doble)
+Ana · Caja 1         (chica)
+--------------------------------
+2x Crepa dulce       (doble)
+  Chica
+  Nutella, Plátano
+  Helado
+>> NOTA: sin azúcar glass
+--------------------------------
+```
+
+Opciones: imprimir (automático al cobrar, según la impresora de la tablet, o con botón), ticket digital (compartir el texto del ticket con la hoja de compartir del sistema; si no existe, copiar al portapapeles o abrir WhatsApp con el texto) y QR (fase opcional del plan). Una reimpresión lleva la marca `*** REIMPRESIÓN ***`; una venta cancelada, `*** VENTA CANCELADA ***`. También se imprime el **ticket de corte** (ver 5.7).
 
 ### 5.5 Menú: productos
 
-Campos: nombre (obligatorio), imagen (opcional), categoría (obligatoria), precio base (≥ 0), tamaños, se arma con ingredientes, descripción, disponible / no disponible, orden en el menú y "Opciones adicionales" (grupos de modificadores asignados, en orden).
+Campos: nombre (obligatorio), imagen (opcional), categoría (obligatoria), precio base (≥ 0), tamaños, se arma con ingredientes, descripción, disponible / no disponible, **va a cocina** (activado por defecto; se apaga en lo que no se prepara, como agua embotellada, café en grano o galleta empaquetada), orden en el menú y "Opciones adicionales" (grupos de modificadores asignados, en orden).
 
 - **Tamaños:** se agregan a mano, con nombre libre ("Chica", "Grande", "12 oz") y precio. Nada automático ni global. Sin tamaños, el producto se vende a su precio base; con tamaños, el precio sale del tamaño elegido y el precio base se oculta. Se reordenan (el primero viene elegido en la venta), se quitan y se pueden copiar de otro producto ("Copiar tamaños de…"). No puede haber dos tamaños con el mismo nombre.
 - **Se arma con ingredientes** (interruptor): ingredientes incluidos por tamaño (o uno solo si no hay tamaños), precio por ingrediente extra, mínimo y máximo de ingredientes (máximo vacío = sin límite) e ingredientes permitidos: todos, o una selección (con filtro por grupo y "Marcar todos").
@@ -198,8 +215,8 @@ Ejemplo:
 
 **Detalle:** vista del ticket y acciones:
 
-- **Ver ticket** y **Reimprimir**.
-- **Cancelar venta:** solo si el turno de esa venta sigue abierto y la venta está pagada. Motivo obligatorio. Requiere `cancelarVentas` o autorización. La venta queda "Cancelada" y deja de contar en totales (el dinero se devolvió en el momento).
+- **Ver ticket**, **Reimprimir ticket** y **Reimprimir comanda** (si la venta tiene productos de cocina), ambos con `*** REIMPRESIÓN ***`.
+- **Cancelar venta:** solo si el turno de esa venta sigue abierto y la venta está pagada. Motivo obligatorio. Requiere `cancelarVentas` o autorización. La venta queda "Cancelada" y deja de contar en totales (el dinero se devolvió en el momento). Si tenía productos de cocina y la comanda está activada, ofrece "Imprimir aviso a cocina": una comanda con "COMANDA CANCELADA", "NO PREPARAR", el folio y los productos, para avisar en barra (también queda el botón "Imprimir comanda cancelada" en el detalle).
 - **Devolución:** para ventas pagadas o devueltas parcialmente, de cualquier turno. Se eligen líneas y cantidades (o todo), método de reembolso (en efectivo requiere un turno abierto en este dispositivo) y motivo. Requiere `cancelarVentas` o autorización. El monto se calcula proporcional al descuento (ver §6). Crea un registro en `devoluciones`, suma a `devuelto` de la venta y cambia su estado. El efectivo devuelto resta del efectivo esperado del turno donde se hizo la devolución.
 
 **Devoluciones:** lista con filtros por fecha, con enlace a la venta original.
@@ -231,7 +248,7 @@ Solo Administrador.
 - **Negocio:** nombre, logo (comprimido), dirección, teléfono, RFC (opcional) y categorías de gasto.
 - **Impuestos y descuentos:** precios incluyen IVA (sí por defecto), tasa (16 %), mostrar desglose de IVA en el ticket; permitir descuentos y porcentaje máximo.
 - **Pagos:** tarjeta y transferencia activadas o no (efectivo siempre), cuentas bancarias para transferencia (banco, titular, CLABE, cuenta o tarjeta, alias) y referencia de transferencia obligatoria sí/no.
-- **Ticket:** mostrar logo, dirección, teléfono, RFC y cajero, mensaje final y QR. Vista previa en vivo (al ancho de la impresora de la tablet).
+- **Ticket:** mostrar logo, dirección, teléfono, RFC y cajero, mensaje final y QR. **Comanda de cocina:** "Imprimir comanda de cocina" (activado por defecto), orden de impresión ("Cocina primero" por defecto o "Cliente primero") y copias de la comanda (1–3, por defecto 1; en la impresora del sistema las copias se eligen en el diálogo). Vista previa en vivo del ticket y de la comanda, lado a lado (al ancho de la impresora de la tablet).
 - **Impresora** (por dispositivo, se guarda localmente y no se sincroniza). La impresora real es una térmica de 58 mm por Bluetooth ("58-LL thermal printer") y la tablet es Android con Chrome.
   - Tipo de conexión: **Bluetooth** (Web Bluetooth), **RawBT** (app de Android, para Bluetooth clásico) o **Sistema** (diálogo de impresión del navegador). Solo aparecen las que el dispositivo soporta; si no hay ninguna directa queda Sistema con la explicación.
   - Bluetooth: "Buscar impresora" (desde un toque), nombre de la impresora elegida, estado (Conectada / Desconectada / Buscando), "Reconectar" y "Olvidar impresora". Al abrir la app se reconecta sola a la impresora guardada. Si al buscar no aparece nada: "No se encontró la impresora…" y la sugerencia de cambiar a RawBT (probablemente es Bluetooth clásico).

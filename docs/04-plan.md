@@ -163,3 +163,9 @@ Cada tarea incluye su criterio de terminado después de "→".
 
 - [x] 17.1 Configuración › Impresora por dispositivo (local): Bluetooth propio (Web Bluetooth, trozos de 20 bytes, reconexión al abrir), RawBT y Sistema con la misma interfaz; ancho, densidad, avance, corte, copias e imprimir al cobrar; ESC/POS con avance y corte según la configuración; se quitan USB y las librerías de @point-of-sale para conectar. → Pruebas de bytes, drivers simulados, persistencia y e2e.
 - [x] 17.2 Docs de especificación, arquitectura, interfaz y README. → Actualizados.
+
+## Fase 18: Comanda de cocina
+
+- [x] 18.1 "Va a cocina" en el producto (esquema, migración 0005, Dexie v4, sync, formulario, copia en la línea de venta y menú de ejemplo). → Pruebas de esquema y de API.
+- [x] 18.2 Comanda como otro TicketDocumento, opciones en Configuración › Ticket con vista previa, dos trabajos al cobrar en el orden configurado, reimpresión y aviso de cancelación. → Snapshot, pruebas de trabajos y errores, e2e.
+- [x] 18.3 Docs de especificación, arquitectura e interfaz. → Actualizados.

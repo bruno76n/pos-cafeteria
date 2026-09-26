@@ -190,11 +190,15 @@ Teclas de 64 px; el cambio en 48 px. El botón de acción vive en el panel de ca
 
 ### Historial y detalle
 
-Tabla con filas de 56 px: folio, hora, productos (una línea, truncada), total (derecha), método(s), cajero, estado. Insignias: Cancelada (Faltante), Devuelta y Devuelta parcial (Ámbar), Por subir (Ámbar con ícono de nube). Detalle: ticket a la izquierda como vista previa, acciones a la derecha (Reimprimir, Compartir, Cancelar venta, Devolución).
+Tabla con filas de 56 px: folio, hora, productos (una línea, truncada), total (derecha), método(s), cajero, estado. Insignias: Cancelada (Faltante), Devuelta y Devuelta parcial (Ámbar), Por subir (Ámbar con ícono de nube). Detalle: ticket a la izquierda como vista previa, acciones a la derecha (Reimprimir ticket, Reimprimir comanda —o "Imprimir comanda cancelada" si la venta se canceló—, Compartir, Cancelar venta, Devolución). Al cancelar una venta con productos de cocina aparece un aviso Ámbar "Esta venta ya se mandó a cocina. Avisa en barra que no la preparen." con el botón "Imprimir aviso a cocina". Tras cobrar, el resultado de la venta ofrece también "Imprimir comanda" ("Reintentar comanda" si falló).
 
 ### Menú
 
-Lista de productos con miniatura, nombre, categoría, precio ("Desde $55.00" si tiene tamaños), interruptor "Disponible", botones subir/bajar, "Editar" y eliminar (bote, con confirmación). Formulario con vista previa del botón como se verá en Nueva venta y, en este orden: nombre, categoría, precio base (se oculta si hay tamaños), **Tamaños** (filas nombre + precio, subir/bajar, quitar, "Agregar tamaño", "Copiar tamaños de…"), **Se arma con ingredientes** (interruptor; incluidos por tamaño, "Precio por ingrediente extra", Mínimo, Máximo con "Sin límite", permitidos Todos/Elegir con filtro por grupo y casillas), descripción, imagen, disponible y **Opciones adicionales** (todos los grupos con casilla; los marcados primero, con subir/bajar). Categorías: lista con color, activa y orden. Ingredientes: alta rápida arriba (nombre, grupo con sugerencias, Agregar) y lista con grupo, disponible, subir/bajar, editar y eliminar. Modificadores: lista de grupos; al editar, tabla de opciones con precio extra y "por defecto".
+Lista de productos con miniatura, nombre, categoría, precio ("Desde $55.00" si tiene tamaños), interruptor "Disponible", botones subir/bajar, "Editar" y eliminar (bote, con confirmación). Formulario con vista previa del botón como se verá en Nueva venta y, en este orden: nombre, categoría, precio base (se oculta si hay tamaños), **Tamaños** (filas nombre + precio, subir/bajar, quitar, "Agregar tamaño", "Copiar tamaños de…"), **Se arma con ingredientes** (interruptor; incluidos por tamaño, "Precio por ingrediente extra", Mínimo, Máximo con "Sin límite", permitidos Todos/Elegir con filtro por grupo y casillas), descripción, imagen, disponible, **Va a cocina** (interruptor, encendido por defecto) y **Opciones adicionales** (todos los grupos con casilla; los marcados primero, con subir/bajar). Categorías: lista con color, activa y orden. Ingredientes: alta rápida arriba (nombre, grupo con sugerencias, Agregar) y lista con grupo, disponible, subir/bajar, editar y eliminar. Modificadores: lista de grupos; al editar, tabla de opciones con precio extra y "por defecto".
+
+### Configuración › Ticket
+
+Formulario a la izquierda (campos visibles, mensaje final, QR y la sección **Comanda de cocina**: "Imprimir comanda de cocina", "Orden de impresión" Cocina primero / Cliente primero y "Copias de la comanda" 1–3) y, a la derecha, las dos vistas previas lado a lado: "Ticket del cliente" y "Comanda de cocina" (o "Esta venta no tiene productos que vayan a cocina."). La comanda se dibuja con la misma fuente monoespaciada; lo doble en 2×, lo chico al 80 %.
 
 ### Configuración › Impresora
 
@@ -217,6 +221,9 @@ Sentence case, verbos concretos, sin relleno. Una acción conserva su nombre en 
 | Sin permiso | "Tu usuario no puede cancelar ventas." | "Pedir autorización" |
 | Impresora | "No se pudo imprimir: la impresora no responde. Revisa que esté encendida y vuelve a intentar." | "Reintentar" |
 | Impresora conectada | "Impresora conectada" | – |
+| Falló la comanda | "No se pudo imprimir la comanda de cocina." + el error de la impresora | "Reintentar comanda" |
+| Falló el ticket (con comanda) | "No se pudo imprimir el ticket del cliente." + el error de la impresora | "Reintentar" |
+| Venta cancelada ya en cocina | "Esta venta ya se mandó a cocina. Avisa en barra que no la preparen." | "Imprimir aviso a cocina" |
 | Bluetooth sin resultados | "No se encontró la impresora. Revisa que esté encendida y cerca." + "Esta impresora puede ser Bluetooth clásico, que el navegador no puede usar. Cambia el tipo de conexión a RawBT." | "Buscar impresora" |
 | Bluetooth desconectada | "Se perdió la conexión. Vuelve a intentar." | "Reintentar" |
 | RawBT no instalada | "No se pudo abrir RawBT. Revisa que esté instalada en la tablet." | "Reintentar" |
