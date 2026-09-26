@@ -1,3 +1,4 @@
+import { bytesDeTicket } from '../escpos';
 import type { ConfigImpresora, DispositivoImpresora } from '../configImpresora';
 import type { TicketDocumento } from '../ticket';
 import { crearEstado, ErrorImpresion, MENSAJES_IMPRESORA as M, type DriverImpresora } from './tipos';
@@ -32,8 +33,9 @@ const entornoNavegador: Entorno = {
       ? navigator.bluetooth
       : undefined,
   esperar: (ms) => new Promise((resolver) => setTimeout(resolver, ms)),
-  // El codificador ESC/POS (con sus páginas de códigos) solo se carga si se imprime directo.
-  bytes: async (doc, config) => (await import('../escpos')).bytesDeTicket(doc, config),
+  // Import estático: un import() dinámico baja un chunk al imprimir y, sin red y sin ese chunk
+  // en caché, fallaba la impresión.
+  bytes: bytesDeTicket,
 };
 
 function conLimite<T>(promesa: Promise<T>, ms: number): Promise<T> {

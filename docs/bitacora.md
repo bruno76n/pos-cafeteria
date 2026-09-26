@@ -162,6 +162,7 @@ Node v26.0.0 · npm 11.12.1 · git 2.50.1 · macOS 26.4 (arm64). No falta nada d
 - RawBT se abre con un intent sin `package`: así, si la app no está, Chrome no hace nada y se puede avisar; con `package` mandaría a la Play Store y no habría forma de saber que falló.
 - Densidad con `DC2 #` (común en térmicas genéricas); "Normal" no manda nada para no imprimir basura en impresoras que no la entienden. En Sistema las copias, densidad, avance y corte los maneja el diálogo del navegador, por eso esas opciones solo se muestran en Bluetooth y RawBT.
 - Comanda (Fase 18): "Imprimir automáticamente al cobrar" de la impresora de la tablet controla ticket y comanda juntos (si está apagado, el resultado de la venta ofrece "Imprimir ticket" e "Imprimir comanda"). La venta es inmutable, así que "ya se mandó a cocina" se decide por la venta (tiene líneas de cocina) y la configuración (comanda activada), no por un registro de impresión. En la impresora del sistema las copias de la comanda no aplican (se eligen en el diálogo), igual que las del ticket.
+- Arreglo: sin internet, la impresión Bluetooth/RawBT al cobrar fallaba porque el codificador ESC/POS se cargaba con `import()` dinámico (un chunk que se baja al imprimir). Ahora es import estático y va en el bundle principal (873 kB); imprimir ya no toca la red. El aviso "Sin conexión" de arriba es de la sincronización, no de la impresora.
 
 ## Para probar a mano (Bruno)
 

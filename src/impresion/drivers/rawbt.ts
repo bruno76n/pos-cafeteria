@@ -1,3 +1,4 @@
+import { bytesDeTicket } from '../escpos';
 import type { ConfigImpresora } from '../configImpresora';
 import type { TicketDocumento } from '../ticket';
 import { ErrorImpresion, MENSAJES_IMPRESORA as M, sinConexion, type DriverImpresora } from './tipos';
@@ -52,7 +53,7 @@ function abrirEnNavegador(url: string): Promise<boolean> {
 const entornoNavegador: Entorno = {
   soportado: () => typeof navigator !== 'undefined' && /Android/i.test(navigator.userAgent),
   abrir: abrirEnNavegador,
-  bytes: async (doc, config) => (await import('../escpos')).bytesDeTicket(doc, config),
+  bytes: bytesDeTicket,
 };
 
 export function crearDriverRawBT(entorno: Entorno = entornoNavegador): DriverImpresora {
