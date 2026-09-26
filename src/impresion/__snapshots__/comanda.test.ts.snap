@@ -1,0 +1,20 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`comanda de cocina > encabezado, cliente, productos con su detalle y nota, sin precios 1`] = `
+"     COCINA
+    A-000123
+             08:42
+Para: Luis
+Ana · Caja 1
+--------------------------------
+2x Crepa dulce
+  Grande
+  Nutella, Plátano, Fresa, Nuez
+  (2 extra)
+  Helado
+>> NOTA: sin azúcar glass
+--------------------------------
+2x Latte
+  Mediano 16 oz, Almendra
+--------------------------------"
+`;

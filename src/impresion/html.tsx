@@ -14,6 +14,7 @@ ${selector} { font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace; 
 ${selector} .r { white-space: pre; min-height: 1.25em; }
 ${selector} .n { font-weight: 700; }
 ${selector} .d { font-size: 2em; line-height: 1.15; font-weight: 700; }
+${selector} .c { font-size: 0.8em; }
 ${selector} .logo { display: block; max-width: 60%; margin: 0 auto 0.5em; filter: grayscale(1) contrast(1.4); }
 ${selector} .qr svg { display: block; width: 50%; height: auto; margin: 0.5em auto; }`;
 }
@@ -26,7 +27,9 @@ export function ticketAHTML(doc: TicketDocumento): string {
       if (linea.tipo === 'qr') return `<div class="qr">${renderSVG(linea.contenido, { border: 1 })}</div>`;
       return renglonesDe(linea, doc.columnas)
         .map((r) => {
-          const clases = ['r', r.negrita ? 'n' : '', r.doble ? 'd' : ''].filter(Boolean).join(' ');
+          const clases = ['r', r.negrita ? 'n' : '', r.doble ? 'd' : '', r.chica ? 'c' : '']
+            .filter(Boolean)
+            .join(' ');
           return `<div class="${clases}">${escapar(r.texto)}</div>`;
         })
         .join('');
@@ -48,14 +51,22 @@ ${estilosTicket(doc)}
 }
 
 /** Vista previa del ticket en pantalla. */
-export function VistaTicket({ doc, className = '' }: { doc: TicketDocumento; className?: string }) {
+export function VistaTicket({
+  doc,
+  className = '',
+  etiqueta = 'Vista previa del ticket',
+}: {
+  doc: TicketDocumento;
+  className?: string;
+  etiqueta?: string;
+}) {
   return (
     <div className={`overflow-x-auto rounded-boton border border-linea bg-white p-4 shadow-sm ${className}`}>
       <style>{estilosTicket(doc, '.vista-ticket')}</style>
       <div
         className="vista-ticket mx-auto text-[13px]"
         role="document"
-        aria-label="Vista previa del ticket"
+        aria-label={etiqueta}
         dangerouslySetInnerHTML={{ __html: ticketAHTML(doc) }}
       />
     </div>

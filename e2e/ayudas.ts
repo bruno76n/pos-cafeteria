@@ -111,3 +111,23 @@ export async function respaldarConfig(request: APIRequestContext) {
     });
   };
 }
+
+/**
+ * Registra el HTML de cada trabajo que se manda a imprimir por el diálogo del sistema (srcdoc del
+ * iframe oculto), en orden. El diálogo real bloquea Chromium sin interfaz: se simula.
+ */
+export async function capturarTrabajos(page: Page) {
+  await page.addInitScript(() => {
+    window.print = () => setTimeout(() => window.dispatchEvent(new Event('afterprint')), 0);
+    const original = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'srcdoc')!;
+    Object.defineProperty(HTMLIFrameElement.prototype, 'srcdoc', {
+      ...original,
+      set(valor: string) {
+        const w = window as unknown as { impresos?: string[] };
+        (w.impresos ??= []).push(valor);
+        original.set!.call(this, valor);
+      },
+    });
+  });
+  return () => page.evaluate(() => (window as unknown as { impresos?: string[] }).impresos ?? []);
+}

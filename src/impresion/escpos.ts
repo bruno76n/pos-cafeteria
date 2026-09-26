@@ -48,7 +48,9 @@ export function ticketAEscPos(doc: TicketDocumento, opciones: OpcionesEscPos = {
         for (const r of renglonesDe(linea, doc.columnas)) {
           if (r.negrita) e.bold(true);
           if (r.doble) e.size(2, 2);
+          if (r.chica) e.font('B');
           e.line(r.texto);
+          if (r.chica) e.font('A');
           if (r.doble) e.size(1, 1);
           if (r.negrita) e.bold(false);
         }

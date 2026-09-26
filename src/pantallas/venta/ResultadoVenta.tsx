@@ -1,8 +1,9 @@
-import { Printer } from 'lucide-react';
+import { ChefHat, Printer } from 'lucide-react';
 import { Boton } from '@/componentes/Boton';
 import type { UltimaVenta } from '@/datos/bd';
 import { useConfig, useVenta } from '@/datos/consultas';
 import { formatearDinero } from '@/dominio/dinero';
+import { construirComanda, opcionesComanda } from '@/impresion/comanda';
 import { ticketATexto } from '@/impresion/ticket';
 import { ticketDeVenta } from '@/impresion/ticketVenta';
 import type { useImpresora } from '@/impresion/usarImpresora';
@@ -19,7 +20,13 @@ export function ResultadoVenta({
 }) {
   const venta = useVenta(ultima.ventaId);
   const config = useConfig();
-  const { imprimir, error, imprimiendo, columnas } = impresora;
+  const { imprimir, error, fallo, imprimiendo, columnas } = impresora;
+  const comanda =
+    venta && config && opcionesComanda(config.ticket).imprimir
+      ? construirComanda(venta, config, { columnas })
+      : null;
+  const fallaComanda = fallo?.fallidos.includes('comanda') ?? false;
+  const fallaTicket = fallo?.fallidos.includes('ticket') ?? false;
 
   return (
     <div className="flex flex-col items-center gap-2 p-6 text-center">
@@ -36,17 +43,31 @@ export function ResultadoVenta({
               disabled={imprimiendo}
               onClick={() => imprimir(ticketDeVenta(venta, config, { columnas }))}
             >
-              <Printer aria-hidden /> {error ? 'Reintentar' : 'Imprimir ticket'}
+              <Printer aria-hidden /> {fallaTicket ? 'Reintentar' : 'Imprimir ticket'}
             </Boton>
             <BotonCompartir
               titulo={`Ticket ${venta.folio}`}
               texto={ticketATexto(ticketDeVenta(venta, config, { columnas }))}
             />
+            {comanda && (
+              <Boton
+                className="col-span-2"
+                disabled={imprimiendo}
+                onClick={() =>
+                  impresora.imprimirTrabajos([
+                    { tipo: 'comanda', doc: comanda, copias: opcionesComanda(config.ticket).copias },
+                  ])
+                }
+              >
+                <ChefHat aria-hidden /> {fallaComanda ? 'Reintentar comanda' : 'Imprimir comanda'}
+              </Boton>
+            )}
           </div>
           {error && (
-            <p className="text-etiqueta text-faltante" role="alert">
-              {error}
-            </p>
+            <div className="text-etiqueta" role="alert">
+              <p className="text-faltante">{error}</p>
+              {fallo?.ayuda && <p className="text-grafito-suave">{fallo.ayuda}</p>}
+            </div>
           )}
         </div>
       )}

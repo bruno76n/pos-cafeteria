@@ -11,7 +11,15 @@ import type { ConfigGeneral, ConfigTicket, Turno, Venta } from '@/dominio/tipos'
 export type Alineacion = 'izquierda' | 'centro' | 'derecha';
 
 export type LineaTicket =
-  | { tipo: 'texto'; texto: string; alineacion?: Alineacion; negrita?: boolean; doble?: boolean }
+  | {
+      tipo: 'texto';
+      texto: string;
+      alineacion?: Alineacion;
+      negrita?: boolean;
+      doble?: boolean;
+      /** Letra chica (fuente B en ESC/POS); ocupa las mismas columnas. */
+      chica?: boolean;
+    }
   | { tipo: 'columnas'; izquierda: string; derecha: string; negrita?: boolean }
   | { tipo: 'separador' }
   | { tipo: 'logo'; dataUrl: string }
@@ -26,7 +34,7 @@ export interface TicketDocumento {
 export type AnchoPapel = 58 | 80;
 export const columnasDeAncho = (ancho: AnchoPapel): 32 | 48 => (ancho === 80 ? 48 : 32);
 
-const texto = (
+export const texto = (
   t: string,
   extra: Omit<Extract<LineaTicket, { tipo: 'texto' }>, 'tipo' | 'texto'> = {},
 ): LineaTicket => ({
@@ -40,7 +48,7 @@ const columnas = (izquierda: string, derecha: string, negrita?: boolean): LineaT
   derecha,
   ...(negrita ? { negrita } : {}),
 });
-const SEPARADOR: LineaTicket = { tipo: 'separador' };
+export const SEPARADOR: LineaTicket = { tipo: 'separador' };
 const porcentaje = (tasa: number) => `${Math.round(tasa * 10000) / 100}%`;
 
 function encabezado(config: Pick<ConfigGeneral, 'negocio' | 'ticket'>): LineaTicket[] {
@@ -225,6 +233,7 @@ export interface RenglonTicket {
   texto: string;
   negrita?: boolean;
   doble?: boolean;
+  chica?: boolean;
 }
 
 /** Renglones de texto de una línea del ticket (sin logo ni QR). */
@@ -237,6 +246,7 @@ export function renglonesDe(linea: LineaTicket, ancho: number): RenglonTicket[] 
         texto: alinear(sangria + r, efectivo, linea.alineacion),
         negrita: linea.negrita,
         doble: linea.doble,
+        chica: linea.chica,
       }));
     }
     case 'columnas': {

@@ -1,24 +1,17 @@
 import { expect, test, type Page } from '@playwright/test';
-import { entrarCon, irAVentaConCajaAbierta, panelVenta, PIN, prepararDispositivo } from './ayudas';
+import {
+  capturarTrabajos,
+  entrarCon,
+  irAVentaConCajaAbierta,
+  panelVenta,
+  PIN,
+  prepararDispositivo,
+} from './ayudas';
 
-/** Registra el HTML de cada ticket que se manda a imprimir por el navegador (srcdoc del iframe oculto). */
-async function capturarImpresiones(page: Page) {
-  await page.addInitScript(() => {
-    // El diálogo de impresión real bloquea la página en Chromium sin interfaz: se simula (también en iframes).
-    window.print = () => setTimeout(() => window.dispatchEvent(new Event('afterprint')), 0);
-    const original = Object.getOwnPropertyDescriptor(HTMLIFrameElement.prototype, 'srcdoc')!;
-    Object.defineProperty(HTMLIFrameElement.prototype, 'srcdoc', {
-      ...original,
-      set(valor: string) {
-        const w = window as unknown as { impresos?: string[] };
-        (w.impresos ??= []).push(valor);
-        original.set!.call(this, valor);
-      },
-    });
-  });
-  return () =>
-    page.evaluate(() => ((window as unknown as { impresos?: string[] }).impresos ?? []).join('\n'));
-}
+const capturarImpresiones = async (page: Page) => {
+  const trabajos = await capturarTrabajos(page);
+  return async () => (await trabajos()).join('\n');
+};
 
 async function irAImpresora(page: Page) {
   await page.getByRole('link', { name: 'Configuración' }).click();

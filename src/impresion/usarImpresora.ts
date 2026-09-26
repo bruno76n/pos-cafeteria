@@ -3,6 +3,7 @@ import { leerConfigImpresora, useConfigImpresora } from '@/datos/impresora';
 import { formatearDinero } from '@/dominio/dinero';
 import { formatearFechaHora } from '@/dominio/fechas';
 import type { ConfigGeneral } from '@/dominio/tipos';
+import type { TipoTrabajo, TrabajoImpresion } from './comanda';
 import { CONFIG_IMPRESORA_POR_DEFECTO, columnasDeImpresora } from './configImpresora';
 import { DRIVERS, driverDe, ErrorImpresion, MENSAJES_IMPRESORA, type DriverImpresora } from './drivers';
 import type { TicketDocumento } from './ticket';
@@ -36,12 +37,40 @@ export function ticketDePrueba(config: ConfigGeneral, columnas: 32 | 48): Ticket
 export interface FalloImpresion {
   mensaje: string;
   ayuda?: string;
+  /** Qué trabajos no salieron (para reintentar solo esos). */
+  fallidos: TipoTrabajo[];
 }
 
-const falloDe = (e: unknown): FalloImpresion =>
-  e instanceof ErrorImpresion
-    ? { mensaje: e.message, ...(e.ayuda ? { ayuda: e.ayuda } : {}) }
-    : { mensaje: MENSAJES_IMPRESORA.noResponde };
+/** Pausa entre dos trabajos seguidos para que la impresora no los empalme. */
+export const PAUSA_ENTRE_TRABAJOS_MS = 1_000;
+
+const mensajeDe = (e: unknown) => (e instanceof ErrorImpresion ? e.message : MENSAJES_IMPRESORA.noResponde);
+const ayudaDe = (e: unknown) => (e instanceof ErrorImpresion ? e.ayuda : undefined);
+
+const NO_SALIO: Record<TipoTrabajo, string> = {
+  ticket: MENSAJES_IMPRESORA.ticketCliente,
+  comanda: MENSAJES_IMPRESORA.comanda,
+  corte: MENSAJES_IMPRESORA.noResponde,
+};
+
+/**
+ * Qué decir cuando algo falla: si no salió nada, el error de la impresora; si salió uno de dos
+ * (o falló una comanda sola), cuál no salió, con el error de la impresora como ayuda.
+ */
+export function falloDeTrabajos(
+  trabajos: TrabajoImpresion[],
+  errores: { tipo: TipoTrabajo; error: unknown }[],
+): FalloImpresion | null {
+  const primero = errores[0];
+  if (!primero) return null;
+  const fallidos = errores.map((e) => e.tipo);
+  const todos = errores.length === trabajos.length;
+  if (todos && (trabajos.length > 1 || primero.tipo !== 'comanda')) {
+    const ayuda = ayudaDe(primero.error);
+    return { mensaje: mensajeDe(primero.error), ...(ayuda ? { ayuda } : {}), fallidos };
+  }
+  return { mensaje: NO_SALIO[primero.tipo], ayuda: mensajeDe(primero.error), fallidos };
+}
 
 /** Estado de conexión del driver, en vivo. */
 export function useEstadoImpresora(driver: DriverImpresora) {
@@ -58,24 +87,36 @@ export function useImpresora() {
   const [imprimiendo, setImprimiendo] = useState(false);
   const actual = config ?? CONFIG_IMPRESORA_POR_DEFECTO;
 
-  async function imprimir(doc: TicketDocumento): Promise<boolean> {
+  /** Manda cada documento como un trabajo aparte; si uno falla, los demás se intentan igual. */
+  async function imprimirTrabajos(trabajos: TrabajoImpresion[]): Promise<boolean> {
     setImprimiendo(true);
     setFallo(null);
+    const errores: { tipo: TipoTrabajo; error: unknown }[] = [];
     try {
       // Se relee al imprimir: la pantalla pudo cambiarla hace un instante.
       const vigente = await leerConfigImpresora();
-      await driverDe(vigente.tipo).imprimir(doc, vigente);
-      return true;
-    } catch (e) {
-      setFallo(falloDe(e));
-      return false;
-    } finally {
-      setImprimiendo(false);
+      const driver = driverDe(vigente.tipo);
+      for (const [i, t] of trabajos.entries()) {
+        if (i > 0) await new Promise((resolver) => setTimeout(resolver, PAUSA_ENTRE_TRABAJOS_MS));
+        try {
+          await driver.imprimir(t.doc, { ...vigente, copias: t.copias ?? vigente.copias });
+        } catch (error) {
+          errores.push({ tipo: t.tipo, error });
+        }
+      }
+    } catch (error) {
+      errores.push(...trabajos.map((t) => ({ tipo: t.tipo, error })));
     }
+    setFallo(falloDeTrabajos(trabajos, errores));
+    setImprimiendo(false);
+    return errores.length === 0;
   }
+
+  const imprimir = (doc: TicketDocumento, tipo: TipoTrabajo = 'ticket') => imprimirTrabajos([{ tipo, doc }]);
 
   return {
     imprimir,
+    imprimirTrabajos,
     error: fallo?.mensaje ?? null,
     fallo,
     imprimiendo,

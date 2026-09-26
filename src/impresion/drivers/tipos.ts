@@ -33,6 +33,8 @@ export const MENSAJES_IMPRESORA = {
   conexionPerdida: 'Se perdió la conexión. Vuelve a intentar.',
   rawbt: 'No se pudo abrir RawBT. Revisa que esté instalada en la tablet.',
   noResponde: 'No se pudo imprimir: la impresora no responde. Revisa que esté encendida y vuelve a intentar.',
+  comanda: 'No se pudo imprimir la comanda de cocina.',
+  ticketCliente: 'No se pudo imprimir el ticket del cliente.',
 } as const;
 
 export class ErrorImpresion extends Error {

@@ -1,4 +1,4 @@
-import { ArrowLeft, Minus, Plus, Printer, RotateCcw, XCircle } from 'lucide-react';
+import { ArrowLeft, ChefHat, Minus, Plus, Printer, RotateCcw, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router';
 import { Boton, clasesBoton } from '@/componentes/Boton';
@@ -33,13 +33,22 @@ import { nombreLinea } from '@/dominio/personalizacion';
 import type { Devolucion, MetodoPago, Venta } from '@/dominio/tipos';
 import { useAutorizar } from '@/estado/autorizacion';
 import { useDispositivoActual } from '@/estado/dispositivo';
+import { construirComanda, opcionesComanda } from '@/impresion/comanda';
 import { VistaTicket } from '@/impresion/html';
 import { ticketATexto } from '@/impresion/ticket';
 import { ticketDeVenta } from '@/impresion/ticketVenta';
 import { useImpresora } from '@/impresion/usarImpresora';
 import { InsigniaPorSubir, TONO_ESTADO } from './Historial';
 
-function DialogoCancelar({ venta, alCerrar }: { venta: Venta; alCerrar: () => void }) {
+function DialogoCancelar({
+  venta,
+  alCerrar,
+  alCancelar,
+}: {
+  venta: Venta;
+  alCerrar: () => void;
+  alCancelar: () => void;
+}) {
   const autorizar = useAutorizar();
   const [motivo, setMotivo] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -50,7 +59,7 @@ function DialogoCancelar({ venta, alCerrar }: { venta: Venta; alCerrar: () => vo
     if (!permitido) return;
     try {
       await cancelarVenta({ ventaId: venta.id, motivo, ...permitido });
-      alCerrar();
+      alCancelar();
     } catch (e) {
       setError((e as Error).message);
     }
@@ -219,8 +228,9 @@ export function DetalleVenta() {
   const turno = useTurno(venta?.turnoId);
   const devoluciones = useDevolucionesDeVenta(venta?.id);
   const pendientes = usePendientes('ventas');
-  const { imprimir, error, imprimiendo, columnas } = useImpresora();
+  const { imprimirTrabajos, error, fallo, imprimiendo, columnas } = useImpresora();
   const [cancelando, setCancelando] = useState(false);
+  const [avisarCocina, setAvisarCocina] = useState(false);
   const [devolviendo, setDevolviendo] = useState(false);
 
   if (venta === undefined || config === undefined || devoluciones === undefined) return null;
@@ -232,6 +242,12 @@ export function DetalleVenta() {
     );
   }
   const doc = ticketDeVenta(venta, config, { columnas });
+  const cancelada = venta.estado === 'cancelada';
+  // Solo si hay algo que se preparó (líneas que van a cocina).
+  const comanda = construirComanda(venta, config, { columnas, cancelada, reimpresion: !cancelada });
+  const copiasComanda = opcionesComanda(config.ticket).copias;
+  const imprimirComanda = () =>
+    comanda && imprimirTrabajos([{ tipo: 'comanda', doc: comanda, copias: copiasComanda }]);
 
   return (
     <Pantalla
@@ -256,10 +272,20 @@ export function DetalleVenta() {
             <Boton
               tamano="grande"
               disabled={imprimiendo}
-              onClick={() => imprimir(ticketDeVenta(venta, config, { columnas, reimpresion: true }))}
+              onClick={() =>
+                imprimirTrabajos([
+                  { tipo: 'ticket', doc: ticketDeVenta(venta, config, { columnas, reimpresion: true }) },
+                ])
+              }
             >
-              <Printer aria-hidden /> {error ? 'Reintentar' : 'Reimprimir'}
+              <Printer aria-hidden />{' '}
+              {fallo?.fallidos.includes('ticket') ? 'Reintentar' : 'Reimprimir ticket'}
             </Boton>
+            {comanda && (
+              <Boton tamano="grande" disabled={imprimiendo} onClick={imprimirComanda}>
+                <ChefHat aria-hidden /> {cancelada ? 'Imprimir comanda cancelada' : 'Reimprimir comanda'}
+              </Boton>
+            )}
             <BotonCompartir titulo={`Ticket ${venta.folio}`} texto={ticketATexto(doc)} />
             {puedeCancelar(venta, turno ?? undefined) && (
               <Boton variante="peligro" tamano="grande" onClick={() => setCancelando(true)}>
@@ -273,9 +299,21 @@ export function DetalleVenta() {
             )}
           </div>
           {error && (
-            <p className="text-faltante" role="alert">
-              {error}
-            </p>
+            <div role="alert">
+              <p className="text-faltante">{error}</p>
+              {fallo?.ayuda && <p className="text-grafito-suave">{fallo.ayuda}</p>}
+            </div>
+          )}
+          {avisarCocina && comanda && (
+            <div
+              role="status"
+              className="flex flex-wrap items-center gap-3 rounded-boton border border-ambar/30 bg-ambar-fondo p-3"
+            >
+              <p className="flex-1">Esta venta ya se mandó a cocina. Avisa en barra que no la preparen.</p>
+              <Boton variante="oscuro" disabled={imprimiendo} onClick={imprimirComanda}>
+                <ChefHat aria-hidden /> Imprimir aviso a cocina
+              </Boton>
+            </div>
           )}
           {venta.cancelacion && (
             <p className="rounded-boton bg-faltante/10 p-3 text-faltante">
@@ -308,7 +346,16 @@ export function DetalleVenta() {
           )}
         </div>
       </div>
-      {cancelando && <DialogoCancelar venta={venta} alCerrar={() => setCancelando(false)} />}
+      {cancelando && (
+        <DialogoCancelar
+          venta={venta}
+          alCerrar={() => setCancelando(false)}
+          alCancelar={() => {
+            setCancelando(false);
+            setAvisarCocina(opcionesComanda(config.ticket).imprimir);
+          }}
+        />
+      )}
       {devolviendo && (
         <DialogoDevolucion venta={venta} previas={devoluciones} alCerrar={() => setDevolviendo(false)} />
       )}
