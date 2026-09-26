@@ -5,7 +5,8 @@ import { formatearFechaHora } from '@/dominio/fechas';
 import { detalleLinea, nombreLinea } from '@/dominio/personalizacion';
 import type { ConfigGeneral, ConfigTicket, Turno, Venta } from '@/dominio/tipos';
 
-// Ticket como datos puros; los renderizadores (HTML y ESC/POS) solo lo dibujan.
+// Ticket como datos puros; los renderizadores (HTML y ESC/POS) solo lo dibujan. El avance y el
+// corte del papel no son parte del ticket: los pone la impresora de cada dispositivo.
 
 export type Alineacion = 'izquierda' | 'centro' | 'derecha';
 
@@ -15,15 +16,15 @@ export type LineaTicket =
   | { tipo: 'separador' }
   | { tipo: 'logo'; dataUrl: string }
   | { tipo: 'qr'; contenido: string }
-  | { tipo: 'espacio' }
-  | { tipo: 'corte' };
+  | { tipo: 'espacio' };
 
 export interface TicketDocumento {
   columnas: 32 | 48;
   lineas: LineaTicket[];
 }
 
-export const columnasDeAncho = (ancho: 58 | 80): 32 | 48 => (ancho === 80 ? 48 : 32);
+export type AnchoPapel = 58 | 80;
+export const columnasDeAncho = (ancho: AnchoPapel): 32 | 48 => (ancho === 80 ? 48 : 32);
 
 const texto = (
   t: string,
@@ -55,8 +56,13 @@ function encabezado(config: Pick<ConfigGeneral, 'negocio' | 'ticket'>): LineaTic
   return lineas;
 }
 
-export interface OpcionesTicketVenta {
+export interface OpcionesTicket {
+  /** Columnas del papel de la impresora de este dispositivo (32 en 58 mm, 48 en 80 mm). */
+  columnas?: 32 | 48;
   reimpresion?: boolean;
+}
+
+export interface OpcionesTicketVenta extends OpcionesTicket {
   /** Contenido del QR (enlace al ticket digital), si se usa. */
   qr?: string;
 }
@@ -122,15 +128,15 @@ export function construirTicketVenta(
   if (ticket.mensajeFinal || opciones.qr) l.push(SEPARADOR);
   if (ticket.mensajeFinal) l.push(texto(ticket.mensajeFinal, { alineacion: 'centro' }));
   if (opciones.qr) l.push({ tipo: 'qr', contenido: opciones.qr });
-  l.push({ tipo: 'espacio' }, { tipo: 'corte' });
-  return { columnas: columnasDeAncho(ticket.ancho), lineas: l };
+  l.push({ tipo: 'espacio' });
+  return { columnas: opciones.columnas ?? 32, lineas: l };
 }
 
 /** Ticket de corte de un turno cerrado (usa el resumen guardado al cerrar). */
 export function construirTicketCorte(
   turno: Turno,
   config: ConfigGeneral,
-  opciones: { reimpresion?: boolean } = {},
+  opciones: OpcionesTicket = {},
 ): TicketDocumento {
   const r = turno.resumen;
   if (!r) throw new Error('El turno no tiene corte todavía.');
@@ -178,8 +184,8 @@ export function construirTicketCorte(
     for (const [categoria, monto] of categorias) l.push(columnas(`  ${categoria}`, $(monto)));
   }
   if (turno.nota) l.push(SEPARADOR, texto(`Nota: ${turno.nota}`));
-  l.push({ tipo: 'espacio' }, { tipo: 'corte' });
-  return { columnas: columnasDeAncho(config.ticket.ancho), lineas: l };
+  l.push({ tipo: 'espacio' });
+  return { columnas: opciones.columnas ?? 32, lineas: l };
 }
 
 // Texto plano (para compartir, vista en pantalla y ESC/POS): cada línea ya ajustada al ancho.
@@ -221,7 +227,7 @@ export interface RenglonTicket {
   doble?: boolean;
 }
 
-/** Renglones de texto de una línea del ticket (sin logo, QR ni corte). */
+/** Renglones de texto de una línea del ticket (sin logo ni QR). */
 export function renglonesDe(linea: LineaTicket, ancho: number): RenglonTicket[] {
   switch (linea.tipo) {
     case 'texto': {

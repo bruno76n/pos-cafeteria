@@ -219,7 +219,7 @@ export function DetalleVenta() {
   const turno = useTurno(venta?.turnoId);
   const devoluciones = useDevolucionesDeVenta(venta?.id);
   const pendientes = usePendientes('ventas');
-  const { imprimir, error, imprimiendo } = useImpresora();
+  const { imprimir, error, imprimiendo, columnas } = useImpresora();
   const [cancelando, setCancelando] = useState(false);
   const [devolviendo, setDevolviendo] = useState(false);
 
@@ -231,7 +231,7 @@ export function DetalleVenta() {
       </Pantalla>
     );
   }
-  const doc = ticketDeVenta(venta, config);
+  const doc = ticketDeVenta(venta, config, { columnas });
 
   return (
     <Pantalla
@@ -256,7 +256,7 @@ export function DetalleVenta() {
             <Boton
               tamano="grande"
               disabled={imprimiendo}
-              onClick={() => imprimir(ticketDeVenta(venta, config, { reimpresion: true }))}
+              onClick={() => imprimir(ticketDeVenta(venta, config, { columnas, reimpresion: true }))}
             >
               <Printer aria-hidden /> {error ? 'Reintentar' : 'Reimprimir'}
             </Boton>

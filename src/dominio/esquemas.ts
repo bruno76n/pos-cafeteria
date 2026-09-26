@@ -80,15 +80,14 @@ export const esquemaConfigGeneral = z.object({
     referenciaTransferenciaObligatoria: z.boolean(),
     cuentas: z.array(esquemaCuentaBancaria),
   }),
+  // El ancho del papel y "imprimir al cobrar" son de cada dispositivo (Configuración › Impresora).
   ticket: z.object({
-    ancho: z.union([z.literal(58), z.literal(80)]),
     mostrarLogo: z.boolean(),
     mostrarDireccion: z.boolean(),
     mostrarTelefono: z.boolean(),
     mostrarRFC: z.boolean(),
     mostrarCajero: z.boolean(),
     mensajeFinal: z.string(),
-    imprimirAlCobrar: z.boolean(),
     /** QR con enlace al ticket digital (opcional; configuraciones anteriores no lo traen). */
     mostrarQR: z.boolean().optional(),
   }),

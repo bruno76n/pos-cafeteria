@@ -30,14 +30,12 @@
       ]
     },
     "ticket": {
-      "ancho": 58,
       "mostrarLogo": true,
       "mostrarDireccion": true,
       "mostrarTelefono": true,
       "mostrarRFC": false,
       "mostrarCajero": true,
-      "mensajeFinal": "¡Gracias por tu visita!",
-      "imprimirAlCobrar": false
+      "mensajeFinal": "¡Gracias por tu visita!"
     },
     "gastos": {
       "categorias": ["Insumos", "Hielo", "Proveedor", "Limpieza", "Otro"]

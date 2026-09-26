@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie';
 import type { Carrito } from '@/dominio/carrito';
+import type { ConfigImpresora } from '@/impresion/configImpresora';
 import type {
   Dispositivo,
   Operacion,
@@ -31,12 +32,6 @@ export interface ErrorSync {
   fecha: string;
 }
 
-export interface ConfigImpresora {
-  tipo: 'navegador' | 'usb' | 'bluetooth';
-  /** Datos que devuelve el driver para reconectar sin volver a elegir el dispositivo. */
-  reconexion: unknown;
-}
-
 /** Última venta cobrada: se muestra en el carrito vacío hasta agregar el siguiente producto. */
 export interface UltimaVenta {
   ventaId: string;
@@ -53,6 +48,7 @@ export interface Meta {
   ultimaLimpieza: string;
   carrito: Carrito;
   ultimaVenta: UltimaVenta | null;
+  /** Se lee con `leerConfigImpresora`/`useConfigImpresora`, que completan versiones anteriores. */
   impresora: ConfigImpresora;
   bloqueoMinutos: number;
   almacenamientoPersistente: boolean;

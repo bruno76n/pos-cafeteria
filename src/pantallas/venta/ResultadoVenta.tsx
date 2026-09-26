@@ -19,7 +19,7 @@ export function ResultadoVenta({
 }) {
   const venta = useVenta(ultima.ventaId);
   const config = useConfig();
-  const { imprimir, error, imprimiendo } = impresora;
+  const { imprimir, error, imprimiendo, columnas } = impresora;
 
   return (
     <div className="flex flex-col items-center gap-2 p-6 text-center">
@@ -34,13 +34,13 @@ export function ResultadoVenta({
             <Boton
               tamano="grande"
               disabled={imprimiendo}
-              onClick={() => imprimir(ticketDeVenta(venta, config))}
+              onClick={() => imprimir(ticketDeVenta(venta, config, { columnas }))}
             >
               <Printer aria-hidden /> {error ? 'Reintentar' : 'Imprimir ticket'}
             </Boton>
             <BotonCompartir
               titulo={`Ticket ${venta.folio}`}
-              texto={ticketATexto(ticketDeVenta(venta, config))}
+              texto={ticketATexto(ticketDeVenta(venta, config, { columnas }))}
             />
           </div>
           {error && (

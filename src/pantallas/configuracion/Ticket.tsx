@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Campo } from '@/componentes/Campo';
 import { Interruptor } from '@/componentes/Interruptor';
 import { Pantalla } from '@/componentes/Pantalla';
-import { Segmentos } from '@/componentes/Segmentos';
 import type { ConfigGeneral } from '@/dominio/tipos';
 import { useConfigEditable } from '@/estado/config';
 import { BotonGuardar } from './Guardar';
@@ -32,15 +31,6 @@ function Formulario({
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto]">
       <div className="flex flex-col gap-4 rounded-hoja border border-linea bg-papel p-5">
-        <Segmentos
-          etiqueta="Ancho del papel"
-          valor={String(ticket.ancho) as '58' | '80'}
-          alCambiar={(ancho) => cambiar({ ancho: ancho === '80' ? 80 : 58 })}
-          opciones={[
-            { valor: '58', texto: '58 mm' },
-            { valor: '80', texto: '80 mm' },
-          ]}
-        />
         {CAMPOS.map((c) => (
           <Interruptor
             key={c.clave}
@@ -61,12 +51,9 @@ function Formulario({
           activo={ticket.mostrarQR ?? false}
           alCambiar={(mostrarQR) => cambiar({ mostrarQR })}
         />
-        <Interruptor
-          etiqueta="Imprimir al cobrar"
-          descripcion="Imprime el ticket en cuanto se confirma cada venta."
-          activo={ticket.imprimirAlCobrar}
-          alCambiar={(imprimirAlCobrar) => cambiar({ imprimirAlCobrar })}
-        />
+        <p className="text-etiqueta text-grafito-suave">
+          El ancho del papel y la impresión al cobrar se eligen en cada tablet, en Configuración › Impresora.
+        </p>
         <BotonGuardar
           alGuardar={async () => {
             await guardar(borrador);

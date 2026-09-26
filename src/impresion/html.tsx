@@ -24,7 +24,6 @@ export function ticketAHTML(doc: TicketDocumento): string {
     .map((linea) => {
       if (linea.tipo === 'logo') return `<img class="logo" src="${escapar(linea.dataUrl)}" alt="">`;
       if (linea.tipo === 'qr') return `<div class="qr">${renderSVG(linea.contenido, { border: 1 })}</div>`;
-      if (linea.tipo === 'corte') return '';
       return renglonesDe(linea, doc.columnas)
         .map((r) => {
           const clases = ['r', r.negrita ? 'n' : '', r.doble ? 'd' : ''].filter(Boolean).join(' ');

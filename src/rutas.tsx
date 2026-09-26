@@ -21,6 +21,7 @@ import { Cortes } from '@/pantallas/caja/Cortes';
 import { DetalleCorte } from '@/pantallas/caja/DetalleCorte';
 import { Movimientos } from '@/pantallas/caja/Movimientos';
 import { ConfigDispositivo } from '@/pantallas/configuracion/Dispositivo';
+import { ConfigImpresora } from '@/pantallas/configuracion/Impresora';
 import { ConfigImpuestos } from '@/pantallas/configuracion/Impuestos';
 import { ConfigNegocio } from '@/pantallas/configuracion/Negocio';
 import { ConfigPagos } from '@/pantallas/configuracion/Pagos';
@@ -275,6 +276,7 @@ export const router = createBrowserRouter([
                       { a: '/configuracion/impuestos', texto: 'Impuestos' },
                       { a: '/configuracion/pagos', texto: 'Pagos' },
                       { a: '/configuracion/ticket', texto: 'Ticket' },
+                      { a: '/configuracion/impresora', texto: 'Impresora' },
                       { a: '/configuracion/dispositivo', texto: 'Dispositivo' },
                     ]}
                   />
@@ -285,6 +287,7 @@ export const router = createBrowserRouter([
                   { path: 'impuestos', element: <ConfigImpuestos /> },
                   { path: 'pagos', element: <ConfigPagos /> },
                   { path: 'ticket', element: <ConfigTicket /> },
+                  { path: 'impresora', element: <ConfigImpresora /> },
                   { path: 'dispositivo', element: <ConfigDispositivo /> },
                 ],
               },

@@ -17,7 +17,7 @@ export function DetalleCorte() {
   const { id } = useParams();
   const turno = useTurno(id);
   const config = useConfig();
-  const { imprimir, error, imprimiendo } = useImpresora();
+  const { imprimir, error, imprimiendo, columnas } = useImpresora();
   if (turno === undefined || config === undefined) return null;
   if (!turno?.resumen || !config) {
     return (
@@ -28,7 +28,7 @@ export function DetalleCorte() {
   }
   const r = turno.resumen;
   const dif = textoDiferencia(r.diferencia ?? 0);
-  const doc = construirTicketCorte(turno, config, { reimpresion: true });
+  const doc = construirTicketCorte(turno, config, { columnas, reimpresion: true });
 
   return (
     <Pantalla

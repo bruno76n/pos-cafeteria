@@ -124,7 +124,9 @@ export function NuevaVenta() {
     );
     terminarVenta({ ventaId: venta.id, folio: venta.folio, cambio: venta.cambio, total: venta.total });
     setCobrando(false);
-    if (config!.ticket.imprimirAlCobrar) void impresora.imprimir(ticketDeVenta(venta, config!));
+    if (impresora.imprimirAlCobrar) {
+      void impresora.imprimir(ticketDeVenta(venta, config!, { columnas: impresora.columnas }));
+    }
     setVentaAbierta(false);
   }
 

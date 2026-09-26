@@ -9,7 +9,6 @@ import { guardar } from '@/datos/escrituras';
 import { useUsuarioActivo } from '@/estado/sesion';
 import { useDispositivoActual } from '@/estado/dispositivo';
 import { FormularioDispositivo } from '@/pantallas/acceso/FormularioDispositivo';
-import { ConfigImpresora } from './Impresora';
 
 const MINUTOS = ['0', '1', '5', '15', '30'] as const;
 
@@ -59,7 +58,7 @@ function OtrosDispositivos({ miId }: { miId: string }) {
   );
 }
 
-/** Configuración de esta tablet: nombre, tipo, prefijo, bloqueo automático, almacenamiento e impresora. */
+/** Configuración de esta tablet: nombre, tipo, prefijo, bloqueo automático, tema y almacenamiento. */
 export function ConfigDispositivo() {
   const dispositivo = useDispositivoActual();
   const { esAdmin } = useUsuarioActivo();
@@ -116,7 +115,6 @@ export function ConfigDispositivo() {
             : 'No persistente: si falta espacio, el navegador podría borrar los datos locales. Instala la app para protegerlos.'}
         </p>
       </section>
-      <ConfigImpresora />
     </Pantalla>
   );
 }

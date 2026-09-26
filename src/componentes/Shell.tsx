@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router';
 import { useBloqueoPorInactividad } from '@/estado/inactividad';
+import { useReconexionImpresora } from '@/impresion/usarImpresora';
 import { AvisosSync } from './AvisosSync';
 import { BarraSuperior } from './BarraSuperior';
 import { DialogoAutorizacion } from './DialogoAutorizacion';
@@ -8,6 +9,7 @@ import { BarraInferior, Riel } from './Navegacion';
 /** Estructura general: barra superior, riel lateral (o barra inferior en vertical) y contenido. */
 export function Shell() {
   useBloqueoPorInactividad();
+  useReconexionImpresora();
   return (
     <div className="flex h-full flex-col">
       <BarraSuperior />

@@ -32,7 +32,7 @@ export function configInicial(nombreNegocio?: string): ConfigGeneral {
     negocio: { ...menu.negocio, nombre: nombreNegocio?.trim() || menu.negocio.nombre, logo: null },
     ventas: c.ventas,
     pagos: c.pagos,
-    ticket: { ...c.ticket, ancho: c.ticket.ancho === 80 ? 80 : 58 },
+    ticket: c.ticket,
     gastos: c.gastos,
     roles: ROLES_POR_DEFECTO,
     zonaHoraria: c.zonaHoraria,

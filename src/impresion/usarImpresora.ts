@@ -1,21 +1,22 @@
-import { useState } from 'react';
-import { useMeta } from '@/datos/consultas';
+import { useEffect, useState, useSyncExternalStore } from 'react';
+import { leerConfigImpresora, useConfigImpresora } from '@/datos/impresora';
+import { formatearDinero } from '@/dominio/dinero';
 import { formatearFechaHora } from '@/dominio/fechas';
 import type { ConfigGeneral } from '@/dominio/tipos';
-import { DRIVERS } from './drivers';
-import { columnasDeAncho, type TicketDocumento } from './ticket';
+import { CONFIG_IMPRESORA_POR_DEFECTO, columnasDeImpresora } from './configImpresora';
+import { DRIVERS, driverDe, ErrorImpresion, MENSAJES_IMPRESORA, type DriverImpresora } from './drivers';
+import type { TicketDocumento } from './ticket';
 
-export const MENSAJE_ERROR_IMPRESION =
-  'No se pudo imprimir: la impresora no responde. Revisa que esté encendida y vuelve a intentar.';
-
-/** Ticket de "Imprimir prueba" (revisa acentos, ancho y corte). */
-export function ticketDePrueba(config: ConfigGeneral): TicketDocumento {
+/** Ticket de "Imprimir prueba": acentos, ñ, signo de pesos, totales, ancho y logo si está activado. */
+export function ticketDePrueba(config: ConfigGeneral, columnas: 32 | 48): TicketDocumento {
+  const { negocio, ticket } = config;
   return {
-    columnas: columnasDeAncho(config.ticket.ancho),
+    columnas,
     lineas: [
+      ...(ticket.mostrarLogo && negocio.logo ? [{ tipo: 'logo' as const, dataUrl: negocio.logo }] : []),
       {
         tipo: 'texto',
-        texto: config.negocio.nombre.toLocaleUpperCase('es-MX'),
+        texto: negocio.nombre.toLocaleUpperCase('es-MX'),
         alineacion: 'centro',
         negrita: true,
       },
@@ -23,38 +24,73 @@ export function ticketDePrueba(config: ConfigGeneral): TicketDocumento {
       { tipo: 'separador' },
       { tipo: 'texto', texto: formatearFechaHora(new Date(), config.zonaHoraria) },
       { tipo: 'texto', texto: 'Café, Piña, Año, ¡Gracias!' },
-      { tipo: 'columnas', izquierda: 'Izquierda', derecha: 'Derecha' },
+      { tipo: 'columnas', izquierda: '1 Café de olla', derecha: formatearDinero(3500) },
       { tipo: 'separador' },
+      { tipo: 'columnas', izquierda: 'TOTAL', derecha: formatearDinero(123450), negrita: true },
+      { tipo: 'texto', texto: `${columnas} columnas`, alineacion: 'derecha' },
       { tipo: 'espacio' },
-      { tipo: 'corte' },
     ],
   };
 }
 
-/** Imprime con la impresora configurada en este dispositivo y expone el error para "Reintentar". */
+export interface FalloImpresion {
+  mensaje: string;
+  ayuda?: string;
+}
+
+const falloDe = (e: unknown): FalloImpresion =>
+  e instanceof ErrorImpresion
+    ? { mensaje: e.message, ...(e.ayuda ? { ayuda: e.ayuda } : {}) }
+    : { mensaje: MENSAJES_IMPRESORA.noResponde };
+
+/** Estado de conexión del driver, en vivo. */
+export function useEstadoImpresora(driver: DriverImpresora) {
+  return useSyncExternalStore(driver.suscribir, driver.estado);
+}
+
+/**
+ * Imprime con la impresora configurada en este dispositivo y expone el error para "Reintentar".
+ * `columnas` es el ancho del papel con el que se arman los tickets.
+ */
 export function useImpresora() {
-  const impresora = useMeta('impresora');
-  const [error, setError] = useState<string | null>(null);
+  const config = useConfigImpresora();
+  const [fallo, setFallo] = useState<FalloImpresion | null>(null);
   const [imprimiendo, setImprimiendo] = useState(false);
+  const actual = config ?? CONFIG_IMPRESORA_POR_DEFECTO;
 
   async function imprimir(doc: TicketDocumento): Promise<boolean> {
     setImprimiendo(true);
-    setError(null);
+    setFallo(null);
     try {
-      const elegido = impresora ? DRIVERS[impresora.tipo] : DRIVERS.navegador;
-      const driver = elegido.soportado() ? elegido : DRIVERS.navegador;
-      if (driver.estado() !== 'conectada' && !(await driver.reconectar(impresora?.reconexion ?? null))) {
-        throw new Error('desconectada');
-      }
-      await driver.imprimir(doc);
+      // Se relee al imprimir: la pantalla pudo cambiarla hace un instante.
+      const vigente = await leerConfigImpresora();
+      await driverDe(vigente.tipo).imprimir(doc, vigente);
       return true;
-    } catch {
-      setError(MENSAJE_ERROR_IMPRESION);
+    } catch (e) {
+      setFallo(falloDe(e));
       return false;
     } finally {
       setImprimiendo(false);
     }
   }
 
-  return { imprimir, error, imprimiendo };
+  return {
+    imprimir,
+    error: fallo?.mensaje ?? null,
+    fallo,
+    imprimiendo,
+    columnas: columnasDeImpresora(actual),
+    imprimirAlCobrar: actual.imprimirAlCobrar,
+  };
+}
+
+/** Al abrir la app, reconecta la impresora Bluetooth guardada (sin preguntar). */
+export function useReconexionImpresora() {
+  useEffect(() => {
+    void leerConfigImpresora().then((config) => {
+      if (config.tipo === 'bluetooth' && config.dispositivo && DRIVERS.bluetooth.soportado()) {
+        void DRIVERS.bluetooth.reconectar(config);
+      }
+    });
+  }, []);
 }

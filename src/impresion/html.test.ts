@@ -13,10 +13,7 @@ test('HTML del ticket: renglones, negritas y escapado', () => {
 
 test('@page de 58 y 80 mm', () => {
   const doc58 = construirTicketVenta(ventaPrueba(), configPrueba);
-  const doc80 = construirTicketVenta(ventaPrueba(), {
-    ...configPrueba,
-    ticket: { ...configPrueba.ticket, ancho: 80 },
-  });
+  const doc80 = construirTicketVenta(ventaPrueba(), configPrueba, { columnas: 48 });
   expect(documentoImpresion(doc58)).toContain('@page { size: 58mm auto; margin: 0; }');
   expect(documentoImpresion(doc58)).toContain('width: 32ch;');
   expect(documentoImpresion(doc80)).toContain('@page { size: 80mm auto; margin: 0; }');

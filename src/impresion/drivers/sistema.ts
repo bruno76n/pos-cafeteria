@@ -1,15 +1,16 @@
 import { documentoImpresion } from '../html';
 import type { TicketDocumento } from '../ticket';
-import type { DriverImpresora } from './tipos';
+import { sinConexion, type DriverImpresora } from './tipos';
 
-/** window.print() sobre un iframe oculto: funciona en todos lados (en iPad, AirPrint o PDF). */
-export const driverNavegador: DriverImpresora = {
-  tipo: 'navegador',
-  nombre: 'Diálogo del sistema',
+/**
+ * Diálogo de impresión del navegador sobre un iframe oculto: funciona en todos lados (en iPad,
+ * AirPrint o PDF). Las copias se eligen en el diálogo; densidad, avance y corte los pone el sistema.
+ */
+export const driverSistema: DriverImpresora = {
+  ...sinConexion,
+  tipo: 'sistema',
+  nombre: 'Sistema',
   soportado: () => typeof window !== 'undefined' && typeof window.print === 'function',
-  conectar: async () => null,
-  reconectar: async () => true,
-  estado: () => 'conectada',
   imprimir: (doc: TicketDocumento) =>
     new Promise<void>((resolver) => {
       const marco = document.createElement('iframe');

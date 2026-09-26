@@ -41,6 +41,7 @@ test('todas las pantallas: controles con nombre y foco visible', async ({ page }
     ['Configuración', 'Impuestos'],
     ['Configuración', 'Pagos'],
     ['Configuración', 'Ticket'],
+    ['Configuración', 'Impresora'],
     ['Configuración', 'Dispositivo'],
   ];
   for (const [seccion, pestana] of rutas) {

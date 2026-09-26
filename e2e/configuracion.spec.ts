@@ -39,8 +39,15 @@ test('negocio y ticket: los cambios se ven en la vista previa', async ({ page })
   await expect(vistaPrevia(page)).toContainText('Calle Nueva 45, Zapopan');
   await guardar(page);
 
+  // El ancho del papel es de cada tablet (Configuración › Impresora) y la vista previa lo usa.
+  await irA(page, 'Impresora');
+  await page.getByRole('button', { name: '80 mm (48 columnas)' }).click();
+  await expect(page.getByRole('button', { name: '80 mm (48 columnas)' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+
   await irA(page, 'Ticket');
-  await page.getByRole('button', { name: '80 mm' }).click();
   await page.getByRole('switch', { name: 'Mostrar cajero' }).click();
   await page.getByLabel('Mensaje final').fill('¡Vuelve pronto!');
   await expect(vistaPrevia(page)).toContainText('¡Vuelve pronto!');

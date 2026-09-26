@@ -72,9 +72,7 @@ describe('ticket de venta', () => {
   });
 
   test('80 mm (48 columnas)', () => {
-    const texto = ticketATexto(
-      construirTicketVenta(venta, { ...config, ticket: { ...config.ticket, ancho: 80 } }),
-    );
+    const texto = ticketATexto(construirTicketVenta(venta, config, { columnas: 48 }));
     expect(texto.split('\n').every((r) => r.length <= 48)).toBe(true);
     expect(texto).toContain('TOTAL                                    $193.50');
     expect(texto).toMatchSnapshot();
@@ -142,7 +140,8 @@ describe('ticket de venta', () => {
     const doc = construirTicketVenta(venta, conLogo, { qr: 'https://pos.example/t/venta-b' });
     expect(doc.lineas[0]).toEqual({ tipo: 'logo', dataUrl: 'data:image/png;base64,AAA' });
     expect(doc.lineas).toContainEqual({ tipo: 'qr', contenido: 'https://pos.example/t/venta-b' });
-    expect(doc.lineas.at(-1)).toEqual({ tipo: 'corte' });
+    // El avance y el corte los agrega la impresora de cada dispositivo, no el ticket.
+    expect(doc.lineas.at(-1)).toEqual({ tipo: 'espacio' });
   });
 });
 

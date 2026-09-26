@@ -11,9 +11,9 @@ import { textoDiferencia } from './diferencia';
 /** Paso final del cierre: "Caja cerrada. Diferencia: …" e "Imprimir corte". */
 export function CorteCerrado({ turno, alSalir }: { turno: Turno; alSalir: () => void }) {
   const config = useConfig();
-  const { imprimir, error, imprimiendo } = useImpresora();
+  const { imprimir, error, imprimiendo, columnas } = useImpresora();
   const diferencia = textoDiferencia(turno.resumen?.diferencia ?? 0);
-  const doc = config && turno.resumen ? construirTicketCorte(turno, config) : null;
+  const doc = config && turno.resumen ? construirTicketCorte(turno, config, { columnas }) : null;
 
   return (
     <Pantalla titulo="Caja cerrada">
