@@ -158,3 +158,8 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 16.3 Eliminar productos desde la lista (antes solo dentro del producto). → e2e: se quita y queda como lápida en el servidor.
 - [x] 16.4 Actualización de la base local sin quedarse en "Cargando": la pestaña vieja suelta la base y la nueva avisa qué hacer. → Mensaje con botón Recargar.
 - [x] 16.1 Caja actual y cerrar caja en la misma pantalla, con el efectivo esperado a la vista mientras se cuenta. → e2e de caja.
+
+## Fase 17: Impresora térmica Bluetooth (58-LL) en la tablet Android
+
+- [x] 17.1 Configuración › Impresora por dispositivo (local): Bluetooth propio (Web Bluetooth, trozos de 20 bytes, reconexión al abrir), RawBT y Sistema con la misma interfaz; ancho, densidad, avance, corte, copias e imprimir al cobrar; ESC/POS con avance y corte según la configuración; se quitan USB y las librerías de @point-of-sale para conectar. → Pruebas de bytes, drivers simulados, persistencia y e2e.
+- [x] 17.2 Docs de especificación, arquitectura, interfaz y README. → Actualizados.

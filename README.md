@@ -60,7 +60,7 @@ Los íconos de la PWA salen de `public/icono.svg`; si lo cambias, regenéralos c
 - **Servidor** (`servidor/`): valida cada operación con las reglas de `src/dominio/reglasServidor.ts`. Las ventas nunca se borran y solo cambian estado, cancelación y devuelto.
 - **Menú:** cada producto puede tener sus propios tamaños (nombre y precio), armarse con ingredientes del catálogo (Menú › Ingredientes: incluidos por tamaño, precio por ingrediente extra, mínimo, máximo y permitidos) y llevar opciones adicionales (grupos de modificadores). El cálculo y la validación viven en `src/dominio/personalizacion.ts`; la venta guarda copia del tamaño y de los ingredientes.
 - **Dinero en centavos enteros**; folios por dispositivo (`A-000123`); fechas con la hora del dispositivo y el día de negocio en `America/Mexico_City`.
-- **Impresión** (`src/impresion/`): el ticket es un documento de datos que se dibuja en HTML (vista previa e impresión del sistema) o en ESC/POS (USB o Bluetooth directos). Opcionalmente lleva un QR al ticket digital público (`/t/:id`, servido por `GET /api/tickets/:id` sin sesión).
+- **Impresión** (`src/impresion/`): el ticket es un documento de datos que se dibuja en HTML (vista previa e impresión del sistema) o en ESC/POS (Bluetooth directo o la app RawBT en Android). La impresora se configura en cada tablet (Configuración › Impresora). Opcionalmente lleva un QR al ticket digital público (`/t/:id`, servido por `GET /api/tickets/:id` sin sesión).
 - **Tema** claro, oscuro o automático por dispositivo (Configuración › Dispositivo).
 
 ## Producción (Neon + Vercel)
@@ -71,7 +71,7 @@ Los íconos de la PWA salen de `public/icono.svg`; si lo cambias, regenéralos c
 4. En Vercel, importa el repositorio (detecta Vite; salida `dist`). En Settings › Environment Variables agrega `DATABASE_URL` y `JWT_SECRET` (una cadena larga y aleatoria, por ejemplo `openssl rand -base64 48`). También puedes conectar Neon con la integración de Vercel para que ponga `DATABASE_URL`.
 5. Despliega y abre `https://tu-pos.vercel.app/api/salud`: debe responder `{ "ok": true }`.
 6. En la tablet, abre la URL (HTTPS). Android: Chrome › Instalar app. iPad: Safari › Compartir › Agregar a inicio. Inicia sesión **dentro** de la app instalada (tiene su propio almacenamiento), configura el dispositivo y sigue el asistente inicial si la base está vacía.
-7. Configuración › Dispositivo › Impresora › "Imprimir prueba".
+7. Configuración › Impresora: elige Bluetooth y "Buscar impresora" (o RawBT si no aparece) y luego "Imprimir prueba".
 
 Cada push a la rama principal redepliega app y API. Si cambia el esquema: `npm run db:generar` en desarrollo, commit de la migración y `npm run db:migrar` contra Neon antes o junto con el despliegue. **Si se te olvida, la API responde 500 en `/api/sync/pull`** (la columna nueva no existe) y la app se queda en "Descargando datos del servidor… Error del servidor."; se arregla corriendo las migraciones.
 
@@ -79,6 +79,6 @@ Cada push a la rama principal redepliega app y API. Si cambia el esquema: `npm r
 
 - **Permisos por rol solo en la app.** El token es del dispositivo, no de la persona: los permisos de Cajero y Encargado (y el PIN) se aplican en la tablet, no en la API.
 - **Depende del reloj del dispositivo.** Las fechas de las ventas y el día de negocio salen de la hora de la tablet; si está mal, los reportes y folios por día lo estarán también.
-- **Impresión directa solo en Android/Chrome (o Chrome de escritorio).** WebUSB y Web Bluetooth no existen en iPad; ahí se imprime con el diálogo del sistema (AirPrint o PDF). Por Bluetooth solo funcionan impresoras Bluetooth Low Energy; en Windows el driver del sistema puede acaparar la impresora USB. Los drivers USB y Bluetooth no se han probado con una impresora real.
+- **Impresión directa solo en Android/Chrome (o Chrome de escritorio).** Web Bluetooth no existe en iPad; ahí se imprime con el diálogo del sistema (AirPrint o PDF). Web Bluetooth solo ve impresoras Bluetooth Low Energy y exige HTTPS; las de Bluetooth clásico se usan con la app RawBT (Android). Los drivers Bluetooth y RawBT no se han probado con la impresora real (58-LL).
 - **Sincronización "gana el último"** en menú, configuración y usuarios: si dos tablets editan lo mismo sin conexión, queda el cambio más reciente.
 - **Reportes de más de 35 días** requieren internet (se consultan al servidor).

@@ -231,8 +231,14 @@ Solo Administrador.
 - **Negocio:** nombre, logo (comprimido), dirección, teléfono, RFC (opcional) y categorías de gasto.
 - **Impuestos y descuentos:** precios incluyen IVA (sí por defecto), tasa (16 %), mostrar desglose de IVA en el ticket; permitir descuentos y porcentaje máximo.
 - **Pagos:** tarjeta y transferencia activadas o no (efectivo siempre), cuentas bancarias para transferencia (banco, titular, CLABE, cuenta o tarjeta, alias) y referencia de transferencia obligatoria sí/no.
-- **Ticket:** ancho (58/80 mm), mostrar logo, dirección, teléfono, RFC y cajero, mensaje final, imprimir al cobrar. Vista previa en vivo.
-- **Impresora** (por dispositivo, se guarda localmente): tipo de conexión (Navegador, USB o Bluetooth, según lo que soporte el dispositivo), conectar y "Imprimir prueba".
+- **Ticket:** mostrar logo, dirección, teléfono, RFC y cajero, mensaje final y QR. Vista previa en vivo (al ancho de la impresora de la tablet).
+- **Impresora** (por dispositivo, se guarda localmente y no se sincroniza). La impresora real es una térmica de 58 mm por Bluetooth ("58-LL thermal printer") y la tablet es Android con Chrome.
+  - Tipo de conexión: **Bluetooth** (Web Bluetooth), **RawBT** (app de Android, para Bluetooth clásico) o **Sistema** (diálogo de impresión del navegador). Solo aparecen las que el dispositivo soporta; si no hay ninguna directa queda Sistema con la explicación.
+  - Bluetooth: "Buscar impresora" (desde un toque), nombre de la impresora elegida, estado (Conectada / Desconectada / Buscando), "Reconectar" y "Olvidar impresora". Al abrir la app se reconecta sola a la impresora guardada. Si al buscar no aparece nada: "No se encontró la impresora…" y la sugerencia de cambiar a RawBT (probablemente es Bluetooth clásico).
+  - RawBT: nota de qué es y cómo instalarla. Si la app no responde: "No se pudo abrir RawBT. Revisa que esté instalada en la tablet."
+  - Ancho de papel: 58 mm (32 columnas, por defecto) u 80 mm (48 columnas). Aplica a venta, reimpresión, corte y vista previa.
+  - Opciones (Bluetooth y RawBT): densidad (Baja, Normal, Alta), líneas de avance al final (0–8, por defecto 3), "Cortar papel al final" (apagado por defecto; muchas de 58 mm no tienen cortador) y copias (1–3). Para todas: "Imprimir automáticamente al cobrar".
+  - "Imprimir prueba": ticket de ejemplo con acentos, ñ, signo de pesos, una línea de totales ($1,234.50) y el logo si está activado. Si no hay logo o no carga, sale solo el nombre del negocio.
 - **Dispositivo:** nombre, prefijo de folio, tipo, bloqueo automático (minutos, 0 = nunca) y estado del almacenamiento persistente.
 
 ## 6. Cálculos (fuente de verdad para las pruebas)

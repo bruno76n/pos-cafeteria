@@ -11,11 +11,11 @@
 | **Cuenta por dispositivo con token + usuarios internos con PIN** | La tablet inicia sesión una vez y guarda un token; los cajeros cambian con PIN, que funciona sin internet. |
 | **Vercel** sirve la app y la API | Un solo despliegue: archivos estáticos en `dist/` y funciones en `api/`. |
 | **PGlite** (Postgres en WebAssembly) para desarrollo y pruebas | Claude Code puede desarrollar y probar toda la noche sin Docker, sin Java y sin credenciales reales. |
-| **Impresión con drivers intercambiables** | Aún no sabemos qué impresora habrá. En iPad un navegador no puede usar USB ni Bluetooth; en Android sí. |
+| **Impresión con drivers intercambiables** | La impresora es una térmica de 58 mm por Bluetooth ("58-LL") y la tablet Android con Chrome. Web Bluetooth solo ve impresoras BLE; si es Bluetooth clásico se usa RawBT. En iPad solo hay diálogo del sistema. |
 
 ## 2. Dependencias
 
-**App (producción):** `react`, `react-dom`, `react-router`, `dexie`, `dexie-react-hooks`, `zustand`, `zod`, `lucide-react`, `@point-of-sale/receipt-printer-encoder`, `@point-of-sale/webusb-receipt-printer`, `@point-of-sale/webbluetooth-receipt-printer` y la fuente autoalojada (ver `03-interfaz.md`).
+**App (producción):** `react`, `react-dom`, `react-router`, `dexie`, `dexie-react-hooks`, `zustand`, `zod`, `lucide-react`, `@point-of-sale/receipt-printer-encoder` (Bluetooth y RawBT usan drivers propios, sin librería) y la fuente autoalojada (ver `03-interfaz.md`).
 
 **Servidor (producción):** `hono`, `drizzle-orm`, `@neondatabase/serverless`, `jose` (JWT), `bcryptjs`, `zod`.
 
@@ -157,8 +157,9 @@ interface ConfigGeneral {
             descuentosPermitidos: boolean; descuentoMaximoPorcentaje: number };
   pagos: { tarjeta: boolean; transferencia: boolean; referenciaTransferenciaObligatoria: boolean;
            cuentas: { id: string; banco: string; titular: string; clabe: string; cuenta: string; alias: string }[] };
-  ticket: { ancho: 58 | 80; mostrarLogo: boolean; mostrarDireccion: boolean; mostrarTelefono: boolean;
-            mostrarRFC: boolean; mostrarCajero: boolean; mensajeFinal: string; imprimirAlCobrar: boolean };
+  ticket: { mostrarLogo: boolean; mostrarDireccion: boolean; mostrarTelefono: boolean;
+            mostrarRFC: boolean; mostrarCajero: boolean; mensajeFinal: string; mostrarQR?: boolean };
+            // El ancho del papel e "imprimir al cobrar" son de cada dispositivo (§10, ConfigImpresora).
   gastos: { categorias: string[] };
   roles: Record<'encargado' | 'cajero', Record<Permiso, boolean>>;
   zonaHoraria: string;                        // 'America/Mexico_City'
@@ -301,7 +302,7 @@ Si el rango pedido cabe en los 35 días locales, Reportes calcula con los datos 
 
 - **Cuenta:** `POST /api/acceso` verifica el correo y la contraseña (bcrypt) contra `cuentas` y regresa un JWT (`jose`, HS256, `JWT_SECRET`, vigencia de 1 año) con el `id` de la cuenta. La tablet guarda el token en Dexie (`meta`). El middleware revisa firma, vigencia y que la cuenta siga `activa` (desactivarla corta el acceso de sus dispositivos). Tras 5 intentos fallidos desde la misma IP, esperar 1 minuto.
 - Las cuentas **no se crean desde la app**: en desarrollo las crea el seed; en producción, Bruno con `npm run crear-cuenta -- correo contraseña`.
-- **Dispositivo:** `id` generado una vez, guardado en Dexie junto con nombre, tipo, prefijo, contador de folios y configuración de impresora. Se sincroniza como cualquier otra tabla.
+- **Dispositivo:** `id` generado una vez, guardado en Dexie junto con nombre, tipo, prefijo y contador de folios. Se sincroniza como cualquier otra tabla. La impresora de la tablet es aparte y local (`meta.impresora`, §10): no se sincroniza.
 - **PIN:** `hash = SHA-256(sal + ':' + pin)` en hexadecimal, con `sal` aleatoria de 16 bytes por usuario (Web Crypto). Se valida localmente contra cada usuario activo, sin red. Al guardar, verifica que el PIN no coincida con el de otro usuario.
 - **Sesión** (Zustand, en memoria): usuario activo, última actividad, temporizador de bloqueo. Recargar pide PIN de nuevo.
 - Los permisos por rol (Cajero/Encargado) se aplican en la app, no en la API: el token es del dispositivo, no de la persona. Es aceptable para este POS provisional y queda documentado en el README.
@@ -321,24 +322,46 @@ Si el rango pedido cabe en los 35 días locales, Reportes calcula con los datos 
 
 ### Capas
 
-1. **`TicketDocumento`** (datos puros): `{ columnas: 32 | 48, lineas: LineaTicket[] }`, donde cada línea es texto (alineación, negrita, tamaño doble), columnas izquierda/derecha, separador, logo, QR, espacio o corte.
-2. **Constructores puros:** `construirTicketVenta(venta, config, opciones)` y `construirTicketCorte(turno, config)`. Pruebas con snapshot.
-3. **Renderizadores:** `html.tsx` (vista previa en pantalla e impresión por navegador con `@page { size: 58mm auto }` o `80mm`) y `escpos.ts` (bytes ESC/POS con `ReceiptPrinterEncoder`: acentos y ñ con la página de códigos adecuada, probando con "Café, Piña, Año, ¡Gracias!"; logo en blanco y negro con ancho múltiplo de 8; QR nativo de la impresora).
-4. **Drivers** con la misma interfaz `{ soportado(), conectar(), reconectar(), imprimir(doc), estado }`:
-   - `navegador`: `window.print()` sobre un iframe oculto con el HTML del ticket. Funciona en todos lados (en iPad, por AirPrint o PDF).
-   - `usb`: `WebUSBReceiptPrinter`. Solo Chrome en Android o escritorio (en Windows el driver del sistema puede acaparar la impresora).
-   - `bluetooth`: `WebBluetoothReceiptPrinter`. Solo Chrome en Android o escritorio, y solo impresoras Bluetooth Low Energy (muchas impresoras baratas son Bluetooth clásico y no aparecen).
-5. Detección: `'usb' in navigator`, `'bluetooth' in navigator`. Solo se ofrecen las opciones que el dispositivo soporta, con una nota cuando no hay ninguna directa ("En este dispositivo se imprime con el diálogo del sistema").
+1. **`TicketDocumento`** (datos puros): `{ columnas: 32 | 48, lineas: LineaTicket[] }`, donde cada línea es texto (alineación, negrita, tamaño doble), columnas izquierda/derecha, separador, logo, QR o espacio. El avance y el corte no son parte del ticket: los agrega la impresora del dispositivo.
+2. **Constructores puros:** `construirTicketVenta(venta, config, { columnas, reimpresion, qr })` y `construirTicketCorte(turno, config, { columnas, reimpresion })`. El mismo documento sirve para venta, reimpresión y corte; `columnas` sale del ancho de papel de la impresora de la tablet (`useImpresora().columnas`). Pruebas con snapshot.
+3. **Renderizadores:** `html.tsx` (vista previa en pantalla e impresión del sistema con `@page { size: 58mm auto }` o `80mm`) y `escpos.ts` (bytes ESC/POS con `ReceiptPrinterEncoder`, detalle abajo).
+4. **Drivers** (`src/impresion/drivers/`) con la misma interfaz `DriverImpresora`: `soportado()`, `estado()` (`conectada | desconectada | buscando`) y `suscribir()`, `conectar()` (desde un toque), `reconectar(config)`, `imprimir(doc, config)` y `olvidar(config)`. Los errores son `ErrorImpresion` con el mensaje para la pantalla y, si aplica, una `ayuda` (p. ej. "Cambia el tipo de conexión a RawBT.").
+   - `bluetooth` (Web Bluetooth, propio, sin librería): `requestDevice({ acceptAllDevices: true, optionalServices })` con los servicios seriales comunes de las térmicas baratas (`0000ff00`, `0000ffe0`, `000018f0`, `49535343-fe7d-4ae5-8fa9-9fafd205e455`, `e7810a71-…`); recorre los servicios y usa la característica de escritura sin respuesta (o con respuesta si no hay). Manda los bytes en trozos de 20 (el navegador no expone el MTU) con 20 ms de pausa, o el ticket sale cortado. Guarda `{ id, nombre }` del dispositivo; al abrir la app (`useReconexionImpresora` en el Shell) reconecta con `navigator.bluetooth.getDevices()` (permisos persistentes de Chrome) y al imprimir reintenta si se perdió la conexión. `NotFoundError` al buscar → "No se encontró la impresora…" + sugerencia de RawBT (probablemente es Bluetooth clásico). Solo Chrome (Android o computadora) en contexto seguro.
+   - `rawbt` (Android): abre `intent:base64,<ESC/POS en base64>#Intent;scheme=rawbt;end;`; la app RawBT recibe los bytes y los manda a la impresora Bluetooth clásico emparejada. Sin `package` en el intent: si la app no está, Chrome no hace nada; si en 2.5 s la página no pierde el foco (`blur`/`visibilitychange`), se muestra "No se pudo abrir RawBT…". Se ofrece solo si el user agent es Android.
+   - `sistema`: `window.print()` sobre un iframe oculto con el HTML del ticket. Funciona en todos lados (en iPad, AirPrint o PDF); ahí las copias se eligen en el diálogo.
+5. Solo se ofrecen las conexiones que el dispositivo soporta. Si no hay ninguna directa, queda Sistema con la explicación en pantalla. Si la guardada deja de estar disponible, se imprime con Sistema.
 
-`conectar()` debe llamarse desde un toque del usuario (restricción del navegador). Los datos para reconectar se guardan en la configuración local del dispositivo. WebUSB, Web Bluetooth y el service worker exigen HTTPS (o localhost).
+### ESC/POS
 
-| Dispositivo | Navegador | USB directo | Bluetooth directo |
+- Página de códigos: `codepage('auto')` con candidatas CP437 y CP850 (mapa Epson): "Café, Piña, Año, ¡Gracias! $1,234.50" sale completo en CP437 (`ESC t 0`); las mayúsculas acentuadas que CP437 no tiene (Á, Í, Ó, Ú) cambian a CP850 (`ESC t 2`).
+- Densidad (`DC2 # n` de las térmicas genéricas): Normal no manda nada; Baja y Alta sí (si la impresora no la entiende, dejarla en Normal).
+- Logo en blanco y negro (Atkinson) con ancho múltiplo de 8 (224 puntos en 58 mm, 320 en 80 mm); si no hay logo o no carga, el ticket sale solo con el nombre del negocio.
+- Al final: `avance` renglones en blanco y, si `cortar`, corte parcial (`GS V 1`). `copias` repite los bytes completos.
+
+### Configuración de la impresora (por dispositivo)
+
+`meta.impresora` en Dexie (no se sincroniza), leída con `useConfigImpresora()` / `leerConfigImpresora()` y guardada con `cambiarConfigImpresora()` (`src/datos/impresora.ts`); `normalizarConfigImpresora` completa valores faltantes y convierte la versión anterior (`navegador`/`usb` → `sistema`).
+
+```ts
+interface ConfigImpresora {
+  tipo: 'bluetooth' | 'rawbt' | 'sistema';          // por defecto 'sistema'
+  dispositivo: { id: string; nombre: string } | null; // impresora Bluetooth elegida
+  ancho: 58 | 80;                                    // 32 o 48 columnas; por defecto 58
+  densidad: 'baja' | 'normal' | 'alta';
+  avance: number;                                    // 0–8, por defecto 3
+  cortar: boolean;                                   // por defecto apagado
+  copias: number;                                    // 1–3
+  imprimirAlCobrar: boolean;
+}
+```
+
+| Dispositivo | Sistema | Bluetooth (BLE) | RawBT (Bluetooth clásico) |
 |---|:-:|:-:|:-:|
 | iPad / iPhone (Safari o Chrome) | ✓ | – | – |
-| Android con Chrome | ✓ | ✓ | solo BLE |
-| Computadora con Chrome | ✓ | ✓ (no siempre en Windows) | solo BLE |
+| Android con Chrome | ✓ | ✓ | ✓ (con la app instalada) |
+| Computadora con Chrome | ✓ | ✓ | – |
 
-Los drivers USB y Bluetooth no se pueden probar sin la impresora: impleméntalos, prueba los bytes con pruebas unitarias y anota en la bitácora "Probar con impresora real".
+Web Bluetooth y el service worker exigen HTTPS (o localhost). Los drivers no se pueden probar sin la impresora: los bytes y los drivers (con Web Bluetooth y RawBT simulados) tienen pruebas unitarias y e2e, y la prueba física queda en la bitácora.
 
 ## 11. Seguridad de la API
 
@@ -373,7 +396,7 @@ Los drivers USB y Bluetooth no se pueden probar sin la impresora: impleméntalos
 
 ## 14. Qué no se prueba en la noche
 
-Impresión física (USB/Bluetooth), instalación en iPad/Android real, Neon real y el despliegue en Vercel (incluido el adaptador de `api/`). Todo eso queda en "Para probar a mano" de la bitácora.
+Impresión física (Bluetooth y RawBT), instalación en iPad/Android real, Neon real y el despliegue en Vercel (incluido el adaptador de `api/`). Todo eso queda en "Para probar a mano" de la bitácora.
 
 ## 15. Producción (lo hace Bruno, no Claude Code)
 
@@ -383,6 +406,6 @@ Impresión física (USB/Bluetooth), instalación en iPad/Android real, Neon real
 4. En Vercel, importar el repositorio (detecta Vite; salida `dist`). En Settings › Environment Variables agregar `DATABASE_URL` y `JWT_SECRET` (una cadena larga y aleatoria, por ejemplo `openssl rand -base64 48`). También se puede conectar Neon con la integración de Vercel para que ponga `DATABASE_URL` sola.
 5. Desplegar y abrir `https://tu-pos.vercel.app/api/salud`: debe responder `{ "ok": true }`.
 6. En la tablet, abrir la URL (HTTPS). Android: Chrome › Instalar app. iPad: Safari › Compartir › Agregar a inicio. Iniciar sesión dentro de la app instalada, configurar el dispositivo y seguir el asistente inicial.
-7. Configuración › Impresora › "Imprimir prueba".
+7. Configuración › Impresora: Bluetooth › "Buscar impresora" (o RawBT si no aparece) y "Imprimir prueba".
 
 Cada `git push` a la rama principal redepliega app y API. Si cambia el esquema: `npm run db:generar` en desarrollo, commit de la migración y `npm run db:migrar` contra Neon antes o junto con el despliegue.

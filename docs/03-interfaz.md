@@ -196,6 +196,10 @@ Tabla con filas de 56 px: folio, hora, productos (una línea, truncada), total (
 
 Lista de productos con miniatura, nombre, categoría, precio ("Desde $55.00" si tiene tamaños), interruptor "Disponible", botones subir/bajar, "Editar" y eliminar (bote, con confirmación). Formulario con vista previa del botón como se verá en Nueva venta y, en este orden: nombre, categoría, precio base (se oculta si hay tamaños), **Tamaños** (filas nombre + precio, subir/bajar, quitar, "Agregar tamaño", "Copiar tamaños de…"), **Se arma con ingredientes** (interruptor; incluidos por tamaño, "Precio por ingrediente extra", Mínimo, Máximo con "Sin límite", permitidos Todos/Elegir con filtro por grupo y casillas), descripción, imagen, disponible y **Opciones adicionales** (todos los grupos con casilla; los marcados primero, con subir/bajar). Categorías: lista con color, activa y orden. Ingredientes: alta rápida arriba (nombre, grupo con sugerencias, Agregar) y lista con grupo, disponible, subir/bajar, editar y eliminar. Modificadores: lista de grupos; al editar, tabla de opciones con precio extra y "por defecto".
 
+### Configuración › Impresora
+
+Pestaña propia en Configuración (entre Ticket y Dispositivo), con una nota arriba: "Se guarda solo en esta tablet." Tarjetas, en orden: **Conexión** (segmentos Bluetooth / RawBT / Sistema según el dispositivo; en Bluetooth, fila con ícono, nombre de la impresora o "Sin impresora elegida", insignia de estado —Conectada en Cafeto, Desconectada neutra, Buscando en Ámbar— y botones "Buscar impresora", "Reconectar" y "Olvidar impresora"; en RawBT, la nota de qué es y cómo instalarla), **Papel** ("58 mm (32 columnas)" / "80 mm (48 columnas)") y **Opciones** (densidad, líneas de avance, "Cortar papel al final", copias —solo Bluetooth y RawBT— e "Imprimir automáticamente al cobrar"). Abajo, botón grande "Imprimir prueba" ("Reintentar" tras un error). Los cambios se guardan al tocarlos, sin botón Guardar. Los mensajes van debajo de la conexión: éxito en Cafeto, error en Faltante con la ayuda en gris debajo.
+
 ### Inicio y reportes
 
 Nada de tarjetas idénticas con sombra. Inicio: columna izquierda con las cifras de hoy como una lista de renglones grandes (Total vendido, Ventas, Ticket promedio y por método), columna derecha con la caja actual y "Más vendidos hoy". Reportes: selector de rango arriba, pestañas, tablas y barras horizontales simples hechas con CSS.
@@ -212,6 +216,10 @@ Sentence case, verbos concretos, sin relleno. Una acción conserva su nombre en 
 | Error de subida | "La venta A-000123 no se pudo subir." | "Reintentar" |
 | Sin permiso | "Tu usuario no puede cancelar ventas." | "Pedir autorización" |
 | Impresora | "No se pudo imprimir: la impresora no responde. Revisa que esté encendida y vuelve a intentar." | "Reintentar" |
+| Impresora conectada | "Impresora conectada" | – |
+| Bluetooth sin resultados | "No se encontró la impresora. Revisa que esté encendida y cerca." + "Esta impresora puede ser Bluetooth clásico, que el navegador no puede usar. Cambia el tipo de conexión a RawBT." | "Buscar impresora" |
+| Bluetooth desconectada | "Se perdió la conexión. Vuelve a intentar." | "Reintentar" |
+| RawBT no instalada | "No se pudo abrir RawBT. Revisa que esté instalada en la tablet." | "Reintentar" |
 | Historial vacío | "Todavía no hay ventas hoy." | "Nueva venta" |
 | Menú vacío | "Aún no hay productos." | "Agregar producto", "Cargar menú de ejemplo" |
 | Confirmar vaciar | "¿Vaciar la venta? Se quitarán 3 productos." | "Vaciar", "Conservar" |
