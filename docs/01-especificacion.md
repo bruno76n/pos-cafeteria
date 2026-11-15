@@ -12,13 +12,13 @@ No es un POS de supermercado: no hay inventario ni alertas de productos agotados
 
 ### Fuera de alcance en esta versión
 
-Inventario y recetas, alertas de agotados, facturación electrónica (CFDI), mesas o cuentas abiertas, comandas a cocina, varias sucursales, programa de lealtad, integración con terminal bancaria, pedidos en línea.
+Inventario y recetas, alertas de agotados, facturación electrónica (CFDI), plano de mesas, varias sucursales, programa de lealtad, integración con terminal bancaria, pedidos en línea.
 
 ## 2. Glosario
 
 | Término | Significado |
 |---|---|
-| Cuenta | Correo y contraseña con los que se inicia sesión **una vez por dispositivo**. Da acceso a los datos del servidor. |
+| Cuenta de acceso | Correo y contraseña con los que se inicia sesión **una vez por dispositivo**. Da acceso a los datos del servidor. |
 | Usuario | Persona que usa el POS (Administrador, Encargado, Cajero). Se identifica con PIN. |
 | Dispositivo | Tablet o celular con la app. Tipo **caja** (vende) o **consulta** (solo ve y administra). |
 | Turno (caja) | Periodo entre abrir y cerrar caja en un dispositivo. Toda venta pertenece a un turno. |
@@ -29,6 +29,10 @@ Inventario y recetas, alertas de agotados, facturación electrónica (CFDI), mes
 | Producto armado | Producto que se arma con ingredientes (crepas): cada tamaño incluye N ingredientes y los demás se cobran como extra. |
 | Grupo de modificadores (extras) | Conjunto de opciones (Leche, Extra shot, Jarabes…) que se asigna a productos en "Opciones adicionales". |
 | Folio | Identificador visible de la venta, por dispositivo: `A-000123`. |
+| Cuenta | Cuenta abierta de un cliente, como en un restaurante: agrupa uno o más pedidos y se cobra al final. Tiene número (reinicia cada día en cada dispositivo) y nombre opcional. Estados: abierta, cobrada y cancelada. |
+| Pedido | Cada envío a cocina dentro de una cuenta. Lleva su número de comanda (1, 2, 3…) y sus líneas. Nunca cambia. |
+| Anulación | Pedido especial que quita una línea ya enviada a cocina y avisa a cocina. |
+| Comanda | Impreso para cocina de un pedido: "Cuenta 12 · Comanda 2". |
 
 ## 3. Roles y permisos
 
@@ -36,7 +40,7 @@ Inventario y recetas, alertas de agotados, facturación electrónica (CFDI), mes
 |---|---|:-:|:-:|:-:|
 | Vender | `vender` | ✓ | ✓ | ✓ |
 | Aplicar descuentos | `aplicarDescuentos` | ✓ | ✓ | – |
-| Cancelar ventas y hacer devoluciones | `cancelarVentas` | ✓ | ✓ | – |
+| Cancelar ventas, hacer devoluciones, anular líneas ya enviadas a cocina y cancelar cuentas abiertas | `cancelarVentas` | ✓ | ✓ | – |
 | Modificar precios | `modificarPrecios` | ✓ | – | – |
 | Crear y editar productos, categorías, ingredientes y modificadores | `crearProductos` | ✓ | ✓ | – |
 | Abrir caja | `abrirCaja` | ✓ | ✓ | ✓ |
@@ -69,6 +73,7 @@ Contenido según permisos:
 
 - **Con `verReportes`:** ventas de hoy (total vendido, número de ventas, ticket promedio), ventas por método (efectivo, tarjeta, transferencia), caja actual (estado, quién abrió, desde cuándo, efectivo esperado), resumen del día (5 productos más vendidos, cancelaciones, devoluciones, gastos).
 - **Sin `verReportes`:** estado de la caja del dispositivo, botón grande "Nueva venta" (o "Abrir caja") y número de ventas del turno. Sin montos de efectivo.
+- **Cuentas abiertas:** un renglón "N cuentas abiertas" (con enlace a la lista) para quien vende, con o sin `verReportes`.
 - Si la caja lleva abierta desde un día anterior: aviso "La caja está abierta desde ayer. Ciérrala para empezar el día con cuentas claras."
 
 Criterio de aceptación: las cifras coinciden con la suma de las ventas no canceladas de hoy y se actualizan solas al registrar una venta (las de otro dispositivo llegan en unos segundos cuando hay conexión).
@@ -83,23 +88,38 @@ Criterio de aceptación: las cifras coinciden con la suma de las ventas no cance
 - **Tocar un producto con tamaños, ingredientes o extras** abre la hoja de personalización, en este orden: **Tamaño** (viene elegido el primero) → **Ingredientes** → **Extras** (modificadores, con las opciones por defecto ya elegidas) → **Nota** → **Cantidad**, y el botón "Agregar $85.00" con el precio calculado. Si falta algo obligatorio, el botón dice qué falta ("Elige al menos 1 ingrediente") y queda deshabilitado.
 - **Ingredientes en la hoja:** botones grandes agrupados por grupo, con el texto "Incluye 2. Cada extra +$5.00" (y "Máximo 5" si hay límite) y el contador "3 elegidos: 1 extra". Al llegar al máximo, los demás se deshabilitan; los no disponibles salen apagados.
 - Líneas idénticas (mismo producto, tamaño, ingredientes —en cualquier orden— y extras, sin nota) se fusionan.
-- **Carrito:** cada línea muestra cantidad, nombre con tamaño ("Crepa dulce Grande"), debajo los ingredientes y extras ("Nutella, Plátano, Fresa, Nuez (2 extra)"), nota e importe. Acciones por línea: + / −, eliminar, editar (reabre la hoja con lo elegido), nota.
-- **"Para:"** campo opcional con el nombre del cliente (para llamarlo cuando esté su bebida). Sale en el ticket.
+- **Borrador del pedido (carrito):** cada línea muestra cantidad, nombre con tamaño ("Crepa dulce Grande"), debajo los ingredientes y extras ("Nutella, Plátano, Fresa, Nuez (2 extra)"), nota e importe. Acciones por línea: + / −, eliminar, editar (reabre la hoja con lo elegido), nota.
+- **"Para:"** campo opcional con el nombre del cliente (para llamarlo cuando esté su bebida). Sale en el ticket y en la comanda. En una cuenta que ya tiene nombre se muestra fijo.
 - **Descuento** a toda la venta, en porcentaje o monto, con motivo opcional. Requiere `aplicarDescuentos` o autorización. Tope: `descuentoMaximoPorcentaje` de la configuración. Solo si `descuentosPermitidos`.
 - **Totales:** subtotal, descuento, IVA según configuración (ver §6) y total.
 - **Vaciar** con confirmación.
-- El carrito se guarda localmente en cada cambio y se recupera tras recargar o cerrar la app.
+- El borrador se guarda localmente en cada cambio y se recupera tras recargar o cerrar la app. Cada cuenta abierta tiene su propio borrador en cada dispositivo.
 - Después de cobrar, el carrito vacío muestra el resultado de la última venta (folio, cambio en grande, "Imprimir ticket", "Compartir") hasta que se agrega el siguiente producto. No hay pantalla intermedia que cerrar.
+
+### 5.2b Cuentas abiertas, pedidos y comandas
+
+El flujo de restaurante: armar el pedido → **"Enviar a cocina"** (imprime la comanda) → la cuenta queda abierta → opcionalmente más pedidos (cada uno imprime su propia comanda con solo lo nuevo) → **"Cobrar"** desde la cuenta → un solo ticket con todo.
+
+- **Cuenta.** Se abre al enviar el primer pedido o con "Nueva cuenta" en la lista de cuentas (con nombre opcional). Número: 1, 2, 3… que **reinicia cada día en cada dispositivo**, calculado en la misma transacción que la crea. Guarda el turno en que se abrió; la venta toma el turno de quien cobra.
+- **Cuentas abiertas.** Pantalla con una tarjeta por cuenta (número, nombre, total y hora de apertura; el dispositivo si hay más de una caja). Tocar una tarjeta la hace la cuenta activa en Nueva venta. Cualquier dispositivo de caja ve y cobra las cuentas abiertas de los demás (llegan con la sincronización).
+- **Enviar a cocina.** Guarda el borrador como un **pedido** nuevo de la cuenta (número de comanda = la última + 1), vacía el borrador e imprime la comanda de ese pedido (solo sus productos). Si la cuenta aún no existe, la abre. El pedido se guarda primero; si la impresora falla, el aviso permite reintentar sin duplicar nada.
+- **La cuenta activa muestra** los pedidos enviados (solo lectura, agrupados por "Comanda 1", "Comanda 2"…) y debajo el borrador "Por enviar". Los totales (subtotal, descuento, IVA, total) cubren todo.
+- **Anular una línea ya enviada.** Cada línea enviada tiene "Anular" (1 pieza, o todas si hay varias). Requiere `cancelarVentas` o autorización con PIN. Los pedidos no se editan: la anulación se guarda como **un pedido nuevo de tipo anulación** con esa línea, y se imprime una comanda de aviso a cocina ("ANULACIÓN · NO PREPARAR"). Al consolidar la cuenta, las anulaciones restan.
+- **Cobrar.** Desde la cuenta, "Cobrar" abre el mismo cobro de §5.3 sobre el total de la cuenta. **Si hay productos sin enviar, se envían a cocina automáticamente (con su comanda) y luego se cobra.** La venta resultante junta las líneas de todos los pedidos (menos las anuladas); la cuenta queda cobrada con el `ventaId`. El descuento se aplica a la cuenta al cobrar.
+- **Venta rápida de mostrador.** Con el borrador sin cuenta, "Cobrar" funciona igual que antes: al confirmar el pago se abre la cuenta, se registra su único pedido, se crea la venta y la cuenta queda cobrada, todo en una transacción. Salen ticket y comanda juntos (en el orden de Configuración › Ticket). Cumple el presupuesto de toques de §7 sin pasos extra.
+- **Cancelar una cuenta abierta.** Requiere `cancelarVentas` o autorización con PIN y un motivo (una cuenta sin pedidos se descarta sin pedir nada). Si ya se mandó a cocina, imprime "COMANDA CANCELADA · NO PREPARAR" con los productos enviados. La cuenta cancelada no genera venta ni suma en reportes.
+- **Cobrar desde otro dispositivo.** Permitido. Si dos tablets cobran la misma cuenta, el servidor acepta una venta y rechaza la otra: "Esta cuenta ya se cobró en otro dispositivo." (aviso persistente en el dispositivo que perdió, para el Administrador).
+- **Cerrar caja con cuentas abiertas.** Se permite, avisando cuáles son; se cobrarán en el turno que esté abierto.
 
 ### 5.3 Cobro
 
-Se abre con el botón "Cobrar $193.50" y ocupa la pantalla. Muestra el total, lo pagado y lo pendiente. Métodos disponibles según configuración (efectivo siempre activo).
+Se abre con el botón "Cobrar $193.50" (sobre el borrador o sobre la cuenta activa, §5.2b) y ocupa la pantalla. Muestra el total, lo pagado y lo pendiente. Métodos disponibles según configuración (efectivo siempre activo).
 
 - **Efectivo** (pestaña por defecto): botón "Exacto" y hasta tres billetes comunes mayores al pendiente (de 20, 50, 100, 200, 500 y 1000), más teclado numérico para otra cantidad. Muestra el cambio en grande. El botón de acción dice **"Confirmar cobro"** si lo recibido cubre el pendiente, o **"Agregar pago"** si no (pago parcial: monto = recibido, y se elige otro método para el resto).
 - **Tarjeta:** monto (por defecto, el pendiente; se puede bajar para pago combinado), referencia opcional (últimos 4 dígitos o número de autorización) y botón **"Pagado con tarjeta"**. El cobro se hace en la terminal externa.
 - **Transferencia:** muestra los datos bancarios configurados (banco, titular, CLABE, cuenta o tarjeta); si hay varias cuentas, se elige una. Monto, referencia (obligatoria si así se configuró) y botón **"Marcar como pagada"**.
 - **Pago combinado:** lista de pagos agregados con opción de quitar cada uno. Máximo un pago por método. Solo el efectivo puede exceder el pendiente y generar cambio. Ejemplo: $100 efectivo ("Agregar pago") + $50 tarjeta ("Pagado con tarjeta") = $150.
-- **La venta se confirma en cuanto un pago deja el pendiente en cero**; no hay un segundo botón de confirmar. Al confirmar se crea la venta (folio del dispositivo, copia completa del carrito, pagos), se registra en el diario local, se dispara la impresión automática si está activada y se vuelve a Nueva venta con el carrito vacío mostrando el resultado.
+- **La venta se confirma en cuanto un pago deja el pendiente en cero**; no hay un segundo botón de confirmar. Al confirmar se crea la venta (folio del dispositivo, copia completa de las líneas de la cuenta, pagos), la cuenta pasa a cobrada, se registra en el diario local, se dispara la impresión automática si está activada y se vuelve a Nueva venta con el carrito vacío mostrando el resultado.
 - **Total en cero** (descuento del 100 %): el cobro muestra "Nada que cobrar" y un botón "Confirmar" que registra la venta sin pagos.
 - "Volver a la venta" regresa sin perder nada (los pagos agregados se descartan).
 
@@ -107,7 +127,7 @@ Criterios de aceptación: la suma de los montos de los pagos es igual al total; 
 
 ### 5.4 Ticket
 
-Contenido: logo, nombre de la cafetería, dirección, teléfono y RFC (si aplica y está activado), folio, fecha y hora, dispositivo, cajero, "Para:" si hay, productos con cantidad, tamaño, ingredientes (con cuántos fueron extra), opciones y nota, precio unitario cuando la cantidad es mayor a 1, importes, subtotal, descuento, total, desglose de IVA (si está activado), pagos (recibido y cambio en efectivo; referencia en tarjeta/transferencia) y mensaje final.
+Contenido: logo, nombre de la cafetería, dirección, teléfono y RFC (si aplica y está activado), folio, "Cuenta 12" (si viene de una cuenta), fecha y hora, dispositivo, cajero, "Para:" si hay, productos con cantidad, tamaño, ingredientes (con cuántos fueron extra), opciones y nota, precio unitario cuando la cantidad es mayor a 1, importes, subtotal, descuento, total, desglose de IVA (si está activado), pagos (recibido y cambio en efectivo; referencia en tarjeta/transferencia) y mensaje final.
 
 Formatos: 58 mm (32 columnas) y 80 mm (48 columnas). Ejemplo ilustrativo de 58 mm:
 
@@ -141,11 +161,18 @@ Cambio                     $6.50
     ¡Gracias por tu visita!
 ```
 
-**Comanda de cocina.** Al cobrar salen dos impresos: el ticket del cliente (arriba, sin cambios) y la comanda para cocina, como dos trabajos separados a la misma impresora, en el orden configurado y con una pausa breve (1 s) entre ellos. La comanda lleva "COCINA" y el folio en grande, la hora, "Para: Luis" en grande si hay cliente, cajero y caja en letra chica y, separados por una raya, solo los productos que van a cocina: cantidad y nombre en grande ("2x Crepa dulce") y debajo tamaño, ingredientes, extras/modificadores y la nota destacada (">> NOTA: …"). Sin precios, subtotales, totales, IVA ni datos fiscales. Mismo ancho, avance y corte que el ticket. Si ninguna línea va a cocina, no hay comanda. Si falla un impreso, el otro se intenta igual y el error dice cuál falló ("No se pudo imprimir la comanda de cocina."). Las ventas anteriores a "Va a cocina" cuentan todas sus líneas como de cocina.
+Si la cuenta tuvo más de una comanda, el ticket agrupa los productos bajo "Comanda 1 de 3", "Comanda 2 de 3"… (las anuladas ya no aparecen). El ticket es uno solo y consolida todos los pedidos.
+
+**Comanda de cocina.** Cada **pedido** imprime su comanda al enviarse a cocina, con solo sus productos. En la venta rápida salen dos impresos al cobrar: el ticket del cliente y la comanda, como dos trabajos separados a la misma impresora, en el orden configurado y con una pausa breve (1 s) entre ellos; en una cuenta abierta la comanda sale al enviar y el ticket al cobrar (el orden configurado solo aplica a la venta rápida). La comanda lleva "COCINA" y, en grande y en dos líneas (la letra doble solo cabe en la mitad de las columnas), "Cuenta 12" y "Comanda 2" (sin "de N": todavía no se sabe cuántas habrá), la hora, "Para: Luis" en grande si hay cliente, cajero y caja en letra chica y, separados por una raya, solo los productos que van a cocina: cantidad y nombre en grande ("2x Crepa dulce") y debajo tamaño, ingredientes, extras/modificadores y la nota destacada (">> NOTA: …"). Sin precios, subtotales, totales, IVA ni datos fiscales. Mismo ancho, avance y corte que el ticket. Si ninguna línea de un pedido va a cocina, no hay comanda. Variantes:
+
+- **Anulación:** encabezado "ANULACIÓN" y "NO PREPARAR" en lugar de "COCINA", con la cuenta y la comanda y solo la línea anulada, con "(de la comanda 1)" debajo.
+- **Cuenta cancelada:** "COMANDA CANCELADA" y "NO PREPARAR", con los productos enviados que siguen vigentes.
+- **Reimpresión:** `*** REIMPRESIÓN ***` y la comanda dice "Comanda 2 de 3" (total de pedidos de la cuenta).
 
 ```
      COCINA          (doble)
-    A-000123         (doble)
+  Cuenta 12          (doble)
+  Comanda 2          (doble)
       08:42
 Para: Luis           (doble)
 Ana · Caja 1         (chica)
@@ -157,6 +184,8 @@ Ana · Caja 1         (chica)
 >> NOTA: sin azúcar glass
 --------------------------------
 ```
+
+Si falla un impreso, el otro se intenta igual y el error dice cuál falló ("No se pudo imprimir la comanda de cocina."). Las ventas anteriores a "Va a cocina" cuentan todas sus líneas como de cocina. Las ventas anteriores a las cuentas no tienen pedidos: su comanda lleva el folio en lugar de la cuenta.
 
 Opciones: imprimir (automático al cobrar, según la impresora de la tablet, o con botón), ticket digital (compartir el texto del ticket con la hoja de compartir del sistema; si no existe, copiar al portapapeles o abrir WhatsApp con el texto) y QR (fase opcional del plan). Una reimpresión lleva la marca `*** REIMPRESIÓN ***`; una venta cancelada, `*** VENTA CANCELADA ***`. También se imprime el **ticket de corte** (ver 5.7).
 
@@ -205,7 +234,7 @@ Ejemplo:
 
 1. Contar efectivo: por denominaciones (billetes de 1000, 500, 200, 100, 50, 20; monedas de 20, 10, 5, 2, 1 y 0.50) o capturando el total directo.
 2. En la misma pantalla, mientras se cuenta: efectivo esperado, efectivo contado y diferencia en vivo (sobrante en verde, faltante en rojo), con los totales del turno. Nota opcional. (Ya no es corte ciego: a pedido de Bruno, quien cierra ve cuánto debe haber.)
-3. Confirmar: el turno queda cerrado con su resumen guardado (ya no cambia). Opción de imprimir el corte. Si hay ventas por subir: "Hay 3 ventas por subir; se subirán solas." (no impide cerrar).
+3. Confirmar: el turno queda cerrado con su resumen guardado (ya no cambia). Opción de imprimir el corte. Si hay ventas por subir: "Hay 3 ventas por subir; se subirán solas." (no impide cerrar). Si hay cuentas abiertas: "Hay 2 cuentas abiertas (Cuenta 3 · Luis, Cuenta 4). Se cobrarán en el turno que esté abierto." con la lista (tampoco impide cerrar).
 
 **Cortes de caja:** historial (fecha, dispositivo, quién abrió y cerró, total vendido, diferencia) y detalle con reimpresión.
 
@@ -215,8 +244,8 @@ Ejemplo:
 
 **Detalle:** vista del ticket y acciones:
 
-- **Ver ticket**, **Reimprimir ticket** y **Reimprimir comanda** (si la venta tiene productos de cocina), ambos con `*** REIMPRESIÓN ***`.
-- **Cancelar venta:** solo si el turno de esa venta sigue abierto y la venta está pagada. Motivo obligatorio. Requiere `cancelarVentas` o autorización. La venta queda "Cancelada" y deja de contar en totales (el dinero se devolvió en el momento). Si tenía productos de cocina y la comanda está activada, ofrece "Imprimir aviso a cocina": una comanda con "COMANDA CANCELADA", "NO PREPARAR", el folio y los productos, para avisar en barra (también queda el botón "Imprimir comanda cancelada" en el detalle).
+- **Ver ticket**, **Reimprimir ticket** y **Reimprimir comanda** (si la venta tiene productos de cocina; una por pedido si la venta viene de una cuenta con varios), ambos con `*** REIMPRESIÓN ***`. Las ventas con cuenta muestran "Cuenta 12".
+- **Cancelar venta:** solo si el turno de esa venta sigue abierto y la venta está pagada. Motivo obligatorio. Requiere `cancelarVentas` o autorización. La venta queda "Cancelada" y deja de contar en totales (el dinero se devolvió en el momento). Si tenía productos de cocina y la comanda está activada, ofrece "Imprimir aviso a cocina": una comanda con "COMANDA CANCELADA", "NO PREPARAR", la cuenta (o el folio en ventas sin cuenta) y los productos, para avisar en barra (también queda el botón "Imprimir comanda cancelada" en el detalle).
 - **Devolución:** para ventas pagadas o devueltas parcialmente, de cualquier turno. Se eligen líneas y cantidades (o todo), método de reembolso (en efectivo requiere un turno abierto en este dispositivo) y motivo. Requiere `cancelarVentas` o autorización. El monto se calcula proporcional al descuento (ver §6). Crea un registro en `devoluciones`, suma a `devuelto` de la venta y cambia su estado. El efectivo devuelto resta del efectivo esperado del turno donde se hizo la devolución.
 
 **Devoluciones:** lista con filtros por fecha, con enlace a la venta original.
@@ -248,13 +277,13 @@ Solo Administrador.
 - **Negocio:** nombre, logo (comprimido), dirección, teléfono, RFC (opcional) y categorías de gasto.
 - **Impuestos y descuentos:** precios incluyen IVA (sí por defecto), tasa (16 %), mostrar desglose de IVA en el ticket; permitir descuentos y porcentaje máximo.
 - **Pagos:** tarjeta y transferencia activadas o no (efectivo siempre), cuentas bancarias para transferencia (banco, titular, CLABE, cuenta o tarjeta, alias) y referencia de transferencia obligatoria sí/no.
-- **Ticket:** mostrar logo, dirección, teléfono, RFC y cajero, mensaje final y QR. **Comanda de cocina:** "Imprimir comanda de cocina" (activado por defecto), orden de impresión ("Cocina primero" por defecto o "Cliente primero") y copias de la comanda (1–3, por defecto 1; en la impresora del sistema las copias se eligen en el diálogo). Vista previa en vivo del ticket y de la comanda, lado a lado (al ancho de la impresora de la tablet).
+- **Ticket:** mostrar logo, dirección, teléfono, RFC y cajero, mensaje final y QR. **Comanda de cocina:** "Imprimir comanda de cocina" (activado por defecto), orden de impresión de la venta rápida, donde ticket y comanda salen juntos ("Cocina primero" por defecto o "Cliente primero") y copias de la comanda (1–3, por defecto 1; en la impresora del sistema las copias se eligen en el diálogo). Vista previa en vivo del ticket y de la comanda, lado a lado (al ancho de la impresora de la tablet).
 - **Impresora** (por dispositivo, se guarda localmente y no se sincroniza). La impresora real es una térmica de 58 mm por Bluetooth ("58-LL thermal printer") y la tablet es Android con Chrome.
   - Tipo de conexión: **Bluetooth** (Web Bluetooth), **RawBT** (app de Android, para Bluetooth clásico) o **Sistema** (diálogo de impresión del navegador). Solo aparecen las que el dispositivo soporta; si no hay ninguna directa queda Sistema con la explicación.
   - Bluetooth: "Buscar impresora" (desde un toque), nombre de la impresora elegida, estado (Conectada / Desconectada / Buscando), "Reconectar" y "Olvidar impresora". Al abrir la app se reconecta sola a la impresora guardada. Si al buscar no aparece nada: "No se encontró la impresora…" y la sugerencia de cambiar a RawBT (probablemente es Bluetooth clásico).
   - RawBT: nota de qué es y cómo instalarla. Si la app no responde: "No se pudo abrir RawBT. Revisa que esté instalada en la tablet."
   - Ancho de papel: 58 mm (32 columnas, por defecto) u 80 mm (48 columnas). Aplica a venta, reimpresión, corte y vista previa.
-  - Opciones (Bluetooth y RawBT): densidad (Baja, Normal, Alta), líneas de avance al final (0–8, por defecto 3), "Cortar papel al final" (apagado por defecto; muchas de 58 mm no tienen cortador) y copias (1–3). Para todas: "Imprimir automáticamente al cobrar".
+  - Opciones (Bluetooth y RawBT): densidad (Baja, Normal, Alta), líneas de avance al final (0–8, por defecto 3), "Cortar papel al final" (apagado por defecto; muchas de 58 mm no tienen cortador) y copias (1–3). Para todas: "Imprimir automáticamente" (comandas al enviar a cocina y tickets al cobrar).
   - "Imprimir prueba": ticket de ejemplo con acentos, ñ, signo de pesos, una línea de totales ($1,234.50) y el logo si está activado. Si no hay logo o no carga, sale solo el nombre del negocio.
 - **Dispositivo:** nombre, prefijo de folio, tipo, bloqueo automático (minutos, 0 = nunca) y estado del almacenamiento persistente.
 
@@ -302,6 +331,8 @@ Desde la pantalla de venta con el carrito vacío y la caja abierta:
 | Brownie, tarjeta | ≤ 4 | Brownie → Cobrar → Tarjeta → Pagado con tarjeta |
 | Latte mediano con almendra, efectivo $100 | ≤ 7 | Latte → Mediano → Almendra → Agregar → Cobrar → $100 → Confirmar cobro |
 
+La venta rápida (borrador sin cuenta → Cobrar) conserva esos mismos toques: abrir la cuenta, el pedido y la venta ocurren al confirmar el pago, sin pasos extra. Con cuentas abiertas: enviar un pedido nuevo = producto(s) → Enviar a cocina; cobrar una cuenta = tarjeta de la cuenta → Cobrar → método → confirmar.
+
 Estos flujos llevan prueba e2e que cuenta los toques.
 
 ## 8. Casos borde
@@ -311,6 +342,11 @@ Estos flujos llevan prueba e2e que cuenta los toques.
 - **Sesión del dispositivo expirada o cuenta desactivada:** se pide iniciar sesión otra vez sin perder las ventas pendientes de subir.
 - **Escritura rechazada al sincronizar:** aviso persistente con el folio para el Administrador y botón "Reintentar".
 - **Dos dispositivos con el mismo prefijo:** se valida al configurar el dispositivo (con conexión) y se advierte.
+- **Recarga o cierre con cuentas abiertas:** las cuentas y sus pedidos viven en la tablet y se suben solos; el borrador de cada cuenta también se recupera.
+- **Dos tablets agregando a la misma cuenta:** cada pedido es un registro nuevo (solo se inserta), así que no se pisan; el número de comanda puede repetirse si ocurre a la vez y solo afecta a la etiqueta impresa.
+- **Cuentas abiertas con más de 35 días:** nunca se borran de la tablet ni quedan fuera de la sincronización mientras sigan abiertas.
+- **Tablets con la versión anterior:** hay que actualizar todas antes de crear la primera cuenta (una versión vieja no entiende las tablas nuevas).
+- **Ventas anteriores a las cuentas:** quedan como venta directa (sin cuenta) y siguen funcionando en reportes, devoluciones, ticket público e historial.
 - **Caja abierta varios días:** se permite, con aviso en Inicio.
 - **Producto eliminado o con precio cambiado mientras está en el carrito:** la línea conserva lo que tenía al agregarse.
 - **Ventas anteriores a los tamaños:** no traen `tamano` ni `ingredientes`; se muestran e imprimen como antes (el tamaño venía dentro de los modificadores).

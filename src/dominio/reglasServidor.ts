@@ -3,6 +3,7 @@ import {
   centavosPositivos,
   dia,
   ESQUEMAS_TABLA,
+  ESTADOS_CUENTA,
   esquemaCancelacion,
   esquemaTurno,
   ESTADOS_VENTA,
@@ -34,13 +35,21 @@ export const TABLAS_BORRABLES: readonly TablaSync[] = [
   'productos',
 ];
 
-/** Tablas que el pull limita a los últimos 35 días. */
-export const TABLAS_CON_ALCANCE: readonly TablaSync[] = ['ventas', 'movimientos', 'devoluciones', 'turnos'];
+/** Tablas que el pull limita a los últimos 35 días (los turnos y las cuentas abiertas llegan siempre). */
+export const TABLAS_CON_ALCANCE: readonly TablaSync[] = [
+  'ventas',
+  'movimientos',
+  'devoluciones',
+  'turnos',
+  'cuentasVenta',
+  'pedidos',
+];
 
 /** Campos que se pueden cambiar con `actualizar` (además de actualizadoEn). */
 export const CAMPOS_ACTUALIZABLES: Partial<Record<TablaSync, readonly string[]>> = {
   ventas: ['estado', 'cancelacion', 'devuelto'],
   movimientos: ['anulado', 'anuladoPor', 'anuladoEn'],
+  cuentasVenta: ['estado', 'nombre', 'ventaId', 'cancelacion'],
 };
 
 /**
@@ -68,6 +77,9 @@ const ventaTolerante = z.looseObject({
   estado: z.enum(ESTADOS_VENTA).catch('pagada'),
   devuelto: z.number().int().catch(0),
   cancelacion: z.looseObject({}).nullable().catch(null),
+  cuentaId: id.optional().catch(undefined),
+  cuentaNumero: z.number().int().optional().catch(undefined),
+  cuentaComandas: z.number().int().optional().catch(undefined),
   actualizadoEn: fecha,
 });
 
@@ -75,6 +87,14 @@ const cambiosVenta = z.strictObject({
   estado: z.enum(ESTADOS_VENTA).optional(),
   cancelacion: esquemaCancelacion.nullable().optional(),
   devuelto: centavosPositivos.optional(),
+  actualizadoEn: fecha,
+});
+
+const cambiosCuenta = z.strictObject({
+  estado: z.enum(ESTADOS_CUENTA).optional(),
+  nombre: z.string().nullable().optional(),
+  ventaId: id.nullable().optional(),
+  cancelacion: esquemaCancelacion.nullable().optional(),
   actualizadoEn: fecha,
 });
 
@@ -96,8 +116,8 @@ export type Accion =
   | { tipo: 'insertar'; valores: Record<string, unknown> }
   /** Upsert donde gana el actualizadoEn más reciente. Sin cambio = duplicada. */
   | { tipo: 'upsert'; valores: Record<string, unknown> }
-  /** UPDATE de campos permitidos. `soloTurnoAbierto`: solo si el turno sigue abierto. */
-  | { tipo: 'actualizar'; valores: Record<string, unknown>; soloTurnoAbierto: boolean }
+  /** UPDATE de campos permitidos. `soloAbierto`: solo si el turno o la cuenta siguen abiertos. */
+  | { tipo: 'actualizar'; valores: Record<string, unknown>; soloAbierto: boolean }
   /** Marca el registro como borrado (lápida para que el pull lo propague). */
   | { tipo: 'borrar'; actualizadoEn: string };
 
@@ -136,7 +156,7 @@ export function evaluarOperacion(op: Pick<Operacion, 'tabla' | 'tipo' | 'registr
       : rechazo(errorZod(r.error));
   }
 
-  // actualizar en ventas, movimientos, devoluciones y turnos: se crean una vez y nunca se borran
+  // actualizar en ventas, movimientos, turnos y cuentas; devoluciones y pedidos se crean una vez y nunca cambian
   const esquemaCambios =
     tabla === 'ventas'
       ? cambiosVenta
@@ -144,7 +164,9 @@ export function evaluarOperacion(op: Pick<Operacion, 'tabla' | 'tipo' | 'registr
         ? cambiosMovimiento
         : tabla === 'turnos'
           ? cambiosTurno
-          : null;
+          : tabla === 'cuentasVenta'
+            ? cambiosCuenta
+            : null;
   if (!esquemaCambios) return rechazo(`No se puede modificar un registro de ${tabla}.`);
   const { id: _id, ...cambios } = datos;
   const permitidos = CAMPOS_ACTUALIZABLES[tabla];
@@ -154,5 +176,12 @@ export function evaluarOperacion(op: Pick<Operacion, 'tabla' | 'tipo' | 'registr
   }
   const r = esquemaCambios.safeParse(cambios);
   if (!r.success) return rechazo(errorZod(r.error));
-  return { ok: true, accion: { tipo: 'actualizar', valores: r.data, soloTurnoAbierto: tabla === 'turnos' } };
+  return {
+    ok: true,
+    accion: {
+      tipo: 'actualizar',
+      valores: r.data,
+      soloAbierto: tabla === 'turnos' || tabla === 'cuentasVenta',
+    },
+  };
 }

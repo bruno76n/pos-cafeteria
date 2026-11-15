@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'vitest';
 import { resumirTurno } from '@/dominio/caja';
 import { configPrueba, ventaPrueba } from '@/dominio/datosPrueba';
-import type { ConfigGeneral, Turno } from '@/dominio/tipos';
+import type { ConfigGeneral, LineaVenta, Turno } from '@/dominio/tipos';
 import { construirTicketCorte, construirTicketVenta, envolver, ticketATexto } from './ticket';
 
 const config: ConfigGeneral = {
@@ -202,4 +202,57 @@ test('envolver corta por palabras y palabras largas', () => {
   expect(envolver('uno dos tres', 7)).toEqual(['uno dos', 'tres']);
   expect(envolver('supercalifragilístico', 8)).toEqual(['supercal', 'ifragilí', 'stico']);
   expect(envolver('', 8)).toEqual(['']);
+});
+
+describe('ticket de una cuenta', () => {
+  const [latte, brownie] = venta.lineas as [LineaVenta, LineaVenta];
+
+  test('con varias comandas agrupa los productos por comanda', () => {
+    const deCuenta = {
+      ...venta,
+      cuentaId: 'cuenta-1',
+      cuentaNumero: 12,
+      cuentaComandas: 3,
+      lineas: [
+        { ...latte, comanda: 1 },
+        { ...brownie, comanda: 2 },
+      ],
+    };
+    const texto = ticketATexto(construirTicketVenta(deCuenta, config));
+    expect(texto).toContain('Cuenta: 12');
+    expect(texto).toContain('Comanda 1 de 3');
+    expect(texto).toContain('Comanda 2 de 3');
+    expect(texto.indexOf('Comanda 1 de 3')).toBeLessThan(texto.indexOf('Latte'));
+    expect(texto.indexOf('Latte')).toBeLessThan(texto.indexOf('Comanda 2 de 3'));
+    expect(texto.indexOf('Comanda 2 de 3')).toBeLessThan(texto.indexOf('Brownie'));
+    expect(texto).toMatchSnapshot();
+  });
+
+  test('con una sola comanda no hay encabezados; sin cuenta tampoco hay "Cuenta"', () => {
+    const una = {
+      ...venta,
+      cuentaNumero: 5,
+      cuentaComandas: 1,
+      lineas: venta.lineas.map((l) => ({ ...l, comanda: 1 })),
+    };
+    const texto = ticketATexto(construirTicketVenta(una, config));
+    expect(texto).toContain('Cuenta: 5');
+    expect(texto).not.toContain('Comanda');
+    expect(ticketATexto(construirTicketVenta(venta, config))).not.toContain('Cuenta');
+  });
+
+  test('si solo quedan productos de una comanda (las otras se anularon) no se agrupa', () => {
+    const texto = ticketATexto(
+      construirTicketVenta(
+        {
+          ...venta,
+          cuentaNumero: 5,
+          cuentaComandas: 3,
+          lineas: venta.lineas.map((l) => ({ ...l, comanda: 2 })),
+        },
+        config,
+      ),
+    );
+    expect(texto).not.toContain('Comanda');
+  });
 });

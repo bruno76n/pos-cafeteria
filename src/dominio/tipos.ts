@@ -38,6 +38,10 @@ export type EstadoVenta = (typeof e.ESTADOS_VENTA)[number];
 export type Cancelacion = z.infer<typeof e.esquemaCancelacion>;
 export type Venta = z.infer<typeof e.esquemaVenta>;
 export type Devolucion = z.infer<typeof e.esquemaDevolucion>;
+export type EstadoCuenta = (typeof e.ESTADOS_CUENTA)[number];
+export type Cuenta = z.infer<typeof e.esquemaCuenta>;
+export type TipoPedido = (typeof e.TIPOS_PEDIDO)[number];
+export type Pedido = z.infer<typeof e.esquemaPedido>;
 
 /** Registro de cualquier tabla sincronizable. */
 export interface RegistrosPorTabla {
@@ -52,6 +56,8 @@ export interface RegistrosPorTabla {
   movimientos: Movimiento;
   ventas: Venta;
   devoluciones: Devolucion;
+  cuentasVenta: Cuenta;
+  pedidos: Pedido;
 }
 
 export type Operacion = z.infer<typeof e.esquemaOperacion>;

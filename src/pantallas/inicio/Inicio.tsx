@@ -2,7 +2,7 @@ import { Link } from 'react-router';
 import { clasesBoton } from '@/componentes/Boton';
 import { Pantalla } from '@/componentes/Pantalla';
 import { TablaCifras } from '@/componentes/TablaCifras';
-import { useDatosDelRango, useDatosDelTurno, useTurnoAbierto } from '@/datos/consultas';
+import { useCuentasAbiertas, useDatosDelRango, useDatosDelTurno, useTurnoAbierto } from '@/datos/consultas';
 import { avisoCajaAbierta, resumirTurno } from '@/dominio/caja';
 import { formatearDinero } from '@/dominio/dinero';
 import { diaLocal, formatearFecha, formatearHora } from '@/dominio/fechas';
@@ -45,6 +45,17 @@ function EstadoCaja({ turno, conMontos }: { turno: Turno | null; conMontos: bool
   );
 }
 
+/** "3 cuentas abiertas", con enlace a la lista (solo en cajas que venden y si hay alguna). */
+function CuentasAbiertas() {
+  const cuentas = useCuentasAbiertas();
+  if (!cuentas?.length) return null;
+  return (
+    <Link to="/cuentas" className="text-producto font-semibold underline">
+      {cuentas.length === 1 ? '1 cuenta abierta' : `${cuentas.length} cuentas abiertas`}
+    </Link>
+  );
+}
+
 /** Inicio: cifras de hoy con verReportes; sin él, solo el estado de la caja y "Nueva venta". */
 export function Inicio() {
   const hoy = diaLocal();
@@ -61,6 +72,7 @@ export function Inicio() {
       {turno ? 'Nueva venta' : 'Abrir caja'}
     </Link>
   );
+  const cuentasAbiertas = esCaja && puede('vender') && <CuentasAbiertas />;
   const avisoCaja = aviso && (
     <p className="rounded-boton bg-ambar-fondo p-3 text-ambar" role="alert">
       {aviso}
@@ -74,6 +86,7 @@ export function Inicio() {
         <div className="flex max-w-xl flex-col gap-4 rounded-hoja border border-linea bg-papel p-6">
           <h2 className="text-seccion font-semibold">Caja</h2>
           <EstadoCaja turno={turno} conMontos={false} />
+          {cuentasAbiertas}
           {accionPrincipal}
         </div>
       </Pantalla>
@@ -100,6 +113,7 @@ export function Inicio() {
           >
             <h2 className="text-seccion font-semibold">Caja actual</h2>
             <EstadoCaja turno={turno} conMontos />
+            {cuentasAbiertas}
             {accionPrincipal}
           </section>
           <section className="rounded-hoja border border-linea bg-papel p-5" aria-label="Más vendidos hoy">

@@ -13,11 +13,15 @@ export function describirError(error: {
   if (error.tabla === 'ventas' && typeof error.datos.folio === 'string')
     return `La venta ${error.datos.folio}`;
   if (error.tabla === 'ventas') return 'Una venta';
+  if (error.tabla === 'cuentasVenta' && typeof error.datos.numero === 'number')
+    return `La cuenta ${error.datos.numero}`;
   const nombre = typeof error.datos.nombre === 'string' ? ` «${error.datos.nombre}»` : '';
   const tipos: Record<string, string> = {
     movimientos: 'Un movimiento de caja',
     devoluciones: 'Una devolución',
     turnos: 'Un turno de caja',
+    cuentasVenta: 'Una cuenta',
+    pedidos: 'Un pedido',
     config: 'La configuración',
     categorias: `La categoría${nombre}`,
     gruposModificadores: `El grupo${nombre}`,

@@ -1,5 +1,11 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { categoriaPrueba, categoriasPrueba, ventaPrueba } from '@/dominio/datosPrueba';
+import {
+  categoriaPrueba,
+  categoriasPrueba,
+  cuentaPrueba,
+  pedidoPrueba,
+  ventaPrueba,
+} from '@/dominio/datosPrueba';
 import { diaLocal, sumarDias } from '@/dominio/fechas';
 import type { FilaPull, Operacion, RespuestaPull, RespuestaPush } from '@/dominio/tipos';
 import { ErrorApi, type ClienteApi } from './api';
@@ -287,6 +293,36 @@ describe('pull', () => {
     });
   });
 
+  test('una tabla que esta versión no conoce se ignora sin fallar', async () => {
+    const cafes = categoriaPrueba('cafes');
+    servidor.paginas = [
+      {
+        filas: [
+          { tabla: 'mesas', rev: 4, borrado: false, registro: { id: 'm1' } } as unknown as FilaPull,
+          fila('categorias', { ...cafes }, 5),
+        ],
+        rev: 5,
+        hayMas: false,
+      },
+    ];
+    expect(await motor.pull()).toBe('ok');
+    expect(await bd.categorias.get(cafes.id)).toBeDefined();
+    expect(await leerMeta('cursorPull')).toBe(5);
+  });
+
+  test('las cuentas y los pedidos bajan a su tabla', async () => {
+    servidor.paginas = [
+      {
+        filas: [fila('cuentasVenta', { ...cuentaPrueba() }, 6), fila('pedidos', { ...pedidoPrueba() }, 7)],
+        rev: 7,
+        hayMas: false,
+      },
+    ];
+    await motor.pull();
+    expect(await bd.cuentasVenta.get('cuenta-1')).toMatchObject({ numero: 12, estado: 'abierta' });
+    expect(await bd.pedidos.get('pedido-1')).toMatchObject({ cuentaId: 'cuenta-1', numero: 1 });
+  });
+
   test('401 en el pull también expira la sesión', async () => {
     servidor.falla = new ErrorApi('sesion', 'x', 401);
     expect(await motor.pull()).toBe('sesion-expirada');
@@ -320,6 +356,24 @@ describe('limpieza diaria', () => {
     expect((await bd.turnos.toArray()).map((t) => t.id)).toEqual(['t-abierto']);
     await bd.ventas.put(ventaPrueba({ id: 'otra-vieja', dia: viejo }));
     expect(await motor.limpiarAntiguos(hoy)).toBe(0);
+  });
+
+  test('las cuentas abiertas y sus pedidos nunca se borran; las demás sí', async () => {
+    const hoy = diaLocal();
+    const viejo = sumarDias(hoy, -40);
+    await bd.cuentasVenta.bulkPut([
+      cuentaPrueba({ id: 'abierta', dia: viejo }),
+      cuentaPrueba({ id: 'cobrada', dia: viejo, estado: 'cobrada', ventaId: 'v' }),
+      cuentaPrueba({ id: 'reciente', dia: sumarDias(hoy, -3), estado: 'cobrada', ventaId: 'v' }),
+    ]);
+    await bd.pedidos.bulkPut([
+      pedidoPrueba({ id: 'p-abierta', cuentaId: 'abierta', dia: viejo }),
+      pedidoPrueba({ id: 'p-cobrada', cuentaId: 'cobrada', dia: viejo }),
+      pedidoPrueba({ id: 'p-reciente', cuentaId: 'reciente', dia: sumarDias(hoy, -3) }),
+    ]);
+    expect(await motor.limpiarAntiguos(hoy)).toBe(2);
+    expect((await bd.cuentasVenta.toArray()).map((c) => c.id).sort()).toEqual(['abierta', 'reciente']);
+    expect((await bd.pedidos.toArray()).map((p) => p.id).sort()).toEqual(['p-abierta', 'p-reciente']);
   });
 });
 

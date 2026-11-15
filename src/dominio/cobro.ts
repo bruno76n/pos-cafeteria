@@ -1,6 +1,6 @@
-import { calcularTotales, lineasParaVenta, type Carrito, type ConfigVentas } from './carrito.js';
+import { calcularTotales, type ConfigVentas, type DescuentoCarrito } from './carrito.js';
 import type { Centavos } from './dinero.js';
-import type { Dispositivo, MetodoPago, Pago, RefUsuario, Turno, Venta } from './tipos.js';
+import type { Dispositivo, LineaVenta, MetodoPago, Pago, RefUsuario, Turno, Venta } from './tipos.js';
 
 export const NOMBRE_METODO: Record<MetodoPago, string> = {
   efectivo: 'Efectivo',
@@ -85,20 +85,21 @@ export function quitarPago(pagos: Pago[], metodo: MetodoPago): Pago[] {
 /** Venta lista para guardarse (el folio se asigna al guardarla, en la misma transacción). */
 export type VentaNueva = Omit<Venta, 'folio' | 'folioNumero' | 'actualizadoEn'>;
 
-/** Arma la venta con copia completa del carrito, totales, pagos y cambio. */
+/** Arma la venta con copia completa de las líneas, totales, pagos y cambio. */
 export function armarVenta(datos: {
   id: string;
   fecha: string;
   dia: string;
-  carrito: Carrito;
+  lineas: LineaVenta[];
+  descuento: DescuentoCarrito | null;
+  cliente: string | null;
   config: ConfigVentas;
   pagos: Pago[];
   turno: Pick<Turno, 'id'>;
   dispositivo: Pick<Dispositivo, 'id' | 'nombre'>;
   cajero: RefUsuario;
 }): VentaNueva {
-  const { carrito } = datos;
-  const totales = calcularTotales(carrito.lineas, carrito.descuento, datos.config);
+  const totales = calcularTotales(datos.lineas, datos.descuento, datos.config);
   if (!cobroCompleto(totales.total, datos.pagos)) throw new Error('Los pagos no cubren el total.');
   return {
     id: datos.id,
@@ -108,13 +109,11 @@ export function armarVenta(datos: {
     fecha: datos.fecha,
     dia: datos.dia,
     cajero: datos.cajero,
-    cliente: carrito.cliente?.trim() || null,
-    lineas: lineasParaVenta(carrito),
+    cliente: datos.cliente?.trim() || null,
+    lineas: datos.lineas,
     subtotal: totales.subtotal,
     descuento:
-      carrito.descuento && totales.descuento > 0
-        ? { ...carrito.descuento, importe: totales.descuento }
-        : null,
+      datos.descuento && totales.descuento > 0 ? { ...datos.descuento, importe: totales.descuento } : null,
     iva: totales.iva,
     total: totales.total,
     pagos: datos.pagos,

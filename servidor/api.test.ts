@@ -1,13 +1,19 @@
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, beforeEach, describe, expect, test } from 'vitest';
-import { categoriaPrueba, configPrueba, ventaPrueba } from '../src/dominio/datosPrueba.js';
+import {
+  categoriaPrueba,
+  configPrueba,
+  cuentaPrueba,
+  pedidoPrueba,
+  ventaPrueba,
+} from '../src/dominio/datosPrueba.js';
 import { diaLocal, sumarDias } from '../src/dominio/fechas.js';
-import type { Operacion, RespuestaPull, RespuestaPush, Venta } from '../src/dominio/tipos.js';
+import type { Cuenta, Operacion, Pedido, RespuestaPull, RespuestaPush, Venta } from '../src/dominio/tipos.js';
 import { crearApp } from './app.js';
 import { firmarToken, hashContrasena } from './auth.js';
 import { crearBasePrueba } from './db/basePrueba.js';
 import type { ConexionBaseDatos } from './db/cliente.js';
-import { config, cuentas, ventas } from './db/esquema.js';
+import { config, cuentas, cuentasVenta, pedidos, ventas } from './db/esquema.js';
 
 const SECRETO = 'secreto-de-prueba';
 let conexion: ConexionBaseDatos;
@@ -409,6 +415,163 @@ describe('pull', () => {
     ]);
     const despues = await pull(rev);
     expect(despues.filas.find((f) => f.registro.id === nutella.id)).toMatchObject({ borrado: true });
+  });
+});
+
+function cuentaDeHoy(cambios: Partial<Cuenta> = {}): Cuenta {
+  return cuentaPrueba({
+    id: crypto.randomUUID(),
+    dia: diaLocal(),
+    fecha: ahora(),
+    actualizadoEn: ahora(),
+    ...cambios,
+  });
+}
+
+function pedidoDeHoy(cuentaId: string, cambios: Partial<Pedido> = {}): Pedido {
+  return pedidoPrueba({
+    id: crypto.randomUUID(),
+    cuentaId,
+    dia: diaLocal(),
+    fecha: ahora(),
+    actualizadoEn: ahora(),
+    ...cambios,
+  });
+}
+
+const crearCuenta = (c: Cuenta) => op({ tabla: 'cuentasVenta', tipo: 'crear', registroId: c.id, datos: c });
+const crearPedido = (p: Pedido) => op({ tabla: 'pedidos', tipo: 'crear', registroId: p.id, datos: p });
+const cambiarCuenta = (id: string, datos: object) =>
+  op({
+    tabla: 'cuentasVenta',
+    tipo: 'actualizar',
+    registroId: id,
+    datos: { ...datos, actualizadoEn: ahora() },
+  });
+
+describe('cuentas y pedidos', () => {
+  test('cuenta y pedido son idempotentes', async () => {
+    const cuenta = cuentaDeHoy();
+    const pedido = pedidoDeHoy(cuenta.id);
+    const ops = [crearCuenta(cuenta), crearPedido(pedido)];
+    expect((await push(ops)).cuerpo.resultados.map((r) => r.resultado)).toEqual(['aplicada', 'aplicada']);
+    // reenviar las mismas operaciones y los mismos registros con otras operaciones
+    expect((await push(ops)).cuerpo.resultados.map((r) => r.resultado)).toEqual(['duplicada', 'duplicada']);
+    const otras = [crearCuenta(cuenta), crearPedido(pedido)];
+    expect((await push(otras)).cuerpo.resultados.map((r) => r.resultado)).toEqual(['duplicada', 'duplicada']);
+    expect(await conexion.db.select().from(cuentasVenta).where(eq(cuentasVenta.id, cuenta.id))).toHaveLength(
+      1,
+    );
+    expect(await conexion.db.select().from(pedidos).where(eq(pedidos.cuentaId, cuenta.id))).toHaveLength(1);
+  });
+
+  test('dos tablets agregan pedidos a la misma cuenta sin pisarse', async () => {
+    const cuenta = cuentaDeHoy();
+    await push([crearCuenta(cuenta)]);
+    const deCaja1 = pedidoDeHoy(cuenta.id, { numero: 2, enviadoPor: { id: 'u1', nombre: 'Ana' } });
+    const deCaja2 = pedidoDeHoy(cuenta.id, { numero: 2, enviadoPor: { id: 'u2', nombre: 'Beto' } });
+    const [a, b] = await Promise.all([push([crearPedido(deCaja1)]), push([crearPedido(deCaja2)])]);
+    expect(a.cuerpo.resultados[0]?.resultado).toBe('aplicada');
+    expect(b.cuerpo.resultados[0]?.resultado).toBe('aplicada');
+    const filas = await conexion.db.select().from(pedidos).where(eq(pedidos.cuentaId, cuenta.id));
+    expect(filas.map((f) => f.id).sort()).toEqual([deCaja1.id, deCaja2.id].sort());
+  });
+
+  test('los pedidos no se modifican ni se borran', async () => {
+    const cuenta = cuentaDeHoy();
+    const pedido = pedidoDeHoy(cuenta.id);
+    await push([crearCuenta(cuenta), crearPedido(pedido)]);
+    const { cuerpo } = await push([
+      op({
+        tabla: 'pedidos',
+        tipo: 'actualizar',
+        registroId: pedido.id,
+        datos: { numero: 9, actualizadoEn: ahora() },
+      }),
+      op({ tabla: 'pedidos', tipo: 'borrar', registroId: pedido.id, datos: { actualizadoEn: ahora() } }),
+    ]);
+    expect(cuerpo.resultados.map((r) => r.resultado)).toEqual(['rechazada', 'rechazada']);
+  });
+
+  test('cobrar cierra la cuenta; una cuenta cobrada ya no cambia', async () => {
+    const cuenta = cuentaDeHoy();
+    const venta = ventaDeHoy({
+      folio: 'M-000001',
+      folioNumero: 1,
+      cuentaId: cuenta.id,
+      cuentaNumero: cuenta.numero,
+    });
+    const { cuerpo } = await push([
+      crearCuenta(cuenta),
+      op({ tabla: 'ventas', tipo: 'crear', registroId: venta.id, datos: venta }),
+      cambiarCuenta(cuenta.id, { estado: 'cobrada', ventaId: venta.id }),
+      cambiarCuenta(cuenta.id, {
+        estado: 'cancelada',
+        cancelacion: { motivo: 'x', usuario: ana, autorizadoPor: null, fecha: ahora() },
+      }),
+      cambiarCuenta(cuenta.id, { nombre: 'Otro' }),
+    ]);
+    expect(cuerpo.resultados.map((r) => r.resultado)).toEqual([
+      'aplicada',
+      'aplicada',
+      'aplicada',
+      'rechazada',
+      'rechazada',
+    ]);
+    const [fila] = await conexion.db.select().from(cuentasVenta).where(eq(cuentasVenta.id, cuenta.id));
+    expect(fila).toMatchObject({ estado: 'cobrada', ventaId: venta.id });
+    const [guardada] = await conexion.db.select().from(ventas).where(eq(ventas.id, venta.id));
+    expect(guardada).toMatchObject({ cuentaId: cuenta.id, cuentaNumero: cuenta.numero });
+  });
+
+  test('doble cobro: la segunda venta de la cuenta se rechaza con un mensaje claro', async () => {
+    const cuenta = cuentaDeHoy();
+    const deCaja1 = ventaDeHoy({ folio: 'N-000001', folioNumero: 1, cuentaId: cuenta.id });
+    const deCaja2 = ventaDeHoy({
+      folio: 'P-000001',
+      folioNumero: 1,
+      cuentaId: cuenta.id,
+      dispositivoId: 'otro',
+    });
+    await push([
+      crearCuenta(cuenta),
+      op({ tabla: 'ventas', tipo: 'crear', registroId: deCaja1.id, datos: deCaja1 }),
+      cambiarCuenta(cuenta.id, { estado: 'cobrada', ventaId: deCaja1.id }),
+    ]);
+    const { cuerpo } = await push([
+      op({ tabla: 'ventas', tipo: 'crear', registroId: deCaja2.id, datos: deCaja2 }),
+      cambiarCuenta(cuenta.id, { estado: 'cobrada', ventaId: deCaja2.id }),
+    ]);
+    expect(cuerpo.resultados[0]).toMatchObject({
+      resultado: 'rechazada',
+      motivo: 'Esta cuenta ya se cobró en otro dispositivo.',
+    });
+    expect(cuerpo.resultados[1]?.resultado).toBe('rechazada');
+    expect(await conexion.db.select().from(ventas).where(eq(ventas.cuentaId, cuenta.id))).toHaveLength(1);
+  });
+
+  test('las cuentas abiertas bajan siempre; las demás, solo los últimos 35 días', async () => {
+    const vieja = sumarDias(diaLocal(), -40);
+    const abierta = cuentaDeHoy({ dia: vieja });
+    const cobrada = cuentaDeHoy({ dia: vieja, estado: 'cobrada', ventaId: 'v' });
+    const reciente = cuentaDeHoy({ estado: 'cobrada', ventaId: 'v' });
+    const pedidoAbierta = pedidoDeHoy(abierta.id, { dia: vieja });
+    const pedidoCobrada = pedidoDeHoy(cobrada.id, { dia: vieja });
+    await push([
+      crearCuenta(abierta),
+      crearCuenta(cobrada),
+      crearCuenta(reciente),
+      crearPedido(pedidoAbierta),
+      crearPedido(pedidoCobrada),
+    ]);
+    const { filas } = await pullCompleto(0);
+    const ids = new Set(filas.map((f) => f.registro.id));
+    expect(ids.has(abierta.id)).toBe(true);
+    expect(ids.has(pedidoAbierta.id)).toBe(true);
+    expect(ids.has(reciente.id)).toBe(true);
+    expect(ids.has(cobrada.id)).toBe(false);
+    expect(ids.has(pedidoCobrada.id)).toBe(false);
+    expect(filas.find((f) => f.registro.id === abierta.id)?.tabla).toBe('cuentasVenta');
   });
 });
 

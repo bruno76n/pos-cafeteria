@@ -1,6 +1,7 @@
+import { etiquetaComanda, numeroDeCuenta } from '@/dominio/cuentas';
 import { formatearHora } from '@/dominio/fechas';
 import { resumenModificadores } from '@/dominio/modificadores';
-import type { ConfigGeneral, ConfigTicket, LineaVenta, Venta } from '@/dominio/tipos';
+import type { ConfigGeneral, ConfigTicket, Cuenta, LineaVenta, Pedido, Venta } from '@/dominio/tipos';
 import { SEPARADOR, texto, type LineaTicket, type OpcionesTicket, type TicketDocumento } from './ticket';
 
 // Comanda de cocina: el mismo TicketDocumento que el del cliente, solo con lo que hay que
@@ -21,9 +22,71 @@ export const opcionesComanda = (ticket: ConfigGeneral['ticket']): OpcionesComand
 /** Las ventas anteriores a "Va a cocina" no lo traen en sus líneas: cuentan como sí. */
 export const vaACocina = (linea: Pick<LineaVenta, 'vaACocina'>) => linea.vaACocina !== false;
 
+/** Lo que una comanda necesita saber, venga de un pedido o de una venta. */
+export interface DatosComanda {
+  /**
+   * Lo que se lee en grande bajo "COCINA", una línea por elemento (la letra doble solo cabe en la
+   * mitad de las columnas): el folio de la venta, o la cuenta y la comanda.
+   */
+  titulo: string[];
+  fecha: string;
+  cliente: string | null;
+  cajero: string;
+  dispositivoNombre: string;
+  lineas: LineaVenta[];
+}
+
+/** Comanda de una venta sin cuenta (anterior a las cuentas): el folio es el título. */
+export function datosDeVenta(venta: Venta): DatosComanda {
+  return {
+    titulo: [venta.folio],
+    fecha: venta.fecha,
+    cliente: venta.cliente,
+    cajero: venta.cajero.nombre,
+    dispositivoNombre: venta.dispositivoNombre,
+    lineas: venta.lineas,
+  };
+}
+
+/**
+ * Comanda de un pedido de una cuenta: "Cuenta 12" y "Comanda 2". Con `totalPedidos` (reimpresiones)
+ * dice "Comanda 2 de 3". `dispositivoNombre` es la caja desde donde se envía, si no es la que abrió la cuenta.
+ */
+export function datosDePedido(
+  cuenta: Pick<Cuenta, 'numero' | 'nombre' | 'dispositivoNombre'>,
+  pedido: Pick<Pedido, 'numero' | 'fecha' | 'lineas' | 'enviadoPor'>,
+  opciones: { totalPedidos?: number; dispositivoNombre?: string } = {},
+): DatosComanda {
+  return {
+    titulo: [numeroDeCuenta(cuenta), etiquetaComanda(pedido.numero, opciones.totalPedidos)],
+    fecha: pedido.fecha,
+    cliente: cuenta.nombre,
+    cajero: pedido.enviadoPor.nombre,
+    dispositivoNombre: opciones.dispositivoNombre ?? cuenta.dispositivoNombre,
+    lineas: pedido.lineas,
+  };
+}
+
+/** Aviso de cuenta cancelada: la cuenta y lo que ya se había mandado a cocina (`lineas` vigentes). */
+export function datosDeCuenta(
+  cuenta: Pick<Cuenta, 'numero' | 'nombre' | 'dispositivoNombre' | 'abiertaPor' | 'cancelacion' | 'fecha'>,
+  lineas: LineaVenta[],
+): DatosComanda {
+  return {
+    titulo: [numeroDeCuenta(cuenta)],
+    fecha: cuenta.cancelacion?.fecha ?? cuenta.fecha,
+    cliente: cuenta.nombre,
+    cajero: (cuenta.cancelacion?.usuario ?? cuenta.abiertaPor).nombre,
+    dispositivoNombre: cuenta.dispositivoNombre,
+    lineas,
+  };
+}
+
 export interface OpcionesDocComanda extends OpcionesTicket {
-  /** Aviso para barra de que la venta se canceló. */
+  /** Aviso para barra de que la venta (o la cuenta) se canceló. */
   cancelada?: boolean;
+  /** Pedido de anulación: avisa que NO se prepare lo que ya se había pedido. */
+  anulacion?: boolean;
 }
 
 function lineasDeProducto(linea: LineaVenta): LineaTicket[] {
@@ -39,29 +102,30 @@ function lineasDeProducto(linea: LineaVenta): LineaTicket[] {
   return l;
 }
 
-/** Comanda de una venta, o `null` si ninguna de sus líneas va a cocina. */
+/** Comanda de lo que se manda a cocina, o `null` si ninguna de sus líneas va a cocina. */
 export function construirComanda(
-  venta: Venta,
+  datos: DatosComanda,
   config: Pick<ConfigTicket, 'zonaHoraria'>,
   opciones: OpcionesDocComanda = {},
 ): TicketDocumento | null {
-  const lineas = venta.lineas.filter(vaACocina);
+  const lineas = datos.lineas.filter(vaACocina);
   if (lineas.length === 0) return null;
 
+  const encabezado = opciones.cancelada ? 'COMANDA CANCELADA' : opciones.anulacion ? 'ANULACIÓN' : 'COCINA';
   const l: LineaTicket[] = [
-    texto(opciones.cancelada ? 'COMANDA CANCELADA' : 'COCINA', {
-      alineacion: 'centro',
-      negrita: true,
-      doble: true,
-    }),
-    texto(venta.folio, { alineacion: 'centro', negrita: true, doble: true }),
-    texto(formatearHora(venta.fecha, config.zonaHoraria), { alineacion: 'centro' }),
+    texto(encabezado, { alineacion: 'centro', negrita: true, doble: true }),
+    ...datos.titulo.map((t) => texto(t, { alineacion: 'centro', negrita: true, doble: true })),
+    texto(formatearHora(datos.fecha, config.zonaHoraria), { alineacion: 'centro' }),
   ];
   if (opciones.reimpresion) l.push(texto('*** REIMPRESIÓN ***', { alineacion: 'centro', negrita: true }));
-  if (opciones.cancelada) l.push(texto('NO PREPARAR', { alineacion: 'centro', negrita: true }));
-  if (venta.cliente) l.push(texto(`Para: ${venta.cliente}`, { negrita: true, doble: true }));
-  l.push(texto(`${venta.cajero.nombre} · ${venta.dispositivoNombre}`, { chica: true }));
-  for (const linea of lineas) l.push(SEPARADOR, ...lineasDeProducto(linea));
+  if (opciones.cancelada || opciones.anulacion)
+    l.push(texto('NO PREPARAR', { alineacion: 'centro', negrita: true }));
+  if (datos.cliente) l.push(texto(`Para: ${datos.cliente}`, { negrita: true, doble: true }));
+  l.push(texto(`${datos.cajero} · ${datos.dispositivoNombre}`, { chica: true }));
+  for (const linea of lineas) {
+    l.push(SEPARADOR, ...lineasDeProducto(linea));
+    if (opciones.anulacion && linea.comanda) l.push(texto(`  (de la comanda ${linea.comanda})`));
+  }
   l.push(SEPARADOR, { tipo: 'espacio' });
   return { columnas: opciones.columnas ?? 32, lineas: l };
 }
@@ -76,17 +140,33 @@ export interface TrabajoImpresion {
   copias?: number;
 }
 
-/** Lo que se imprime al cobrar: ticket del cliente y comanda (si aplica), en el orden configurado. */
-export function trabajosDeVenta(
-  venta: Venta,
+/** La comanda de un pedido (vacío si está apagada o si nada va a cocina). */
+export function trabajosDePedido(
+  datos: DatosComanda,
+  config: ConfigGeneral,
+  columnas: 32 | 48,
+  opciones: OpcionesDocComanda = {},
+): TrabajoImpresion[] {
+  const ajustes = opcionesComanda(config.ticket);
+  const doc = ajustes.imprimir ? construirComanda(datos, config, { ...opciones, columnas }) : null;
+  return doc ? [{ tipo: 'comanda', doc, copias: ajustes.copias }] : [];
+}
+
+/** El ticket del cliente al cobrar. */
+export const trabajosDeCobro = (ticket: TicketDocumento): TrabajoImpresion[] => [
+  { tipo: 'ticket', doc: ticket },
+];
+
+/** Venta rápida: ticket y comanda salen juntos, en el orden configurado. */
+export function trabajosDeVentaRapida(
+  datos: DatosComanda,
   config: ConfigGeneral,
   ticket: TicketDocumento,
   columnas: 32 | 48,
 ): TrabajoImpresion[] {
-  const cliente: TrabajoImpresion = { tipo: 'ticket', doc: ticket };
-  const opciones = opcionesComanda(config.ticket);
-  const doc = opciones.imprimir ? construirComanda(venta, config, { columnas }) : null;
-  if (!doc) return [cliente];
-  const comanda: TrabajoImpresion = { tipo: 'comanda', doc, copias: opciones.copias };
-  return opciones.orden === 'cocina' ? [comanda, cliente] : [cliente, comanda];
+  const comanda = trabajosDePedido(datos, config, columnas);
+  const cliente = trabajosDeCobro(ticket);
+  return opcionesComanda(config.ticket).orden === 'cocina'
+    ? [...comanda, ...cliente]
+    : [...cliente, ...comanda];
 }

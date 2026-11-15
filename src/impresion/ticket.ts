@@ -1,5 +1,6 @@
 import { tipoDiferencia } from '@/dominio/caja';
 import { NOMBRE_METODO } from '@/dominio/cobro';
+import { etiquetaComanda } from '@/dominio/cuentas';
 import { formatearDinero } from '@/dominio/dinero';
 import { formatearFechaHora } from '@/dominio/fechas';
 import { detalleLinea, nombreLinea } from '@/dominio/personalizacion';
@@ -87,12 +88,20 @@ export function construirTicketVenta(
   if (venta.estado === 'cancelada')
     l.push(texto('*** VENTA CANCELADA ***', { alineacion: 'centro', negrita: true }));
   l.push(texto(`Folio: ${venta.folio}`, { negrita: true }));
+  if (venta.cuentaNumero) l.push(texto(`Cuenta: ${venta.cuentaNumero}`));
   l.push(columnas(formatearFechaHora(venta.fecha, zonaHoraria), venta.dispositivoNombre));
   if (ticket.mostrarCajero) l.push(texto(`Cajero: ${venta.cajero.nombre}`));
   if (venta.cliente) l.push(texto(`Para: ${venta.cliente}`));
   l.push(SEPARADOR);
 
+  // Una cuenta con productos de varias comandas los agrupa por comanda.
+  const agruparPorComanda = new Set(venta.lineas.map((x) => x.comanda)).size > 1;
+  let comandaActual: number | undefined;
   for (const linea of venta.lineas) {
+    if (agruparPorComanda && linea.comanda && linea.comanda !== comandaActual) {
+      comandaActual = linea.comanda;
+      l.push(texto(etiquetaComanda(linea.comanda, venta.cuentaComandas ?? linea.comanda), { negrita: true }));
+    }
     l.push(columnas(`${linea.cantidad} ${nombreLinea(linea)}`, formatearDinero(linea.importe)));
     if (linea.cantidad > 1) l.push(texto(`  ${linea.cantidad} x ${formatearDinero(linea.precioUnitario)}`));
     const resumen = detalleLinea(linea);

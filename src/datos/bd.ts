@@ -46,7 +46,13 @@ export interface Meta {
   dispositivoId: string;
   cursorPull: number;
   ultimaLimpieza: string;
-  carrito: Carrito;
+  /**
+   * Pedido en curso (borrador) de cada cuenta, por `cuentaId`; la clave vacía es el borrador sin
+   * cuenta (venta de mostrador). Sobrevive a recargas y cierres.
+   */
+  borradores: Record<string, Carrito>;
+  /** Cuenta abierta con la que se está trabajando en Nueva venta (null = borrador sin cuenta). */
+  cuentaActivaId: string | null;
   ultimaVenta: UltimaVenta | null;
   /** Se lee con `leerConfigImpresora`/`useConfigImpresora`, que completan versiones anteriores. */
   impresora: ConfigImpresora;
@@ -73,6 +79,8 @@ export class BaseLocal extends Dexie {
   declare movimientos: TablasSync['movimientos'];
   declare ventas: TablasSync['ventas'];
   declare devoluciones: TablasSync['devoluciones'];
+  declare cuentasVenta: TablasSync['cuentasVenta'];
+  declare pedidos: TablasSync['pedidos'];
   declare outbox: Table<OperacionOutbox, number>;
   declare meta: Table<{ clave: ClaveMeta; valor: unknown }, ClaveMeta>;
   declare erroresSync: Table<ErrorSync, string>;
@@ -129,6 +137,18 @@ export class BaseLocal extends Dexie {
             p.vaACocina ??= true;
           }),
       );
+    // Cuentas abiertas y sus pedidos; el carrito guardado pasa a ser el borrador sin cuenta.
+    this.version(5)
+      .stores({
+        cuentasVenta: 'id, dia, estado, [dispositivoId+dia]',
+        pedidos: 'id, cuentaId, dia',
+      })
+      .upgrade(async (tx) => {
+        const meta = tx.table('meta');
+        const guardado = await meta.get('carrito');
+        if (guardado) await meta.put({ clave: 'borradores', valor: { '': guardado.valor } });
+        await meta.delete('carrito');
+      });
   }
 
   tabla<T extends TablaSync>(nombre: T): TablasSync[T] {

@@ -1,7 +1,8 @@
 import { useCategorias, useProductos, useVentaReciente } from '@/datos/consultas';
 import { useConfigImpresora } from '@/datos/impresora';
 import type { ConfigGeneral } from '@/dominio/tipos';
-import { construirComanda, opcionesComanda } from '@/impresion/comanda';
+import { etiquetaComanda, numeroDeCuenta } from '@/dominio/cuentas';
+import { construirComanda, datosDeVenta, opcionesComanda } from '@/impresion/comanda';
 import { columnasDeImpresora } from '@/impresion/configImpresora';
 import { VistaTicket } from '@/impresion/html';
 import { ticketDeVenta } from '@/impresion/ticketVenta';
@@ -27,7 +28,11 @@ export function VistaPreviaTicket({
   const venta = reciente ?? ventaDeMuestra(config, productos, categorias);
   const columnas = columnasDeImpresora(impresora);
   const mostrarComanda = conComanda && opcionesComanda(config.ticket).imprimir;
-  const comanda = mostrarComanda ? construirComanda(venta, config, { columnas }) : null;
+  const datosComanda = {
+    ...datosDeVenta(venta),
+    titulo: [numeroDeCuenta({ numero: venta.cuentaNumero ?? 12 }), etiquetaComanda(1)],
+  };
+  const comanda = mostrarComanda ? construirComanda(datosComanda, config, { columnas }) : null;
   return (
     <div className="flex flex-wrap items-start gap-4">
       <aside className="flex flex-col gap-2" aria-label="Vista previa del ticket">

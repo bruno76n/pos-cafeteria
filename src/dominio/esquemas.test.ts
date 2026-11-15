@@ -2,11 +2,13 @@ import { describe, expect, test } from 'vitest';
 import {
   esquemaCategoria,
   esquemaConfig,
+  esquemaCuenta,
   esquemaDevolucion,
   esquemaDispositivo,
   esquemaGrupoModificadores,
   esquemaMovimiento,
   esquemaOperacion,
+  esquemaPedido,
   esquemaPeticionPush,
   esquemaProducto,
   esquemaTurno,
@@ -162,6 +164,65 @@ describe('compatibilidad con datos anteriores', () => {
       nombre: 'Mediano',
       precio: 7500,
     });
+  });
+});
+
+describe('cuentas y pedidos', () => {
+  const cuenta = {
+    id: 'c1',
+    dispositivoId: 'd1',
+    dispositivoNombre: 'Caja 1',
+    turnoId: 't1',
+    dia: '2026-09-19',
+    numero: 1,
+    nombre: null,
+    estado: 'abierta' as const,
+    ventaId: null,
+    cancelacion: null,
+    abiertaPor: ana,
+    fecha: ahora,
+    actualizadoEn: ahora,
+  };
+  const pedido = {
+    id: 'p1',
+    cuentaId: 'c1',
+    numero: 1,
+    tipo: 'normal' as const,
+    lineas: venta.lineas,
+    enviadoPor: ana,
+    autorizadoPor: null,
+    fecha: ahora,
+    dia: '2026-09-19',
+    actualizadoEn: ahora,
+  };
+
+  test('cuenta y pedido válidos', () => {
+    expect(esquemaCuenta.safeParse(cuenta).success).toBe(true);
+    expect(
+      esquemaCuenta.safeParse({ ...cuenta, nombre: 'Luis', estado: 'cobrada', ventaId: 'v1' }).success,
+    ).toBe(true);
+    expect(esquemaPedido.safeParse(pedido).success).toBe(true);
+    expect(esquemaPedido.safeParse({ ...pedido, tipo: 'anulacion', autorizadoPor: ana }).success).toBe(true);
+  });
+
+  test('estado, número y pedido inválidos', () => {
+    expect(esquemaCuenta.safeParse({ ...cuenta, estado: 'pagada' }).success).toBe(false);
+    expect(esquemaCuenta.safeParse({ ...cuenta, numero: 0 }).success).toBe(false);
+    expect(esquemaPedido.safeParse({ ...pedido, lineas: [] }).success).toBe(false);
+    expect(esquemaPedido.safeParse({ ...pedido, tipo: 'extra' }).success).toBe(false);
+  });
+
+  test('la venta puede traer su cuenta; sin ella sigue siendo válida', () => {
+    expect(esquemaVenta.safeParse(venta).success).toBe(true);
+    const conCuenta = esquemaVenta.parse({
+      ...venta,
+      cuentaId: 'c1',
+      cuentaNumero: 12,
+      cuentaComandas: 3,
+      lineas: venta.lineas.map((l) => ({ ...l, comanda: 2 })),
+    });
+    expect(conCuenta).toMatchObject({ cuentaId: 'c1', cuentaNumero: 12, cuentaComandas: 3 });
+    expect(conCuenta.lineas[0]?.comanda).toBe(2);
   });
 });
 

@@ -1,4 +1,11 @@
-import { agregarLinea, calcularTotales, carritoVacio, crearLinea, type Carrito } from '@/dominio/carrito';
+import {
+  agregarLinea,
+  calcularTotales,
+  carritoVacio,
+  crearLinea,
+  lineasParaVenta,
+  type Carrito,
+} from '@/dominio/carrito';
 import { armarVenta } from '@/dominio/cobro';
 import { ahoraISO, diaLocal } from '@/dominio/fechas';
 import type { Categoria, ConfigGeneral, Producto, Venta } from '@/dominio/tipos';
@@ -42,7 +49,9 @@ export function ventaDeMuestra(config: ConfigGeneral, productos: Producto[], cat
       id: 'muestra',
       fecha,
       dia: diaLocal(fecha),
-      carrito,
+      lineas: lineasParaVenta(carrito),
+      descuento: null,
+      cliente: carrito.cliente,
       config: config.ventas,
       pagos: [{ metodo: 'efectivo', monto: total, recibido }],
       turno: { id: 'muestra' },

@@ -1,18 +1,26 @@
 import { beforeEach, describe, expect, test } from 'vitest';
-import { categoriaPrueba, ventaPrueba } from '@/dominio/datosPrueba';
+import { categoriaPrueba, configPrueba, cuentaPrueba, ventaPrueba } from '@/dominio/datosPrueba';
+import { diaLocal } from '@/dominio/fechas';
+import type { LineaVenta } from '@/dominio/tipos';
 import type { VentaNueva } from '@/dominio/cobro';
 import { verificarPin } from '@/dominio/pin';
 import { bd, leerMeta } from './bd';
 import {
   actualizar,
   alEscribir,
+  abrirCuenta,
   abrirTurno,
+  anularLinea,
   anularMovimiento,
+  cancelarCuenta,
   cancelarVenta,
+  cobrarCuenta,
+  cobrarVentaRapida,
   cerrarTurno,
   borrar,
   configurarDispositivo,
   crear,
+  enviarPedido,
   inicializarNegocio,
   guardar,
   registrarDevolucion,
@@ -380,5 +388,282 @@ describe('cancelaciones y devoluciones', () => {
       }),
     ).rejects.toThrow('abre la caja');
     expect(await bd.devoluciones.count()).toBe(0);
+  });
+});
+
+describe('cuentas abiertas', () => {
+  const ana = { id: 'cajero', nombre: 'Ana' };
+  const [latte, brownie] = ventaPrueba().lineas as [LineaVenta, LineaVenta];
+  const cafe: LineaVenta = {
+    ...brownie,
+    id: 'l-cafe',
+    nombre: 'Café',
+    precioUnitario: 4000,
+    importe: 4000,
+    nota: null,
+  };
+  const apertura = {
+    nombre: null,
+    turno: { id: 'turno-1' },
+    dispositivo: { id: 'caja-1', nombre: 'Caja 1' },
+    usuario: ana,
+  };
+  const cobro = {
+    descuento: null,
+    cliente: null,
+    config: configPrueba.ventas,
+    turno: { id: 'turno-2' },
+    dispositivo: { id: 'caja-1', nombre: 'Caja 1' },
+    cajero: ana,
+  };
+  const efectivo = (monto: number) => [{ metodo: 'efectivo' as const, monto, recibido: monto }];
+
+  beforeEach(async () => {
+    await bd.dispositivos.put({ ...dispositivo, actualizadoEn: '2026-09-19T00:00:00.000Z' });
+  });
+
+  test('el número de cuenta reinicia cada día y en cada dispositivo', async () => {
+    await bd.cuentasVenta.bulkPut([
+      cuentaPrueba({ id: 'ayer-1', numero: 40, dia: '2026-01-01' }),
+      cuentaPrueba({ id: 'otra-caja', numero: 7, dispositivoId: 'caja-2', dia: diaLocal() }),
+    ]);
+    const a = await abrirCuenta({ ...apertura, nombre: ' Luis ' });
+    const b = await abrirCuenta(apertura);
+    expect([a.numero, b.numero]).toEqual([1, 2]);
+    expect(a).toMatchObject({ nombre: 'Luis', estado: 'abierta', turnoId: 'turno-1', dia: diaLocal() });
+    expect(b.nombre).toBeNull();
+    const ops = await bd.outbox.orderBy('orden').toArray();
+    expect(ops.map((o) => [o.tabla, o.tipo])).toEqual([
+      ['cuentasVenta', 'crear'],
+      ['cuentasVenta', 'crear'],
+    ]);
+  });
+
+  test('enviar pedidos: el primero abre la cuenta y cada uno lleva su número de comanda', async () => {
+    const { cuenta, pedido } = await enviarPedido({
+      destino: { abrir: apertura },
+      lineas: [latte],
+      usuario: ana,
+      nombre: 'Luis',
+    });
+    expect(cuenta).toMatchObject({ numero: 1, nombre: 'Luis' });
+    expect(pedido).toMatchObject({ cuentaId: cuenta.id, numero: 1, tipo: 'normal', autorizadoPor: null });
+    const segundo = await enviarPedido({
+      destino: { cuentaId: cuenta.id },
+      lineas: [cafe],
+      usuario: ana,
+      nombre: 'Otro nombre',
+    });
+    expect(segundo.pedido.numero).toBe(2);
+    // El nombre que ya tenía no se pisa.
+    expect((await bd.cuentasVenta.get(cuenta.id))?.nombre).toBe('Luis');
+    const ops = await bd.outbox.orderBy('orden').toArray();
+    expect(ops.map((o) => [o.tabla, o.tipo])).toEqual([
+      ['cuentasVenta', 'crear'],
+      ['pedidos', 'crear'],
+      ['pedidos', 'crear'],
+    ]);
+  });
+
+  test('el nombre del borrador se le pone a la cuenta si no tenía', async () => {
+    const cuenta = await abrirCuenta(apertura);
+    await enviarPedido({ destino: { cuentaId: cuenta.id }, lineas: [latte], usuario: ana, nombre: 'Marta' });
+    expect((await bd.cuentasVenta.get(cuenta.id))?.nombre).toBe('Marta');
+    const ops = await bd.outbox.orderBy('orden').toArray();
+    expect(ops.map((o) => [o.tabla, o.tipo])).toEqual([
+      ['cuentasVenta', 'crear'],
+      ['cuentasVenta', 'actualizar'],
+      ['pedidos', 'crear'],
+    ]);
+    expect(ops[1]!.datos).toMatchObject({ nombre: 'Marta' });
+  });
+
+  test('no se envía nada vacío ni a una cuenta que ya no está abierta', async () => {
+    const cuenta = await abrirCuenta(apertura);
+    await expect(
+      enviarPedido({ destino: { cuentaId: cuenta.id }, lineas: [], usuario: ana }),
+    ).rejects.toThrow('No hay nada que enviar.');
+    await cancelarCuenta({ cuentaId: cuenta.id, motivo: '', usuario: ana, autorizadoPor: null });
+    await expect(
+      enviarPedido({ destino: { cuentaId: cuenta.id }, lineas: [latte], usuario: ana }),
+    ).rejects.toThrow('Esta cuenta ya no está abierta.');
+    expect(await bd.pedidos.count()).toBe(0);
+  });
+
+  test('anular una línea guarda un pedido de anulación con quien autorizó', async () => {
+    const { cuenta } = await enviarPedido({
+      destino: { abrir: apertura },
+      lineas: [latte, cafe],
+      usuario: ana,
+    });
+    const encargada = { id: 'enc', nombre: 'Encargada' };
+    const { pedido } = await anularLinea({
+      cuentaId: cuenta.id,
+      lineaId: latte.id,
+      cantidad: 1,
+      usuario: ana,
+      autorizadoPor: encargada,
+    });
+    expect(pedido).toMatchObject({ numero: 2, tipo: 'anulacion', autorizadoPor: encargada });
+    // La anulación recuerda de qué comanda quita la pieza.
+    expect(pedido.lineas).toEqual([{ ...latte, cantidad: 1, importe: 8500, comanda: 1 }]);
+    // El pedido original no cambia.
+    expect((await bd.pedidos.toArray()).find((p) => p.tipo === 'normal')?.lineas[0]?.cantidad).toBe(2);
+    await expect(
+      anularLinea({ cuentaId: cuenta.id, lineaId: latte.id, cantidad: 2, usuario: ana, autorizadoPor: null }),
+    ).rejects.toThrow('Solo quedan 1 en la cuenta.');
+    expect(await bd.pedidos.count()).toBe(2);
+  });
+
+  test('cobrar la cuenta: folio, venta con las líneas vigentes y cuenta cobrada, en una transacción', async () => {
+    const { cuenta } = await enviarPedido({
+      destino: { abrir: apertura },
+      lineas: [latte, cafe],
+      usuario: ana,
+      nombre: 'Luis',
+    });
+    await enviarPedido({ destino: { cuentaId: cuenta.id }, lineas: [brownie], usuario: ana });
+    await anularLinea({
+      cuentaId: cuenta.id,
+      lineaId: cafe.id,
+      cantidad: 1,
+      usuario: ana,
+      autorizadoPor: null,
+    });
+    await bd.outbox.clear();
+
+    const total = 17000 + 4500;
+    const r = await cobrarCuenta({ ...cobro, cuentaId: cuenta.id, pagos: efectivo(total) });
+    expect(r.venta).toMatchObject({
+      folio: 'A-000123',
+      folioNumero: 123,
+      turnoId: 'turno-2',
+      cliente: 'Luis',
+      cuentaId: cuenta.id,
+      cuentaNumero: 1,
+      cuentaComandas: 3,
+      total,
+      estado: 'pagada',
+    });
+    expect(r.venta.lineas.map((l) => [l.nombre, l.cantidad, l.comanda])).toEqual([
+      ['Latte', 2, 1],
+      ['Brownie', 1, 2],
+    ]);
+    expect(await bd.cuentasVenta.get(cuenta.id)).toMatchObject({
+      estado: 'cobrada',
+      ventaId: r.venta.id,
+      turnoId: 'turno-1',
+    });
+    expect((await bd.dispositivos.get('caja-1'))?.ultimoFolio).toBe(123);
+    const ops = await bd.outbox.orderBy('orden').toArray();
+    expect(ops.map((o) => [o.tabla, o.tipo])).toEqual([
+      ['ventas', 'crear'],
+      ['dispositivos', 'actualizar'],
+      ['cuentasVenta', 'actualizar'],
+    ]);
+    expect(ops[2]!.datos).toMatchObject({ estado: 'cobrada', ventaId: r.venta.id });
+  });
+
+  test('si el cobro falla no queda nada a medias', async () => {
+    const { cuenta } = await enviarPedido({ destino: { abrir: apertura }, lineas: [latte], usuario: ana });
+    await bd.outbox.clear();
+    await expect(
+      cobrarCuenta({ ...cobro, cuentaId: cuenta.id, pagos: [{ metodo: 'tarjeta', monto: 100 }] }),
+    ).rejects.toThrow('Los pagos no cubren el total.');
+    expect(await bd.ventas.count()).toBe(0);
+    expect((await bd.cuentasVenta.get(cuenta.id))?.estado).toBe('abierta');
+    expect((await bd.dispositivos.get('caja-1'))?.ultimoFolio).toBe(122);
+    expect(await bd.outbox.count()).toBe(0);
+  });
+
+  test('una cuenta cobrada no se cobra otra vez y una vacía no se cobra', async () => {
+    const vacia = await abrirCuenta(apertura);
+    await expect(cobrarCuenta({ ...cobro, cuentaId: vacia.id, pagos: [] })).rejects.toThrow(
+      'La cuenta no tiene productos que cobrar.',
+    );
+    const { cuenta } = await enviarPedido({ destino: { abrir: apertura }, lineas: [cafe], usuario: ana });
+    await cobrarCuenta({ ...cobro, cuentaId: cuenta.id, pagos: efectivo(4000) });
+    await expect(cobrarCuenta({ ...cobro, cuentaId: cuenta.id, pagos: efectivo(4000) })).rejects.toThrow(
+      'Esta cuenta ya no está abierta.',
+    );
+    expect(await bd.ventas.count()).toBe(1);
+  });
+
+  test('el descuento y el "Para:" del borrador se aplican al cobrar', async () => {
+    const { cuenta } = await enviarPedido({ destino: { abrir: apertura }, lineas: [latte], usuario: ana });
+    const r = await cobrarCuenta({
+      ...cobro,
+      cuentaId: cuenta.id,
+      cliente: 'Para llevar',
+      descuento: { tipo: 'porcentaje', valor: 10, motivo: null, autorizadoPor: null },
+      pagos: efectivo(15300),
+    });
+    expect(r.venta).toMatchObject({ cliente: 'Para llevar', subtotal: 17000, total: 15300 });
+    expect(r.venta.descuento).toMatchObject({ importe: 1700 });
+  });
+
+  test('venta rápida: abre la cuenta, guarda su pedido, cobra y la deja cobrada', async () => {
+    const r = await cobrarVentaRapida({ ...cobro, cliente: 'Luis', lineas: [latte], pagos: efectivo(17000) });
+    expect(r.cuenta).toMatchObject({
+      numero: 1,
+      nombre: 'Luis',
+      estado: 'cobrada',
+      ventaId: r.venta.id,
+      turnoId: 'turno-2',
+    });
+    expect(r.pedidos).toHaveLength(1);
+    expect(r.pedidos[0]).toMatchObject({ numero: 1, tipo: 'normal' });
+    expect(r.venta).toMatchObject({
+      folio: 'A-000123',
+      cuentaId: r.cuenta.id,
+      cuentaComandas: 1,
+      cliente: 'Luis',
+    });
+    const ops = await bd.outbox.orderBy('orden').toArray();
+    expect(ops.map((o) => [o.tabla, o.tipo])).toEqual([
+      ['cuentasVenta', 'crear'],
+      ['pedidos', 'crear'],
+      ['ventas', 'crear'],
+      ['dispositivos', 'actualizar'],
+      ['cuentasVenta', 'actualizar'],
+    ]);
+    // La siguiente venta rápida toma la cuenta 2.
+    expect((await cobrarVentaRapida({ ...cobro, lineas: [cafe], pagos: efectivo(4000) })).cuenta.numero).toBe(
+      2,
+    );
+  });
+
+  test('una venta rápida con pagos incompletos no deja cuenta ni pedido', async () => {
+    await expect(cobrarVentaRapida({ ...cobro, lineas: [latte], pagos: [] })).rejects.toThrow();
+    expect(await bd.cuentasVenta.count()).toBe(0);
+    expect(await bd.pedidos.count()).toBe(0);
+  });
+
+  test('cancelar: con pedidos pide motivo; vacía se descarta sin pedirlo', async () => {
+    const { cuenta } = await enviarPedido({ destino: { abrir: apertura }, lineas: [latte], usuario: ana });
+    await expect(
+      cancelarCuenta({ cuentaId: cuenta.id, motivo: ' ', usuario: ana, autorizadoPor: null }),
+    ).rejects.toThrow('Escribe el motivo.');
+    const encargada = { id: 'enc', nombre: 'Encargada' };
+    const cancelada = await cancelarCuenta({
+      cuentaId: cuenta.id,
+      motivo: 'Se fue',
+      usuario: ana,
+      autorizadoPor: encargada,
+    });
+    expect(cancelada).toMatchObject({
+      estado: 'cancelada',
+      cancelacion: { motivo: 'Se fue', usuario: ana, autorizadoPor: encargada },
+    });
+    expect(await bd.ventas.count()).toBe(0);
+
+    const vacia = await abrirCuenta(apertura);
+    const descartada = await cancelarCuenta({
+      cuentaId: vacia.id,
+      motivo: '',
+      usuario: ana,
+      autorizadoPor: null,
+    });
+    expect(descartada.cancelacion?.motivo).toBe('Sin pedidos');
   });
 });

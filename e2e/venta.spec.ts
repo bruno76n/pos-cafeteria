@@ -60,8 +60,8 @@ test('abrir caja, armar venta con modificadores y descuento, recargar y el carri
     .click();
   await expect(panel.getByRole('button', { name: /Cobrar/ })).toHaveText('Cobrar$193.50');
   await expect
-    .poll(async () => (await leerMetaLocal(page, 'carrito')) as { descuento: unknown })
-    .toHaveProperty('descuento.valor', 10);
+    .poll(async () => (await leerMetaLocal(page, 'borradores')) as Record<string, { descuento: unknown }>)
+    .toHaveProperty(['', 'descuento', 'valor'], 10);
 
   await page.reload();
   await entrarCon(page, PIN.encargada);

@@ -9,6 +9,7 @@ const CAMPOS_FECHA = new Set(['actualizadoEn', 'abiertoEn', 'cerradoEn', 'fecha'
 const OPCIONALES: Partial<Record<TablaSync, string[]>> = {
   turnos: ['cerradoPor', 'cerradoEn', 'efectivoContado', 'conteo', 'resumen', 'nota'],
   movimientos: ['anuladoPor', 'anuladoEn'],
+  ventas: ['cuentaId', 'cuentaNumero', 'cuentaComandas'],
 };
 
 export function aFila(registro: Record<string, unknown>): Record<string, unknown> {

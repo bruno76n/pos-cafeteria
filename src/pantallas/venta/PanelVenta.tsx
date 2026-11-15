@@ -1,13 +1,15 @@
-import { Minus, Pencil, Plus, StickyNote, Trash } from 'lucide-react';
+import { ChefHat, Minus, Pencil, Plus, StickyNote, Trash } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import { Boton } from '@/componentes/Boton';
 import { clasesEntrada } from '@/componentes/Campo';
 import { Confirmar } from '@/componentes/Confirmar';
 import { Hoja } from '@/componentes/Hoja';
 import { cantidadDeProductos, type LineaCarrito, type Totales } from '@/dominio/carrito';
+import type { Cuenta, LineaVenta, Pedido } from '@/dominio/tipos';
 import { formatearDinero } from '@/dominio/dinero';
 import { detalleLinea, nombreLinea } from '@/dominio/personalizacion';
 import { useCarrito } from '@/estado/carrito';
+import { PedidosEnviados } from './PedidosEnviados';
 
 function Fila({ etiqueta, valor, fuerte }: { etiqueta: ReactNode; valor: string; fuerte?: boolean }) {
   return (
@@ -118,8 +120,15 @@ function DialogoNota({ linea, alCerrar }: { linea: LineaCarrito; alCerrar: () =>
   );
 }
 
-/** Carrito: líneas, "Para:", totales, acciones y la barra de Cobrar. */
+/**
+ * Cuenta activa o venta nueva: lo ya enviado a cocina (solo lectura), el borrador "Por enviar",
+ * "Para:", totales, acciones, "Enviar a cocina" y la barra de Cobrar.
+ */
 export function PanelVenta({
+  cuenta,
+  pedidos,
+  enviadas,
+  zona,
   totales,
   etiquetaDescuento,
   mostrarIVA,
@@ -127,8 +136,21 @@ export function PanelVenta({
   acciones,
   puedeEditar,
   alEditar,
+  alEnviar,
+  enviando,
+  alAnular,
+  alImprimirPedido,
+  imprimiendo,
+  aviso,
+  alCancelarCuenta,
   alCobrar,
 }: {
+  /** Cuenta activa (null = venta de mostrador sin cuenta). */
+  cuenta: Cuenta | null;
+  pedidos: Pedido[];
+  /** Líneas vigentes de lo ya enviado a cocina. */
+  enviadas: LineaVenta[];
+  zona: string;
   totales: Totales;
   etiquetaDescuento: string;
   mostrarIVA: boolean;
@@ -138,6 +160,14 @@ export function PanelVenta({
   acciones: ReactNode;
   puedeEditar: (linea: LineaCarrito) => boolean;
   alEditar: (linea: LineaCarrito) => void;
+  alEnviar: () => void;
+  enviando: boolean;
+  alAnular: (linea: LineaVenta) => void;
+  alImprimirPedido: (pedido: Pedido) => void;
+  imprimiendo: boolean;
+  /** Aviso de la impresora (p. ej. "No se pudo imprimir la comanda"). */
+  aviso: ReactNode;
+  alCancelarCuenta: () => void;
   alCobrar: () => void;
 }) {
   const carrito = useCarrito((s) => s.carrito);
@@ -146,43 +176,81 @@ export function PanelVenta({
   const [confirmandoVaciar, setConfirmandoVaciar] = useState(false);
   const [notaDe, setNotaDe] = useState<LineaCarrito | null>(null);
   const vacio = carrito.lineas.length === 0;
+  const sinNada = vacio && enviadas.length === 0;
   const productos = cantidadDeProductos(carrito);
 
   return (
     <aside aria-label="Venta actual" className="flex min-h-0 flex-1 flex-col bg-papel">
       <div className="flex flex-col gap-2 border-b border-linea p-4">
-        <h2 className="text-seccion font-semibold">Venta actual</h2>
-        <label className="flex items-center gap-2">
-          <span className="text-grafito-suave">Para:</span>
-          <input
-            className={clasesEntrada}
-            placeholder="Nombre del cliente"
-            value={carrito.cliente ?? ''}
-            maxLength={40}
-            onChange={(e) => ponerCliente(e.target.value)}
-          />
-        </label>
-      </div>
-
-      <div className="min-h-0 flex-1 overflow-y-auto">
-        {vacio ? (
-          (resultado ?? <p className="p-8 text-center text-grafito-suave">Toca un producto para empezar.</p>)
+        <div className="flex items-center justify-between gap-2">
+          <h2 className="text-seccion font-semibold">
+            {cuenta ? `Cuenta ${cuenta.numero}` : 'Venta actual'}
+          </h2>
+          {cuenta && (
+            <Boton variante="fantasma" className="min-h-10 px-2 text-faltante" onClick={alCancelarCuenta}>
+              Cancelar cuenta
+            </Boton>
+          )}
+        </div>
+        {cuenta?.nombre ? (
+          <p>
+            <span className="text-grafito-suave">Para:</span>{' '}
+            <span className="font-semibold">{cuenta.nombre}</span>
+          </p>
         ) : (
-          <ul>
-            {carrito.lineas.map((l) => (
-              <Linea
-                key={l.id}
-                linea={l}
-                resaltada={l.id === ultimaLineaId}
-                alEditar={puedeEditar(l) ? () => alEditar(l) : undefined}
-                alNota={() => setNotaDe(l)}
-              />
-            ))}
-          </ul>
+          <label className="flex items-center gap-2">
+            <span className="text-grafito-suave">Para:</span>
+            <input
+              className={clasesEntrada}
+              placeholder="Nombre del cliente"
+              value={carrito.cliente ?? ''}
+              maxLength={40}
+              onChange={(e) => ponerCliente(e.target.value)}
+            />
+          </label>
         )}
       </div>
 
-      {!vacio && (
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {sinNada ? (
+          (resultado ?? <p className="p-8 text-center text-grafito-suave">Toca un producto para empezar.</p>)
+        ) : (
+          <>
+            {pedidos.length > 0 && (
+              <PedidosEnviados
+                pedidos={pedidos}
+                lineas={enviadas}
+                zona={zona}
+                alAnular={alAnular}
+                alImprimir={alImprimirPedido}
+                imprimiendo={imprimiendo}
+              />
+            )}
+            {!vacio && (
+              <>
+                {enviadas.length > 0 && (
+                  <p className="bg-acero px-4 py-1.5 text-etiqueta font-semibold text-grafito-suave">
+                    Por enviar
+                  </p>
+                )}
+                <ul aria-label="Por enviar">
+                  {carrito.lineas.map((l) => (
+                    <Linea
+                      key={l.id}
+                      linea={l}
+                      resaltada={l.id === ultimaLineaId}
+                      alEditar={puedeEditar(l) ? () => alEditar(l) : undefined}
+                      alNota={() => setNotaDe(l)}
+                    />
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
+        )}
+      </div>
+
+      {!sinNada && (
         <div className="flex flex-col gap-1 border-t border-linea px-4 pt-3">
           <Fila etiqueta="Subtotal" valor={formatearDinero(totales.subtotal)} />
           {totales.descuento > 0 && (
@@ -196,17 +264,21 @@ export function PanelVenta({
           )}
           <div className="mt-2 flex gap-2">
             {acciones}
-            <Boton className="flex-1" onClick={() => setConfirmandoVaciar(true)}>
+            <Boton className="flex-1" disabled={vacio} onClick={() => setConfirmandoVaciar(true)}>
               Vaciar
             </Boton>
           </div>
         </div>
       )}
 
-      <div className="p-4">
+      <div className="flex flex-col gap-2 p-4">
+        {aviso}
+        <Boton variante="oscuro" tamano="grande" disabled={vacio || enviando} onClick={alEnviar}>
+          <ChefHat aria-hidden /> Enviar a cocina
+        </Boton>
         <button
           type="button"
-          disabled={vacio}
+          disabled={sinNada || enviando}
           onClick={alCobrar}
           className="flex min-h-18 w-full items-center justify-between rounded-boton bg-cafeto px-5 text-papel transition-transform duration-100 active:scale-[0.98] active:bg-cafeto-oscuro disabled:opacity-40"
         >
@@ -219,7 +291,7 @@ export function PanelVenta({
 
       {confirmandoVaciar && (
         <Confirmar
-          titulo="¿Vaciar la venta?"
+          titulo={enviadas.length > 0 ? '¿Vaciar lo que falta por enviar?' : '¿Vaciar la venta?'}
           textoAccion="Vaciar"
           textoCancelar="Conservar"
           alConfirmar={() => {

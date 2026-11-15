@@ -1,6 +1,14 @@
 // Menú, configuración y una venta para las pruebas (a partir de seed/menu-demo.json).
 import { configInicial, menuDeEjemplo } from './menuEjemplo.js';
-import type { Categoria, ConfigGeneral, GrupoModificadores, Producto, Venta } from './tipos.js';
+import type {
+  Categoria,
+  ConfigGeneral,
+  Cuenta,
+  GrupoModificadores,
+  Pedido,
+  Producto,
+  Venta,
+} from './tipos.js';
 
 const menu = menuDeEjemplo('2026-09-19T12:00:00.000Z');
 export const categoriasPrueba = menu.categorias;
@@ -84,6 +92,43 @@ export function ventaPrueba(cambios: Partial<Venta> = {}): Venta {
     devuelto: 0,
     cancelacion: null,
     actualizadoEn: '2026-09-19T14:42:10.123Z',
+    ...cambios,
+  };
+}
+
+/** Cuenta abierta de Luis en la Caja 1, con los datos de la venta del caso B. */
+export function cuentaPrueba(cambios: Partial<Cuenta> = {}): Cuenta {
+  return {
+    id: 'cuenta-1',
+    dispositivoId: 'caja-1',
+    dispositivoNombre: 'Caja 1',
+    turnoId: 'turno-1',
+    dia: '2026-09-19',
+    numero: 12,
+    nombre: 'Luis',
+    estado: 'abierta',
+    ventaId: null,
+    cancelacion: null,
+    abiertaPor: ana,
+    fecha: '2026-09-19T14:30:00.000Z',
+    actualizadoEn: '2026-09-19T14:30:00.000Z',
+    ...cambios,
+  };
+}
+
+/** Pedido normal con las líneas de la venta del caso B (2 Latte y 1 Brownie). */
+export function pedidoPrueba(cambios: Partial<Pedido> = {}): Pedido {
+  return {
+    id: 'pedido-1',
+    cuentaId: 'cuenta-1',
+    numero: 1,
+    tipo: 'normal',
+    lineas: ventaPrueba().lineas,
+    enviadoPor: ana,
+    autorizadoPor: null,
+    fecha: '2026-09-19T14:30:00.000Z',
+    dia: '2026-09-19',
+    actualizadoEn: '2026-09-19T14:30:00.000Z',
     ...cambios,
   };
 }

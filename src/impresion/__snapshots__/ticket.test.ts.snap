@@ -32,6 +32,36 @@ Gastos por categoría
 Nota: Faltó cambio"
 `;
 
+exports[`ticket de una cuenta > con varias comandas agrupa los productos por comanda 1`] = `
+"         CAFETERÍA DEMO
+  Av. Juárez 123, Guadalajara
+       Tel. 33 1234 5678
+--------------------------------
+Folio: A-000123
+Cuenta: 12
+19/09/2026 08:42          Caja 1
+Cajero: Ana
+Para: Luis
+--------------------------------
+Comanda 1 de 3
+2 Latte                  $170.00
+  2 x $85.00
+  Mediano 16 oz, Almendra
+Comanda 2 de 3
+1 Brownie                 $45.00
+  Nota: calientito
+--------------------------------
+Subtotal                 $215.00
+Descuento 10%            -$21.50
+TOTAL                    $193.50
+IVA incluido 16%          $26.69
+--------------------------------
+Efectivo recibido        $200.00
+Cambio                     $6.50
+--------------------------------
+    ¡Gracias por tu visita!"
+`;
+
 exports[`ticket de venta > 58 mm (32 columnas) como el ejemplo de la especificación 1`] = `
 "         CAFETERÍA DEMO
   Av. Juárez 123, Guadalajara

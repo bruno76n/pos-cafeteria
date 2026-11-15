@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { agregarLinea, carritoVacio, crearLinea } from './carrito.js';
+import { agregarLinea, carritoVacio, crearLinea, lineasParaVenta } from './carrito.js';
 import {
   agregarPago,
   armarVenta,
@@ -134,14 +134,16 @@ describe('armarVenta', () => {
     id: 'v1',
     fecha: '2026-09-19T14:42:10.123Z',
     dia: '2026-09-19',
-    carrito,
+    lineas: lineasParaVenta(carrito),
+    descuento: carrito.descuento,
+    cliente: carrito.cliente,
     config: configPrueba.ventas,
     turno: { id: 't1' },
     dispositivo: { id: 'd1', nombre: 'Caja 1' },
     cajero: { id: 'c', nombre: 'Cajero' },
   };
 
-  test('copia el carrito, totales, pagos y cambio', () => {
+  test('copia las líneas, totales, pagos y cambio', () => {
     const v = armarVenta({ ...base, pagos: [{ metodo: 'efectivo', monto: 4050, recibido: 5000 }] });
     expect(v).toMatchObject({
       cliente: 'Luis',
@@ -169,11 +171,8 @@ describe('armarVenta', () => {
   });
 
   test('total en cero sin pagos', () => {
-    const gratis = {
-      ...carrito,
-      descuento: { tipo: 'monto' as const, valor: 6000, motivo: null, autorizadoPor: null },
-    };
-    const v = armarVenta({ ...base, carrito: gratis, pagos: [] });
+    const descuento = { tipo: 'monto' as const, valor: 6000, motivo: null, autorizadoPor: null };
+    const v = armarVenta({ ...base, descuento, pagos: [] });
     expect(v).toMatchObject({ total: 0, pagos: [], cambio: 0, descuento: { importe: 4500 } });
   });
 });

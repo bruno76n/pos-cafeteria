@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { categoriaPrueba, ventaPrueba } from './datosPrueba.js';
+import { categoriaPrueba, cuentaPrueba, pedidoPrueba, ventaPrueba } from './datosPrueba.js';
 import { evaluarOperacion } from './reglasServidor.js';
 
 const ahora = '2026-09-19T15:00:00.000Z';
@@ -70,7 +70,7 @@ describe('ventas', () => {
       evaluarOperacion({ tabla: 'ventas', tipo: 'actualizar', registroId: venta.id, datos: cancelar }),
     ).toMatchObject({
       ok: true,
-      accion: { tipo: 'actualizar', soloTurnoAbierto: false },
+      accion: { tipo: 'actualizar', soloAbierto: false },
     });
     expect(
       evaluarOperacion({
@@ -145,7 +145,7 @@ describe('movimientos, devoluciones y turnos', () => {
       evaluarOperacion({ tabla: 'turnos', tipo: 'actualizar', registroId: 't1', datos: cerrar }),
     ).toMatchObject({
       ok: true,
-      accion: { tipo: 'actualizar', soloTurnoAbierto: true },
+      accion: { tipo: 'actualizar', soloAbierto: true },
     });
     expect(
       evaluarOperacion({
@@ -191,5 +191,73 @@ describe('catálogo y configuración', () => {
         datos: { actualizadoEn: ahora },
       }).ok,
     ).toBe(false);
+  });
+});
+
+describe('cuentas y pedidos', () => {
+  const cuenta = cuentaPrueba();
+  const pedido = pedidoPrueba();
+  const op = (tabla: 'cuentasVenta' | 'pedidos', tipo: 'crear' | 'actualizar' | 'borrar', datos: object) =>
+    evaluarOperacion({
+      tabla,
+      tipo,
+      registroId: String((datos as { id?: string }).id ?? 'x'),
+      datos: datos as never,
+    });
+
+  test('crear cuenta y pedido es insertar (idempotente)', () => {
+    expect(op('cuentasVenta', 'crear', cuenta)).toMatchObject({ ok: true, accion: { tipo: 'insertar' } });
+    expect(op('pedidos', 'crear', pedido)).toMatchObject({ ok: true, accion: { tipo: 'insertar' } });
+  });
+
+  test('una cuenta inválida o un pedido sin líneas se rechazan', () => {
+    expect(op('cuentasVenta', 'crear', { ...cuenta, estado: 'pagada' }).ok).toBe(false);
+    expect(op('pedidos', 'crear', { ...pedido, lineas: [] }).ok).toBe(false);
+  });
+
+  test('la cuenta cambia solo estado, nombre, ventaId y cancelacion, y solo mientras está abierta', () => {
+    const cobrada = { id: cuenta.id, estado: 'cobrada', ventaId: 'v1', actualizadoEn: ahora };
+    expect(op('cuentasVenta', 'actualizar', cobrada)).toMatchObject({
+      ok: true,
+      accion: { tipo: 'actualizar', soloAbierto: true },
+    });
+    expect(op('cuentasVenta', 'actualizar', { id: cuenta.id, nombre: 'Luis', actualizadoEn: ahora }).ok).toBe(
+      true,
+    );
+    const cancelada = {
+      id: cuenta.id,
+      estado: 'cancelada',
+      cancelacion: { motivo: 'Se fue', usuario: ana, autorizadoPor: null, fecha: ahora },
+      actualizadoEn: ahora,
+    };
+    expect(op('cuentasVenta', 'actualizar', cancelada).ok).toBe(true);
+    for (const campo of [{ numero: 3 }, { turnoId: 't9' }, { dia: '2026-01-01' }, { abiertaPor: ana }]) {
+      expect(op('cuentasVenta', 'actualizar', { id: cuenta.id, ...campo, actualizadoEn: ahora }).ok).toBe(
+        false,
+      );
+    }
+  });
+
+  test('los pedidos no se modifican ni se borran, y las cuentas tampoco se borran', () => {
+    expect(op('pedidos', 'actualizar', { id: pedido.id, numero: 2, actualizadoEn: ahora })).toEqual({
+      ok: false,
+      motivo: 'No se puede modificar un registro de pedidos.',
+    });
+    expect(op('pedidos', 'borrar', { id: pedido.id, actualizadoEn: ahora }).ok).toBe(false);
+    expect(op('cuentasVenta', 'borrar', { id: cuenta.id, actualizadoEn: ahora }).ok).toBe(false);
+  });
+
+  test('crear una venta con cuenta es tolerante con los datos de la cuenta', () => {
+    const conCuenta = { ...venta, cuentaId: 'cuenta-1', cuentaNumero: 12, cuentaComandas: 2 };
+    expect(
+      evaluarOperacion({ tabla: 'ventas', tipo: 'crear', registroId: venta.id, datos: conCuenta }),
+    ).toMatchObject({
+      ok: true,
+      accion: { valores: { cuentaId: 'cuenta-1', cuentaNumero: 12, cuentaComandas: 2 } },
+    });
+    const rara = { ...venta, cuentaNumero: 'doce' };
+    expect(evaluarOperacion({ tabla: 'ventas', tipo: 'crear', registroId: venta.id, datos: rara }).ok).toBe(
+      true,
+    );
   });
 });

@@ -169,3 +169,18 @@ Cada tarea incluye su criterio de terminado después de "→".
 - [x] 18.1 "Va a cocina" en el producto (esquema, migración 0005, Dexie v4, sync, formulario, copia en la línea de venta y menú de ejemplo). → Pruebas de esquema y de API.
 - [x] 18.2 Comanda como otro TicketDocumento, opciones en Configuración › Ticket con vista previa, dos trabajos al cobrar en el orden configurado, reimpresión y aviso de cancelación. → Snapshot, pruebas de trabajos y errores, e2e.
 - [x] 18.3 Docs de especificación, arquitectura e interfaz. → Actualizados.
+
+## Fase 19: Cuenta abierta (cuentas, pedidos y comandas por pedido)
+
+Modelo y decisiones en `docs/01-especificacion.md` §5.2b, `docs/02-arquitectura.md` §5 y §9 y `docs/03-interfaz.md`. `Venta` se conserva como resultado inmutable del cobro; `Cuenta` y `Pedido` la preceden.
+
+- [x] 19.1 Refactors previos: `construirComanda` recibe `DatosComanda` en lugar de `Venta`; `trabajosDeVenta` se divide en `trabajosDePedido` (comanda) y `trabajosDeCobro` (ticket); `armarVenta` recibe líneas, descuento y cliente en lugar del `Carrito`; `confirmarVenta` sale de `NuevaVenta` a `src/datos/`. → Sin cambio de comportamiento: todas las pruebas existentes pasan.
+- [x] 19.2 Esquemas, tipos y migración: `esquemaCuenta` y `esquemaPedido`, `cuentaId`/`cuentaNumero`/`cuentaComandas` en la venta y `comanda` en la línea, Dexie v5, tablas de Drizzle (`cuentas_venta`, `pedidos`), columnas nullable en `ventas`, índice único en `cuenta_id` y migración 0006. → Pruebas de esquema y de migración desde cero.
+- [x] 19.3 Sync y reglas del servidor: tablas nuevas en todo lo que recorre `TABLAS_SYNC`; qué se inserta y qué campos de la cuenta se actualizan; cuentas abiertas nunca se borran en la limpieza de 35 días ni quedan fuera del pull; el pull ignora tablas desconocidas; doble cobro rechazado con mensaje claro. → Pruebas de reglas, API y sync.
+- [x] 19.4 Dominio y escrituras: `src/dominio/cuentas.ts` (numeración, estados, consolidar pedidos, siguiente comanda); `abrirCuenta`, `enviarPedido`, `anularLinea`, `cobrarCuenta` y `cancelarCuenta` en `escrituras.ts`; hooks `useCuentasAbiertas`, `useCuenta` y `usePedidosDeCuenta`. → Pruebas unitarias y de datos locales.
+- [x] 19.5 Comanda por pedido: "Cuenta N · Comanda 2", solo las líneas del pedido, comanda de anulación, "Comanda 2 de 3" en reimpresiones y en el ticket final; el orden ticket/comanda queda solo para la venta rápida. → Snapshots.
+- [x] 19.6 UI de cuentas: lista de cuentas abiertas, diálogo de nueva cuenta y borrador por cuenta con `cuentaActivaId` en `estado/carrito.ts`. → e2e de la lista.
+- [x] 19.7 Enviar a cocina y cobrar: botón en la pantalla de venta, pedidos enviados en el panel, anular línea, cobrar desde la cuenta con `CapaCobro` y venta rápida (decisiones 1 y 2). → e2e y presupuesto de toques.
+- [x] 19.8 Cierre de caja con cuentas abiertas (avisa y permite) y contador en Inicio. → e2e.
+- [x] 19.9 Reimpresión por pedido, cancelar cuenta abierta (aviso a cocina) y `DetalleVenta` enlazado a su cuenta. → e2e.
+- [x] 19.10 Pruebas, docs y bitácora: e2e existentes ajustados, flujo completo, cobrar desde otra tablet, "Para probar a mano". → typecheck, lint, test y e2e completos.
