@@ -33,7 +33,7 @@ Al terminar el plan completo, escribe en la sección "Resumen final" de la bitá
 
 ## Prohibido
 
-- Comandos destructivos de git (`reset --hard`, `clean -fd`, `checkout -- .`, `push --force`, reescribir historia). No hagas `push`.
+- Comandos destructivos de git (`reset --hard`, `clean -fd`, `checkout -- .`, `push --force`, reescribir historia). `git push` normal de una rama sí está permitido; nunca a `main` sin pedirlo.
 - Desplegar (`vercel`) o conectarte a bases reales. **Nunca uses `DATABASE_URL` ni te conectes a Neon**: todo se desarrolla y prueba con PGlite local.
 - `npm create vite` u otro asistente interactivo en la raíz: la carpeta ya tiene archivos y el asistente podría borrarlos. Arma la configuración a mano.
 - `curl | bash` o instalar software del sistema operativo. Si falta algo del sistema, anótalo en la bitácora y avanza con lo que sí se puede.
