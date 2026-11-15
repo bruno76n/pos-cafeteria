@@ -1,9 +1,9 @@
 import { ChefHat, Printer } from 'lucide-react';
 import { Boton } from '@/componentes/Boton';
 import type { UltimaVenta } from '@/datos/bd';
-import { useConfig, useVenta } from '@/datos/consultas';
+import { useConfig, useCuenta, usePedidosDeCuenta, useVenta } from '@/datos/consultas';
 import { formatearDinero } from '@/dominio/dinero';
-import { construirComanda, opcionesComanda } from '@/impresion/comanda';
+import { construirComanda, datosDePedido, datosDeVenta, opcionesComanda } from '@/impresion/comanda';
 import { ticketATexto } from '@/impresion/ticket';
 import { ticketDeVenta } from '@/impresion/ticketVenta';
 import type { useImpresora } from '@/impresion/usarImpresora';
@@ -20,10 +20,19 @@ export function ResultadoVenta({
 }) {
   const venta = useVenta(ultima.ventaId);
   const config = useConfig();
+  const cuenta = useCuenta(venta?.cuentaId);
+  const pedidos = usePedidosDeCuenta(venta?.cuentaId);
   const { imprimir, error, fallo, imprimiendo, columnas } = impresora;
+  // Una venta rápida tiene un solo pedido; si la cuenta tuvo varios, sus comandas ya salieron al enviarlos.
+  const datosComanda =
+    venta && !venta.cuentaId
+      ? datosDeVenta(venta)
+      : cuenta && pedidos?.length === 1
+        ? datosDePedido(cuenta, pedidos[0]!)
+        : null;
   const comanda =
-    venta && config && opcionesComanda(config.ticket).imprimir
-      ? construirComanda(venta, config, { columnas })
+    datosComanda && config && opcionesComanda(config.ticket).imprimir
+      ? construirComanda(datosComanda, config, { columnas })
       : null;
   const fallaComanda = fallo?.fallidos.includes('comanda') ?? false;
   const fallaTicket = fallo?.fallidos.includes('ticket') ?? false;

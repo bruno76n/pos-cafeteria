@@ -1,5 +1,5 @@
 import type { Table } from 'dexie';
-import { LIMITE_OPERACIONES_POR_LOTE } from '@/dominio/esquemas';
+import { LIMITE_OPERACIONES_POR_LOTE, TABLAS_SYNC } from '@/dominio/esquemas';
 import { ahoraISO, DIAS_LOCALES, diaLocal, sumarDias } from '@/dominio/fechas';
 import type { FilaPull, TablaSync } from '@/dominio/tipos';
 import { api, ErrorApi, type ClienteApi } from './api';
@@ -20,6 +20,17 @@ export const MENSAJE_SESION_EXPIRADA = 'La sesión de este dispositivo expiró. 
 export type ResultadoSync = 'ok' | 'sin-sesion' | 'sesion-expirada' | 'error-red' | 'en-espera';
 
 const clave = (tabla: TablaSync, id: string) => `${tabla}:${id}`;
+
+/** Tablas que se limpian por antigüedad (las que tienen `dia`). */
+const TABLAS_CON_DIA = [
+  'ventas',
+  'movimientos',
+  'devoluciones',
+  'turnos',
+  'cuentasVenta',
+  'pedidos',
+] as const;
+type RegistroConDia = { id: string; dia: string; estado?: string; cuentaId?: string };
 
 /** El servidor acepta cuerpos de hasta 2 MB; los lotes se quedan por debajo con margen. */
 export const MAXIMO_BYTES_LOTE = 1_500_000;
@@ -200,11 +211,13 @@ export class MotorSync {
 
   /** Aplica una página del pull sin pisar registros con operaciones pendientes (lo local gana). */
   private async aplicarPagina(filas: FilaPull[], rev: number) {
-    const tablas = [...new Set(filas.map((f) => f.tabla))].map((t) => bd.tabla(t));
+    // Un servidor más nuevo puede mandar tablas que esta versión no conoce: se ignoran sin fallar.
+    const conocidas = filas.filter((f) => (TABLAS_SYNC as readonly string[]).includes(f.tabla));
+    const tablas = [...new Set(conocidas.map((f) => f.tabla))].map((t) => bd.tabla(t));
     await bd.transaction('rw', [bd.outbox, bd.meta, bd.dispositivos, ...tablas], async () => {
       const pendientes = new Set((await bd.outbox.toArray()).map((o) => clave(o.tabla, o.registroId)));
       const miDispositivo = await leerMeta('dispositivoId');
-      for (const fila of filas) {
+      for (const fila of conocidas) {
         const id = String(fila.registro.id);
         if (pendientes.has(clave(fila.tabla, id))) continue;
         const tabla = bd.tabla(fila.tabla);
@@ -235,8 +248,9 @@ export class MotorSync {
   }
 
   /**
-   * Una vez al día: borra ventas, movimientos, devoluciones y turnos cerrados de hace más de
-   * 35 días que no tengan operaciones pendientes.
+   * Una vez al día: borra ventas, movimientos, devoluciones, turnos cerrados, cuentas no abiertas
+   * y pedidos de hace más de 35 días que no tengan operaciones pendientes. Una cuenta abierta (y
+   * sus pedidos) se conserva sin importar su antigüedad.
    */
   async limpiarAntiguos(hoy = diaLocal()): Promise<number> {
     if ((await leerMeta('ultimaLimpieza')) === hoy) return 0;
@@ -244,17 +258,29 @@ export class MotorSync {
     let borrados = 0;
     await bd.transaction(
       'rw',
-      [bd.ventas, bd.movimientos, bd.devoluciones, bd.turnos, bd.outbox, bd.meta],
+      [
+        bd.ventas,
+        bd.movimientos,
+        bd.devoluciones,
+        bd.turnos,
+        bd.cuentasVenta,
+        bd.pedidos,
+        bd.outbox,
+        bd.meta,
+      ],
       async () => {
         const pendientes = new Set((await bd.outbox.toArray()).map((o) => clave(o.tabla, o.registroId)));
-        for (const tabla of ['ventas', 'movimientos', 'devoluciones', 'turnos'] as const) {
-          const t = bd.tabla(tabla) as unknown as Table<{ id: string; dia: string; estado?: string }, string>;
+        const abiertas = new Set(await bd.cuentasVenta.where('estado').equals('abierta').primaryKeys());
+        const sigueVigente = (tabla: TablaSync, r: RegistroConDia) =>
+          (tabla === 'turnos' && r.estado === 'abierto') ||
+          (tabla === 'cuentasVenta' && r.estado === 'abierta') ||
+          (tabla === 'pedidos' && abiertas.has(r.cuentaId ?? ''));
+        for (const tabla of TABLAS_CON_DIA) {
+          const t = bd.tabla(tabla) as unknown as Table<RegistroConDia, string>;
           const viejos = await t
             .where('dia')
             .below(limite)
-            .filter(
-              (r) => !pendientes.has(clave(tabla, r.id)) && (tabla !== 'turnos' || r.estado === 'cerrado'),
-            )
+            .filter((r) => !pendientes.has(clave(tabla, r.id)) && !sigueVigente(tabla, r))
             .primaryKeys();
           await t.bulkDelete(viejos);
           borrados += viejos.length;

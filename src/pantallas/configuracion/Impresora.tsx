@@ -244,8 +244,8 @@ export function ConfigImpresora() {
           </>
         )}
         <Interruptor
-          etiqueta="Imprimir automáticamente al cobrar"
-          descripcion="Imprime el ticket en cuanto se confirma cada venta."
+          etiqueta="Imprimir automáticamente"
+          descripcion="Imprime la comanda al enviar a cocina y el ticket al cobrar."
           activo={config.imprimirAlCobrar}
           alCambiar={(imprimirAlCobrar) => cambiar({ imprimirAlCobrar })}
         />

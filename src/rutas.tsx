@@ -26,6 +26,7 @@ import { ConfigImpuestos } from '@/pantallas/configuracion/Impuestos';
 import { ConfigNegocio } from '@/pantallas/configuracion/Negocio';
 import { ConfigPagos } from '@/pantallas/configuracion/Pagos';
 import { ConfigTicket } from '@/pantallas/configuracion/Ticket';
+import { Cuentas } from '@/pantallas/cuentas/Cuentas';
 import { Inicio } from '@/pantallas/inicio/Inicio';
 import { Categorias } from '@/pantallas/menu/Categorias';
 import { EditarProducto } from '@/pantallas/menu/EditarProducto';
@@ -167,6 +168,11 @@ export const router = createBrowserRouter([
             path: 'venta',
             element: <ConPermiso id="venta" />,
             children: [{ index: true, element: <NuevaVenta /> }],
+          },
+          {
+            path: 'cuentas',
+            element: <ConPermiso id="cuentas" />,
+            children: [{ index: true, element: <Cuentas /> }],
           },
           {
             path: 'ventas',

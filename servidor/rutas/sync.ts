@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, gte, lte, or, sql, type SQL } from 'drizzle-orm';
+import { and, asc, eq, gt, gte, inArray, lte, ne, or, sql, type SQL } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { esquemaPeticionPush, TABLAS_SYNC } from '../../src/dominio/esquemas.js';
@@ -7,7 +7,7 @@ import { evaluarOperacion, TABLAS_BORRABLES, TABLAS_CON_ALCANCE } from '../../sr
 import type { FilaPull, Operacion, ResultadoOperacion, TablaSync } from '../../src/dominio/tipos.js';
 import type { BaseDatos } from '../db/cliente.js';
 import type { categorias } from '../db/esquema.js';
-import { operacionesAplicadas, TABLAS, turnos } from '../db/esquema.js';
+import { cuentasVenta, operacionesAplicadas, pedidos, TABLAS, turnos, ventas } from '../db/esquema.js';
 import { aFila, aRegistro } from '../db/registros.js';
 
 /** Todas las tablas sincronizables tienen id, rev y actualizadoEn; para consultas genéricas. */
@@ -17,9 +17,22 @@ const siguienteRev = sql`nextval('rev_global')`;
 
 export const FILAS_POR_PAGINA = 500;
 
-function esFolioRepetido(error: unknown): boolean {
+function esValorRepetido(error: unknown): boolean {
   const e = error as { code?: string; cause?: { code?: string } };
   return (e.cause?.code ?? e.code) === '23505';
+}
+
+/** Una venta puede chocar por su folio (otro dispositivo con el mismo prefijo) o por su cuenta (doble cobro). */
+async function motivoDeRepetido(db: BaseDatos, op: Operacion): Promise<string> {
+  const cuentaId = typeof op.datos.cuentaId === 'string' ? op.datos.cuentaId : null;
+  if (op.tabla === 'ventas' && cuentaId) {
+    const [otra] = await db
+      .select({ id: ventas.id })
+      .from(ventas)
+      .where(and(eq(ventas.cuentaId, cuentaId), ne(ventas.id, op.registroId)));
+    if (otra) return 'Esta cuenta ya se cobró en otro dispositivo.';
+  }
+  return `El folio ${String(op.datos.folio ?? '')} ya existe en otro dispositivo. Revisa el prefijo de folio.`;
 }
 
 /** Aplica una operación con una sola sentencia idempotente (sin transacciones interactivas). */
@@ -64,16 +77,22 @@ export async function aplicarOperacion(db: BaseDatos, op: Operacion): Promise<Re
       }
       case 'actualizar': {
         const condiciones: SQL[] = [eq(t.id, op.registroId)];
-        if (accion.soloTurnoAbierto) condiciones.push(eq(turnos.estado, 'abierto'));
+        if (accion.soloAbierto) {
+          condiciones.push(
+            op.tabla === 'turnos' ? eq(turnos.estado, 'abierto') : eq(cuentasVenta.estado, 'abierta'),
+          );
+        }
         cambio = await db
           .update(t)
           .set({ ...aFila(accion.valores), rev: siguienteRev } as never)
           .where(and(...condiciones))
           .returning({ id: t.id });
         if (cambio.length === 0) {
-          const motivo = accion.soloTurnoAbierto
-            ? 'El turno no existe en el servidor o ya está cerrado.'
-            : 'El registro no existe en el servidor.';
+          const motivo = !accion.soloAbierto
+            ? 'El registro no existe en el servidor.'
+            : op.tabla === 'turnos'
+              ? 'El turno no existe en el servidor o ya está cerrado.'
+              : 'La cuenta no existe en el servidor o ya no está abierta.';
           return { id: op.id, resultado: 'rechazada', motivo };
         }
         break;
@@ -87,14 +106,8 @@ export async function aplicarOperacion(db: BaseDatos, op: Operacion): Promise<Re
         break;
     }
   } catch (error) {
-    if (esFolioRepetido(error)) {
-      const folio = String(op.datos.folio ?? '');
-      return {
-        id: op.id,
-        resultado: 'rechazada',
-        motivo: `El folio ${folio} ya existe en otro dispositivo. Revisa el prefijo de folio.`,
-      };
-    }
+    if (esValorRepetido(error))
+      return { id: op.id, resultado: 'rechazada', motivo: await motivoDeRepetido(db, op) };
     throw error;
   }
 
@@ -119,7 +132,20 @@ export async function leerCambios(
         condiciones.push(
           nombre === 'turnos'
             ? or(gte(turnos.dia, diaMinimo), eq(turnos.estado, 'abierto'))
-            : gte(conDia.dia, diaMinimo),
+            : nombre === 'cuentasVenta'
+              ? or(gte(cuentasVenta.dia, diaMinimo), eq(cuentasVenta.estado, 'abierta'))
+              : nombre === 'pedidos'
+                ? or(
+                    gte(pedidos.dia, diaMinimo),
+                    inArray(
+                      pedidos.cuentaId,
+                      db
+                        .select({ id: cuentasVenta.id })
+                        .from(cuentasVenta)
+                        .where(eq(cuentasVenta.estado, 'abierta')),
+                    ),
+                  )
+                : gte(conDia.dia, diaMinimo),
         );
       }
       const filas = await db

@@ -5,10 +5,11 @@ import { CampoDinero } from '@/componentes/CampoDinero';
 import { Pantalla } from '@/componentes/Pantalla';
 import { Segmentos } from '@/componentes/Segmentos';
 import { TablaCifras } from '@/componentes/TablaCifras';
-import { useDatosDelTurno, useTurnoAbierto } from '@/datos/consultas';
+import { useCuentasAbiertas, useDatosDelTurno, useTurnoAbierto } from '@/datos/consultas';
 import { cerrarTurno } from '@/datos/escrituras';
 import { useVentasPorSubir } from '@/datos/estadoSync';
 import { avisoCajaAbierta, resumirTurno, totalConteo } from '@/dominio/caja';
+import { avisoCuentasAbiertas } from '@/dominio/cuentas';
 import { formatearDinero } from '@/dominio/dinero';
 import { diaLocal, formatearFecha, formatearHora } from '@/dominio/fechas';
 import type { Movimiento, Turno } from '@/dominio/tipos';
@@ -31,6 +32,7 @@ function CajaAbierta({ turno, alCerrar }: { turno: Turno; alCerrar: (cerrado: Tu
   const { usuario, puede } = useUsuarioActivo();
   const autorizar = useAutorizar();
   const porSubir = useVentasPorSubir();
+  const cuentasAbiertas = useCuentasAbiertas();
   const [registrando, setRegistrando] = useState<Movimiento['tipo'] | null>(null);
   const [autorizado, setAutorizado] = useState(false);
   const [modo, setModo] = useState<'denominaciones' | 'total'>('denominaciones');
@@ -46,6 +48,7 @@ function CajaAbierta({ turno, alCerrar }: { turno: Turno; alCerrar: (cerrado: Tu
   const resumen = resumirTurno({ turno, ...datos, contado });
   const diferencia = textoDiferencia(resumen.diferencia ?? 0);
   const aviso = avisoCajaAbierta(turno.dia, diaLocal());
+  const avisoCuentas = avisoCuentasAbiertas(cuentasAbiertas ?? []);
 
   async function cerrar() {
     setGuardando(true);
@@ -74,6 +77,11 @@ function CajaAbierta({ turno, alCerrar }: { turno: Turno; alCerrar: (cerrado: Tu
       {aviso && (
         <p className="rounded-boton bg-ambar-fondo p-3 text-ambar" role="alert">
           {aviso}
+        </p>
+      )}
+      {avisoCuentas && (
+        <p className="rounded-boton bg-ambar-fondo p-3 text-ambar" role="status">
+          {avisoCuentas}
         </p>
       )}
       <p className="text-producto">

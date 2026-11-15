@@ -18,6 +18,8 @@ import type {
   ConfigGeneral,
   DescuentoVenta,
   Devolucion,
+  EstadoCuenta,
+  TipoPedido,
   GrupoModificadores,
   LineaVenta,
   Pago,
@@ -222,10 +224,15 @@ export const ventas = pgTable(
     estado: text().$type<Venta['estado']>().notNull(),
     devuelto: integer().notNull(),
     cancelacion: jsonb().$type<Cancelacion>(),
+    cuentaId: text(),
+    cuentaNumero: integer(),
+    cuentaComandas: integer(),
     ...sync(),
   },
   (t) => [
     uniqueIndex().on(t.folio),
+    // Una cuenta, una venta (los nulos de las ventas directas no chocan entre sí).
+    uniqueIndex().on(t.cuentaId),
     index().on(t.fecha),
     index().on(t.dia),
     index().on(t.turnoId),
@@ -254,6 +261,44 @@ export const devoluciones = pgTable(
   (t) => [index().on(t.fecha), index().on(t.dia), index().on(t.ventaId), index().on(t.rev)],
 );
 
+/** Se llama así porque `cuentas` ya es la tabla de inicio de sesión. */
+export const cuentasVenta = pgTable(
+  'cuentas_venta',
+  {
+    id: text().primaryKey(),
+    dispositivoId: text().notNull(),
+    dispositivoNombre: text().notNull(),
+    turnoId: text().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    numero: integer().notNull(),
+    nombre: text(),
+    estado: text().$type<EstadoCuenta>().notNull(),
+    ventaId: text(),
+    cancelacion: jsonb().$type<Cancelacion>(),
+    abiertaPor: jsonb().$type<RefUsuario>().notNull(),
+    fecha: fechaHora().notNull(),
+    ...sync(),
+  },
+  (t) => [index().on(t.estado), index().on(t.dia), index().on(t.rev)],
+);
+
+export const pedidos = pgTable(
+  'pedidos',
+  {
+    id: text().primaryKey(),
+    cuentaId: text().notNull(),
+    numero: integer().notNull(),
+    tipo: text().$type<TipoPedido>().notNull(),
+    lineas: jsonb().$type<LineaVenta[]>().notNull(),
+    enviadoPor: jsonb().$type<RefUsuario>().notNull(),
+    autorizadoPor: jsonb().$type<RefUsuario>(),
+    fecha: fechaHora().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    ...sync(),
+  },
+  (t) => [index().on(t.cuentaId), index().on(t.dia), index().on(t.rev)],
+);
+
 /** Tabla de Postgres de cada tabla sincronizable. */
 export const TABLAS = {
   config,
@@ -267,4 +312,6 @@ export const TABLAS = {
   movimientos,
   ventas,
   devoluciones,
+  cuentasVenta,
+  pedidos,
 } as const;

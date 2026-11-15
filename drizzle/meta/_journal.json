@@ -43,6 +43,13 @@
       "when": 1790385724992,
       "tag": "0005_producto-va-a-cocina",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793553273407,
+      "tag": "0006_cuentas",
+      "breakpoints": true
     }
   ]
 }

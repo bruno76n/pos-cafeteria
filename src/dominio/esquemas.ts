@@ -29,6 +29,8 @@ export const TABLAS_SYNC = [
   'movimientos',
   'ventas',
   'devoluciones',
+  'cuentasVenta',
+  'pedidos',
 ] as const;
 
 export const id = z.string().min(1).max(100);
@@ -317,6 +319,8 @@ export const esquemaLineaVenta = z.object({
   importe: centavosPositivos,
   /** Copia de "Va a cocina" del producto (ventas anteriores no lo traen: cuentan como sí). */
   vaACocina: z.boolean().optional(),
+  /** Número de comanda (pedido) de donde viene la línea; solo en ventas que vienen de una cuenta. */
+  comanda: z.number().int().positive().optional(),
 });
 
 export const esquemaDescuento = z.object({
@@ -365,6 +369,51 @@ export const esquemaVenta = z.object({
   estado: z.enum(ESTADOS_VENTA),
   devuelto: centavosPositivos,
   cancelacion: esquemaCancelacion.nullable(),
+  /** Ausentes en las ventas anteriores a las cuentas (venta directa). */
+  cuentaId: id.optional(),
+  cuentaNumero: z.number().int().positive().optional(),
+  /** Pedidos que tuvo la cuenta (para "Comanda 2 de 3" en el ticket). */
+  cuentaComandas: z.number().int().positive().optional(),
+  ...sincronizable,
+});
+
+export const ESTADOS_CUENTA = ['abierta', 'cobrada', 'cancelada'] as const;
+
+/** Cuenta abierta: cambia solo en estado, nombre, ventaId y cancelacion. El turno es el de apertura. */
+export const esquemaCuenta = z.object({
+  id,
+  dispositivoId: id,
+  dispositivoNombre: z.string(),
+  turnoId: id,
+  dia,
+  /** Reinicia cada día en cada dispositivo. */
+  numero: z.number().int().positive(),
+  nombre: z.string().nullable(),
+  estado: z.enum(ESTADOS_CUENTA),
+  ventaId: id.nullable(),
+  cancelacion: esquemaCancelacion.nullable(),
+  abiertaPor: refUsuario,
+  fecha,
+  ...sincronizable,
+});
+
+export const TIPOS_PEDIDO = ['normal', 'anulacion'] as const;
+
+/**
+ * Cada envío a cocina de una cuenta. Solo se inserta. Una anulación lleva las líneas quitadas con
+ * el mismo id que la línea original.
+ */
+export const esquemaPedido = z.object({
+  id,
+  cuentaId: id,
+  /** Número de comanda dentro de la cuenta. */
+  numero: z.number().int().positive(),
+  tipo: z.enum(TIPOS_PEDIDO),
+  lineas: z.array(esquemaLineaVenta).min(1),
+  enviadoPor: refUsuario,
+  autorizadoPor: refUsuario.nullable(),
+  fecha,
+  dia,
   ...sincronizable,
 });
 
@@ -400,6 +449,8 @@ export const ESQUEMAS_TABLA = {
   movimientos: esquemaMovimiento,
   ventas: esquemaVenta,
   devoluciones: esquemaDevolucion,
+  cuentasVenta: esquemaCuenta,
+  pedidos: esquemaPedido,
 } as const;
 
 // Sincronización

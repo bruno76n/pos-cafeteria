@@ -1,6 +1,7 @@
 import {
   BookOpen,
   ChartColumn,
+  ClipboardList,
   House,
   ReceiptText,
   Settings,
@@ -12,7 +13,7 @@ import {
 import type { Permiso } from '@/dominio/tipos';
 
 export type IdSeccion =
-  'inicio' | 'venta' | 'ventas' | 'menu' | 'caja' | 'reportes' | 'usuarios' | 'configuracion';
+  'inicio' | 'venta' | 'cuentas' | 'ventas' | 'menu' | 'caja' | 'reportes' | 'usuarios' | 'configuracion';
 
 export interface ContextoSeccion {
   puede: (permiso: Permiso) => boolean;
@@ -46,6 +47,14 @@ export const SECCIONES: Seccion[] = [
     nombre: 'Venta',
     icono: ShoppingBag,
     accion: 'vender',
+    visible: (c) => c.esCaja && c.puede('vender'),
+  },
+  {
+    id: 'cuentas',
+    ruta: '/cuentas',
+    nombre: 'Cuentas',
+    icono: ClipboardList,
+    accion: 'ver las cuentas abiertas',
     visible: (c) => c.esCaja && c.puede('vender'),
   },
   {
@@ -102,4 +111,4 @@ export const SECCIONES: Seccion[] = [
 export const seccion = (id: IdSeccion) => SECCIONES.find((s) => s.id === id)!;
 
 /** En vertical y celular: cinco accesos abajo; el resto va en "Más". */
-export const SECCIONES_BARRA_INFERIOR: IdSeccion[] = ['inicio', 'venta', 'ventas', 'caja'];
+export const SECCIONES_BARRA_INFERIOR: IdSeccion[] = ['inicio', 'venta', 'cuentas', 'ventas', 'caja'];

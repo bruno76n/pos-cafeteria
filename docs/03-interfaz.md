@@ -58,12 +58,13 @@ Los tokens van como variables CSS en `src/estilos/global.css` (bloque `@theme` d
 Tablet horizontal (1280×800 y 1180×820 como referencia; mínimo 1024×768).
 
 - **Barra superior (56 px):** a la izquierda, nombre del negocio y del dispositivo; a la derecha, indicador de conexión y el usuario activo (al tocarlo: "Cambiar usuario" y "Bloquear").
-- **Riel lateral (80 px):** íconos con etiqueta debajo: Inicio, Venta, Ventas, Menú, Caja, Reportes, Usuarios, Configuración. Solo se muestran las secciones permitidas al usuario activo.
+- **Riel lateral (80 px):** íconos con etiqueta debajo: Inicio, Venta, Cuentas (con la cantidad de cuentas abiertas en una insignia), Ventas, Menú, Caja, Reportes, Usuarios, Configuración. Solo se muestran las secciones permitidas al usuario activo.
 - **Subsecciones como pestañas** arriba del contenido (por ejemplo, en Menú: Productos, Categorías, Ingredientes y Modificadores). Así respetamos el menú final sin menús anidados:
 
 ```
 INICIO
 NUEVA VENTA
+CUENTAS        → lista de cuentas abiertas
 VENTAS         → Historial | Devoluciones
 MENÚ           → Productos | Categorías | Ingredientes | Modificadores
 CAJA           → Caja actual | Movimientos | Cortes de caja
@@ -72,7 +73,7 @@ USUARIOS       → Usuarios | Roles y permisos
 CONFIGURACIÓN  → Negocio | Impuestos | Pagos | Ticket | Dispositivo
 ```
 
-- **Vertical y celular:** el riel pasa a barra inferior con 5 accesos (Inicio, Venta, Ventas, Caja, Más). En Nueva venta, el carrito se vuelve una barra inferior con "Ver venta (3)" a la izquierda y "Cobrar $193.50" a la derecha, que abre una hoja. Inicio y Reportes deben verse bien en el celular del dueño.
+- **Vertical y celular:** el riel pasa a barra inferior con 5 accesos (Inicio, Venta, Cuentas, Ventas, Caja) y "Más". En Nueva venta, el carrito se vuelve una barra inferior con "Ver venta (3)" a la izquierda y "Cobrar $193.50" a la derecha, que abre una hoja. Inicio y Reportes deben verse bien en el celular del dueño.
 
 ## 4. Pantallas
 
@@ -118,9 +119,28 @@ Teclas de 72 px. Se valida sola al completar un PIN que coincide (4–6 dígitos
 ```
 
 - Cuadrícula `repeat(auto-fill, minmax(140px, 1fr))`, botones de 104 px de alto: nombre (hasta 2 líneas) arriba, precio abajo a la izquierda ("Desde $55.00" si tiene tamaños), franja de color de categoría a la izquierda. Imagen opcional pequeña a la derecha si el producto tiene. No disponible: 40 % de opacidad y etiqueta "No disponible".
-- Carrito de 380 px (340 px en 1024). La barra Cobrar mide 72 px, fondo Cafeto, texto blanco, total a 40 px. Deshabilitada con carrito vacío.
-- Carrito vacío después de una venta: muestra "Venta A-000123", la etiqueta "Cambio" con **$6.50** a 64 px y los botones "Imprimir ticket" y "Compartir". Desaparece al agregar el siguiente producto.
+- Carrito de 380 px (340 px en 1024). La barra Cobrar mide 72 px, fondo Cafeto, texto blanco, total a 40 px. Deshabilitada si no hay nada que cobrar (ni borrador ni pedidos enviados). Encima de ella, un botón "Enviar a cocina" de ancho completo y 56 px en Grafito (deshabilitado con el borrador vacío). No es un paso obligatorio: en una venta de mostrador basta con Cobrar.
+- **Cuenta activa.** Sobre las líneas, un encabezado con "Cuenta 12 · Luis" (o "Venta nueva" si el borrador no tiene cuenta) y un botón "Cuentas" que lleva a la lista. Las líneas ya enviadas aparecen primero, en Grafito suave y sin controles de cantidad, agrupadas por un renglón "Comanda 1 · 08:42"; cada una con un botón pequeño "Anular". Debajo, "Por enviar" con el borrador y sus controles de siempre. Una comanda de anulación se muestra como renglón "Comanda 3 · anulación" con la pieza tachada.
+- En vertical, la barra inferior suma "Enviar" junto a "Ver venta" y "Cobrar".
+- Carrito vacío después de una venta: muestra "Venta A-000123" (y "Cuenta 12" si venía de una), la etiqueta "Cambio" con **$6.50** a 64 px y los botones "Imprimir ticket" y "Compartir". Desaparece al agregar el siguiente producto.
 - Carrito vacío sin venta previa: "Toca un producto para empezar."
+
+### Cuentas abiertas
+
+```
+┌─────┬───────────────────────────────────────────────────────────────────────┐
+│     │ Cuentas abiertas (3)                              [ + Nueva cuenta ]  │
+│ Ini │                                                                       │
+│     │ ┌────────────────────┐ ┌────────────────────┐ ┌────────────────────┐ │
+│ Ven │ │ Cuenta 12          │ │ Cuenta 13          │ │ Cuenta 14          │ │
+│     │ │ Luis               │ │ (sin nombre)       │ │ Mesa del fondo     │ │
+│ Cta │ │ 2 comandas · 08:42 │ │ 1 comanda · 08:55  │ │ 3 comandas · 09:10 │ │
+│     │ │ $215.00            │ │ $85.00             │ │ $430.00            │ │
+│     │ └────────────────────┘ └────────────────────┘ └────────────────────┘ │
+└─────┴───────────────────────────────────────────────────────────────────────┘
+```
+
+Tarjetas de 160 px de alto en cuadrícula `repeat(auto-fill, minmax(220px, 1fr))`: número en 28 px bold, nombre (o "Sin nombre" en gris), comandas y hora de apertura en Grafito suave, total a la derecha abajo en cifras de 24 px. Si la cuenta es de otro dispositivo, su nombre va en letra chica. Al tocar una tarjeta se abre Nueva venta con esa cuenta activa. "Nueva cuenta" abre una hoja centrada con el campo "Nombre (opcional)" y el botón "Abrir cuenta". Vacía: "No hay cuentas abiertas." con el botón "Nueva cuenta".
 
 ### Hoja de personalización
 
@@ -185,12 +205,14 @@ Teclas de 64 px; el cambio en 48 px. El botón de acción vive en el panel de ca
 
 ### Caja actual y cierre
 
+- Con cuentas abiertas, un aviso Ámbar arriba del conteo: "Hay 2 cuentas abiertas (Cuenta 3 · Luis, Cuenta 4). Se cobrarán en el turno que esté abierto." No impide cerrar.
+
 - Caja cerrada: "La caja está cerrada" + campo "Fondo inicial" + botón "Abrir caja".
 - Caja abierta y cierre **en la misma pantalla**: encabezado "Abierta por Ana desde las 7:02" y botones "Registrar entrada", "Registrar retiro", "Registrar gasto". A la izquierda, "Cerrar caja · Contar efectivo": tabla de denominaciones con teclado numérico (piezas por fila y subtotal) o "Capturar total". A la derecha (fija al desplazar): efectivo esperado, efectivo contado, diferencia grande en vivo ("Cuenta el efectivo" antes de contar; luego "Faltan $15.00" en Faltante / "Sobran $20.00" en Cafeto / "Cuadra exacto"), nota, botón "Cerrar caja" en Grafito (deshabilitado hasta contar) y debajo los totales del turno. Sin `cerrarCaja`: "Pedir autorización para cerrar caja" y el esperado solo con `verReportes`. Al cerrar: "Caja cerrada. Diferencia: …" → "Imprimir corte".
 
 ### Historial y detalle
 
-Tabla con filas de 56 px: folio, hora, productos (una línea, truncada), total (derecha), método(s), cajero, estado. Insignias: Cancelada (Faltante), Devuelta y Devuelta parcial (Ámbar), Por subir (Ámbar con ícono de nube). Detalle: ticket a la izquierda como vista previa, acciones a la derecha (Reimprimir ticket, Reimprimir comanda —o "Imprimir comanda cancelada" si la venta se canceló—, Compartir, Cancelar venta, Devolución). Al cancelar una venta con productos de cocina aparece un aviso Ámbar "Esta venta ya se mandó a cocina. Avisa en barra que no la preparen." con el botón "Imprimir aviso a cocina". Tras cobrar, el resultado de la venta ofrece también "Imprimir comanda" ("Reintentar comanda" si falló).
+Tabla con filas de 56 px: folio, hora, productos (una línea, truncada), total (derecha), método(s), cajero, estado. Insignias: Cancelada (Faltante), Devuelta y Devuelta parcial (Ámbar), Por subir (Ámbar con ícono de nube). Detalle: ticket a la izquierda como vista previa, acciones a la derecha (Reimprimir ticket, Reimprimir comanda —o "Imprimir comanda cancelada" si la venta se canceló—, Compartir, Cancelar venta, Devolución). Al cancelar una venta con productos de cocina aparece un aviso Ámbar "Esta venta ya se mandó a cocina. Avisa en barra que no la preparen." con el botón "Imprimir aviso a cocina". Tras cobrar, el resultado de la venta ofrece también "Imprimir comanda" ("Reintentar comanda" si falló). Si la venta viene de una cuenta, el detalle muestra "Cuenta 12" (con enlace a sus pedidos) y un botón "Reimprimir comanda" por cada pedido ("Comanda 2 de 3").
 
 ### Menú
 
@@ -202,7 +224,7 @@ Formulario a la izquierda (campos visibles, mensaje final, QR y la sección **Co
 
 ### Configuración › Impresora
 
-Pestaña propia en Configuración (entre Ticket y Dispositivo), con una nota arriba: "Se guarda solo en esta tablet." Tarjetas, en orden: **Conexión** (segmentos Bluetooth / RawBT / Sistema según el dispositivo; en Bluetooth, fila con ícono, nombre de la impresora o "Sin impresora elegida", insignia de estado —Conectada en Cafeto, Desconectada neutra, Buscando en Ámbar— y botones "Buscar impresora", "Reconectar" y "Olvidar impresora"; en RawBT, la nota de qué es y cómo instalarla), **Papel** ("58 mm (32 columnas)" / "80 mm (48 columnas)") y **Opciones** (densidad, líneas de avance, "Cortar papel al final", copias —solo Bluetooth y RawBT— e "Imprimir automáticamente al cobrar"). Abajo, botón grande "Imprimir prueba" ("Reintentar" tras un error). Los cambios se guardan al tocarlos, sin botón Guardar. Los mensajes van debajo de la conexión: éxito en Cafeto, error en Faltante con la ayuda en gris debajo.
+Pestaña propia en Configuración (entre Ticket y Dispositivo), con una nota arriba: "Se guarda solo en esta tablet." Tarjetas, en orden: **Conexión** (segmentos Bluetooth / RawBT / Sistema según el dispositivo; en Bluetooth, fila con ícono, nombre de la impresora o "Sin impresora elegida", insignia de estado —Conectada en Cafeto, Desconectada neutra, Buscando en Ámbar— y botones "Buscar impresora", "Reconectar" y "Olvidar impresora"; en RawBT, la nota de qué es y cómo instalarla), **Papel** ("58 mm (32 columnas)" / "80 mm (48 columnas)") y **Opciones** (densidad, líneas de avance, "Cortar papel al final", copias —solo Bluetooth y RawBT— e "Imprimir automáticamente"). Abajo, botón grande "Imprimir prueba" ("Reintentar" tras un error). Los cambios se guardan al tocarlos, sin botón Guardar. Los mensajes van debajo de la conexión: éxito en Cafeto, error en Faltante con la ayuda en gris debajo.
 
 ### Inicio y reportes
 
@@ -223,6 +245,11 @@ Sentence case, verbos concretos, sin relleno. Una acción conserva su nombre en 
 | Impresora conectada | "Impresora conectada" | – |
 | Falló la comanda | "No se pudo imprimir la comanda de cocina." + el error de la impresora | "Reintentar comanda" |
 | Falló el ticket (con comanda) | "No se pudo imprimir el ticket del cliente." + el error de la impresora | "Reintentar" |
+| Cuenta cancelada ya en cocina | "Esta cuenta ya se mandó a cocina. Avisa en barra que no la preparen." | "Cancelar y avisar a cocina" |
+| Anular una línea enviada | "Anular 1x Latte Mediano. Cocina recibirá un aviso." (con varias piezas: "Hay 3 en la cuenta. Cocina recibirá un aviso.") | "Anular 1", "Anular todas", "Volver" |
+| Cobro duplicado | "Esta cuenta ya se cobró en otro dispositivo." | – |
+| Sin cuentas | "No hay cuentas abiertas." | "Nueva cuenta" |
+| Cerrar caja con cuentas | "Hay 2 cuentas abiertas. Se cobrarán en el turno que esté abierto." | – |
 | Venta cancelada ya en cocina | "Esta venta ya se mandó a cocina. Avisa en barra que no la preparen." | "Imprimir aviso a cocina" |
 | Bluetooth sin resultados | "No se encontró la impresora. Revisa que esté encendida y cerca." + "Esta impresora puede ser Bluetooth clásico, que el navegador no puede usar. Cambia el tipo de conexión a RawBT." | "Buscar impresora" |
 | Bluetooth desconectada | "Se perdió la conexión. Vuelve a intentar." | "Reintentar" |

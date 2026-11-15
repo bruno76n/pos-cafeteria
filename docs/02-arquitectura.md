@@ -53,7 +53,7 @@ Para `@point-of-sale/*` y el adaptador de Hono para Vercel consulta la documenta
     ├── dominio/                    # lógica pura + pruebas (sin React, sin Dexie, sin red)
     │   ├── dinero.ts  fechas.ts  tipos.ts  esquemas.ts
     │   ├── modificadores.ts  personalizacion.ts  carrito.ts  cobro.ts  caja.ts
-    │   ├── devoluciones.ts  folios.ts  permisos.ts  pin.ts
+    │   ├── devoluciones.ts  folios.ts  cuentas.ts  permisos.ts  pin.ts
     │   └── reportes.ts  csv.ts  reglasServidor.ts
     ├── datos/                      # único lugar que toca Dexie y la red
     │   ├── bd.ts                   # esquema Dexie
@@ -137,10 +137,12 @@ Cada tabla sincronizable tiene además:
 | `dispositivos` | Dispositivos, espejo del contador de folios y `activo` (una tablet retirada se desactiva; no se borra) |
 | `turnos` | Turnos de caja (abiertos y cerrados, con `resumen jsonb`) |
 | `movimientos` | Entradas, retiros y gastos |
-| `ventas` | Ventas (inmutables salvo estado); `lineas`, `pagos`, `descuento`, `iva`, `cancelacion` en `jsonb`; índice único en `folio` |
+| `ventas` | Ventas (inmutables salvo estado); `lineas`, `pagos`, `descuento`, `iva`, `cancelacion` en `jsonb`; índice único en `folio`; `cuenta_id` y `cuenta_numero` (nulos en las ventas anteriores a las cuentas) con índice único en `cuenta_id` (una cuenta, una venta; los nulos no chocan) |
+| `cuentas_venta` | Cuentas abiertas, cobradas y canceladas (§9). Se llama así porque `cuentas` ya es la tabla de inicio de sesión. Solo cambian `estado`, `nombre`, `venta_id` y `cancelacion` |
+| `pedidos` | Cada envío a cocina de una cuenta (`lineas` en `jsonb`). Solo se insertan |
 | `devoluciones` | Devoluciones |
 
-Índices: `ventas(fecha)`, `ventas(turno_id)`, `movimientos(turno_id)`, `devoluciones(fecha)`, `turnos(dispositivo_id, estado)` y `rev` en cada tabla.
+Índices: `cuentas_venta(estado)`, `cuentas_venta(dia)`, `pedidos(cuenta_id)`, `ventas(fecha)`, `ventas(turno_id)`, `movimientos(turno_id)`, `devoluciones(fecha)`, `turnos(dispositivo_id, estado)` y `rev` en cada tabla.
 
 ```ts
 type Centavos = number;                       // entero
@@ -219,6 +221,7 @@ interface LineaVenta {
   modificadores: { grupo: string; opcion: string; precioExtra: Centavos }[];
   precioUnitario: Centavos; cantidad: number; nota: string | null; importe: Centavos;
   vaACocina?: boolean;                        // copia del producto; ausente en ventas anteriores = true
+  comanda?: number;                           // número de comanda (pedido) de donde viene; solo en ventas con cuenta
 }
 
 interface Venta {
@@ -233,6 +236,25 @@ interface Venta {
   cambio: Centavos;
   estado: 'pagada' | 'cancelada' | 'devuelta_parcial' | 'devuelta'; devuelto: Centavos;
   cancelacion: { motivo: string; usuario: RefUsuario; autorizadoPor: RefUsuario | null; fecha: Fecha } | null;
+  cuentaId?: string; cuentaNumero?: number;   // ausentes en las ventas anteriores a las cuentas (venta directa)
+  cuentaComandas?: number;                    // pedidos que tuvo la cuenta (para "Comanda 2 de 3" en el ticket)
+}
+
+// La cuenta cambia solo en estado, nombre, ventaId y cancelacion. Su turnoId es el de apertura;
+// el de la venta es el de quien cobra.
+interface Cuenta {
+  id: string; dispositivoId: string; dispositivoNombre: string; turnoId: string;
+  dia: string; numero: number;                // numero reinicia cada día por dispositivo
+  nombre: string | null; estado: 'abierta' | 'cobrada' | 'cancelada'; ventaId: string | null;
+  cancelacion: { motivo: string; usuario: RefUsuario; autorizadoPor: RefUsuario | null; fecha: Fecha } | null;
+  abiertaPor: RefUsuario; fecha: Fecha;
+}
+
+// Solo se inserta. Una anulación lleva las líneas quitadas con el MISMO id que la línea original.
+interface Pedido {
+  id: string; cuentaId: string; numero: number; tipo: 'normal' | 'anulacion';
+  lineas: LineaVenta[]; enviadoPor: RefUsuario; autorizadoPor: RefUsuario | null;
+  fecha: Fecha; dia: string;
 }
 
 interface Devolucion {
@@ -249,7 +271,7 @@ Todo se valida con esquemas Zod (`src/dominio/esquemas.ts`), que usan igual la a
 
 La personalización (tamaño, ingredientes y modificadores), su validación y el precio unitario viven en `src/dominio/personalizacion.ts`. La línea del carrito guarda además lo elegido (`tamanoId`, `ingredientesIds`, `seleccion`) para poder editarla; eso no pasa a la venta.
 
-Migraciones: `0001_tamanos` agrega `productos.tamanos` y convierte un grupo global "Tamaño" (si existe) en tamaños de cada producto que lo usaba (precio base + precio extra; la opción por defecto primero), lo quita de `grupos_ids` y lo marca borrado, subiendo `rev` para que llegue a las tablets. `0002_ingredientes` crea la tabla y `0003_armado` agrega `productos.armado`.
+Migraciones: `0006_cuentas` crea `cuentas_venta` y `pedidos` y agrega `cuenta_id`, `cuenta_numero` y `cuenta_comandas` (nulos) a `ventas`, con el índice único sobre `cuenta_id`; Dexie v5 crea `cuentasVenta` y `pedidos` y mueve el carrito guardado a `borradores`. `0001_tamanos` agrega `productos.tamanos` y convierte un grupo global "Tamaño" (si existe) en tamaños de cada producto que lo usaba (precio base + precio extra; la opción por defecto primero), lo quita de `grupos_ids` y lo marca borrado, subiendo `rev` para que llegue a las tablets. `0002_ingredientes` crea la tabla y `0003_armado` agrega `productos.armado`.
 
 ## 6. Estrategia offline y sincronización
 
@@ -276,7 +298,10 @@ Migraciones: `0001_tamanos` agrega `productos.tamanos` y convierte un grupo glob
 
 Viven en `src/dominio/reglasServidor.ts` (funciones puras, con pruebas) y las usa `servidor/rutas/sync.ts`:
 
-- **ventas, movimientos, devoluciones, turnos:** `crear` = `INSERT ... ON CONFLICT (id) DO NOTHING`. Nunca se borran.
+- **ventas, movimientos, devoluciones, turnos, pedidos, cuentas_venta:** `crear` = `INSERT ... ON CONFLICT (id) DO NOTHING`. Nunca se borran.
+- **pedidos:** solo `crear`; cualquier `actualizar` se rechaza. Dos tablets agregando a la misma cuenta insertan filas distintas y no se pisan.
+- **cuentas_venta `actualizar`:** solo `estado`, `nombre`, `venta_id`, `cancelacion`, y solo mientras en el servidor la cuenta siga `abierta` (así una cuenta cobrada no vuelve a abrirse ni se cancela después).
+- **Doble cobro:** el índice único de `ventas.cuenta_id` rechaza la segunda venta de la misma cuenta; la API responde `rechazada` con "Esta cuenta ya se cobró en otro dispositivo." (queda en `erroresSync` del dispositivo que perdió).
 - **ventas `actualizar`:** solo `estado`, `cancelacion`, `devuelto`. Cualquier otro campo se rechaza.
 - **movimientos `actualizar`:** solo `anulado`, `anulado_por`, `anulado_en`.
 - **turnos `actualizar`:** solo si en el servidor sigue `abierto`.
@@ -289,9 +314,9 @@ Viven en `src/dominio/reglasServidor.ts` (funciones puras, con pruebas) y las us
 
 - Cada 15 segundos con conexión, al volver `online`, al enfocar la ventana y justo después de un push.
 - `GET /api/sync/pull?desde=<rev>` devuelve las filas con `rev` mayor, de todas las tablas, ordenadas por `rev`, máximo 500 por página, más el `rev` más alto enviado. Se pide la siguiente página hasta vaciar.
-- Alcance: catálogo, configuración, usuarios y dispositivos completos; ventas, movimientos, devoluciones y turnos **solo de los últimos 35 días** (el primer pull de un dispositivo nuevo también se limita a ese rango).
+- Alcance: catálogo, configuración, usuarios y dispositivos completos; ventas, movimientos, devoluciones, turnos, cuentas y pedidos **solo de los últimos 35 días** (el primer pull de un dispositivo nuevo también se limita a ese rango). Excepciones: los turnos abiertos y las **cuentas abiertas** llegan siempre, y los pedidos de una cuenta que llega. Una tabla que la app no conoce (versión vieja) se ignora sin fallar.
 - Se aplica en Dexie con `bulkPut`, **excepto** registros que tengan operaciones pendientes en la outbox (lo local gana hasta que se sube).
-- Una vez al día, borra de Dexie ventas, movimientos, devoluciones y turnos cerrados con más de 35 días que no estén en la outbox.
+- Una vez al día, borra de Dexie ventas, movimientos, devoluciones, turnos cerrados, cuentas no abiertas (con sus pedidos) con más de 35 días que no estén en la outbox. Las cuentas abiertas nunca se borran.
 
 ### Reportes de rangos grandes
 
@@ -321,12 +346,21 @@ Si el rango pedido cabe en los 35 días locales, Reportes calcula con los datos 
 - Al configurar un dispositivo (con conexión), el contador arranca en el mayor entre el valor del servidor y el `folio_numero` más alto de las ventas con ese prefijo.
 - El índice único de `folio` en Postgres detecta prefijos duplicados: si llega un folio repetido de otro dispositivo, la operación se rechaza y aparece en `erroresSync`.
 
+### Cuentas, pedidos y su numeración
+
+- **Número de cuenta:** `siguienteNumeroCuenta(cuentasDelDispositivoDelDia)` = mayor número de ese dispositivo y ese día + 1, calculado dentro de la misma transacción de Dexie que crea la cuenta (índice `[dispositivoId+dia]`). Sin contador en `dispositivos`. Reinicia cada día. Dos dispositivos pueden tener el mismo número el mismo día: la comanda lleva además "cajero · dispositivo" en letra chica.
+- **Número de comanda:** el mayor número de comanda de la cuenta + 1, en la transacción que inserta el pedido (las anulaciones también cuentan: también se imprimen).
+- **Estados:** `abierta → cobrada | cancelada` (`src/dominio/cuentas.ts`); no hay vuelta atrás.
+- **Consolidación:** `consolidarLineas(pedidos)` suma las líneas de los pedidos normales y resta las de las anulaciones por `id` de línea (cantidad e importe se recalculan con el precio unitario guardado); las que llegan a cero desaparecen. Cada línea conserva el número de su comanda.
+- **Cobro:** `cobrarCuenta` (`src/datos/escrituras.ts`) abre una sola transacción de Dexie que lee la cuenta y sus pedidos, asigna el folio del dispositivo, guarda la venta con las líneas consolidadas (`armarVenta`), actualiza la cuenta a `cobrada` con `ventaId` y encola sus operaciones (venta, dispositivo y cuenta; en la venta rápida, también la cuenta y el pedido nuevos). Sin cuenta previa (venta rápida) crea también la cuenta y su único pedido en esa transacción. La venta toma el `turnoId` del turno abierto del dispositivo que cobra.
+- **Borrador:** el pedido en curso vive en `meta.borradores` (un `Carrito` por `cuentaId`, y la clave vacía para "sin cuenta") y la cuenta activa en `meta.cuentaActivaId`; `estado/carrito.ts` expone el borrador de la cuenta activa con la misma interfaz de antes.
+
 ## 10. Impresión
 
 ### Capas
 
 1. **`TicketDocumento`** (datos puros): `{ columnas: 32 | 48, lineas: LineaTicket[] }`, donde cada línea es texto (alineación, negrita, tamaño doble), columnas izquierda/derecha, separador, logo, QR o espacio. El avance y el corte no son parte del ticket: los agrega la impresora del dispositivo.
-2. **Constructores puros:** `construirTicketVenta(venta, config, { columnas, reimpresion, qr })`, `construirTicketCorte(turno, config, { columnas, reimpresion })` y `construirComanda(venta, config, { columnas, reimpresion, cancelada })` (`src/impresion/comanda.ts`; `null` si ninguna línea va a cocina). La comanda es otro `TicketDocumento`: mismo renderizador, mismos drivers. Las líneas de texto pueden ser `doble` (encabezado, folio, cliente, productos) o `chica` (fuente B en ESC/POS, `ESC M 1`). El mismo documento sirve para venta, reimpresión y corte; `columnas` sale del ancho de papel de la impresora de la tablet (`useImpresora().columnas`). Pruebas con snapshot.
+2. **Constructores puros:** `construirTicketVenta(venta, config, { columnas, reimpresion, qr })`, `construirTicketCorte(turno, config, { columnas, reimpresion })` y `construirComanda(datos: DatosComanda, config, { columnas, reimpresion, cancelada, anulacion })` (`src/impresion/comanda.ts`; `null` si ninguna línea va a cocina). `DatosComanda` = `{ titulo: string[], fecha, cliente, cajero, dispositivoNombre, lineas }` (el título va en varias líneas dobles porque la letra doble solo cabe en 16 de 32 columnas); `datosDePedido(cuenta, pedido, { totalPedidos?, dispositivoNombre? })` arma ["Cuenta 12", "Comanda 2"] ("Comanda 2 de 3" solo en reimpresiones) y `datosDeVenta(venta)` el de una venta sin cuenta (el folio como título). Una anulación usa `anulacion: true` ("ANULACIÓN" y "NO PREPARAR"). La comanda es otro `TicketDocumento`: mismo renderizador, mismos drivers. Las líneas de texto pueden ser `doble` (encabezado, folio, cliente, productos) o `chica` (fuente B en ESC/POS, `ESC M 1`). El mismo documento sirve para venta, reimpresión y corte; `columnas` sale del ancho de papel de la impresora de la tablet (`useImpresora().columnas`). Pruebas con snapshot.
 3. **Renderizadores:** `html.tsx` (vista previa en pantalla e impresión del sistema con `@page { size: 58mm auto }` o `80mm`) y `escpos.ts` (bytes ESC/POS con `ReceiptPrinterEncoder`, detalle abajo).
 4. **Drivers** (`src/impresion/drivers/`) con la misma interfaz `DriverImpresora`: `soportado()`, `estado()` (`conectada | desconectada | buscando`) y `suscribir()`, `conectar()` (desde un toque), `reconectar(config)`, `imprimir(doc, config)` y `olvidar(config)`. Los errores son `ErrorImpresion` con el mensaje para la pantalla y, si aplica, una `ayuda` (p. ej. "Cambia el tipo de conexión a RawBT.").
    - `bluetooth` (Web Bluetooth, propio, sin librería): `requestDevice({ acceptAllDevices: true, optionalServices })` con los servicios seriales comunes de las térmicas baratas (`0000ff00`, `0000ffe0`, `000018f0`, `49535343-fe7d-4ae5-8fa9-9fafd205e455`, `e7810a71-…`); recorre los servicios y usa la característica de escritura sin respuesta (o con respuesta si no hay). Manda los bytes en trozos de 20 (el navegador no expone el MTU) con 20 ms de pausa, o el ticket sale cortado. Guarda `{ id, nombre }` del dispositivo; al abrir la app (`useReconexionImpresora` en el Shell) reconecta con `navigator.bluetooth.getDevices()` (permisos persistentes de Chrome) y al imprimir reintenta si se perdió la conexión. `NotFoundError` al buscar → "No se encontró la impresora…" + sugerencia de RawBT (probablemente es Bluetooth clásico). Solo Chrome (Android o computadora) en contexto seguro.
@@ -336,7 +370,7 @@ Si el rango pedido cabe en los 35 días locales, Reportes calcula con los datos 
 
 ### Trabajos de impresión
 
-`trabajosDeVenta(venta, config, ticket, columnas)` arma la lista de trabajos al cobrar (`{ tipo: 'ticket' | 'comanda' | 'corte', doc, copias? }`) en el orden de `config.ticket.comanda`. `useImpresora().imprimirTrabajos(trabajos)` los manda uno por uno al driver de la tablet con `PAUSA_ENTRE_TRABAJOS_MS` (1 s) entre ellos; si uno falla sigue con el siguiente. `falloDeTrabajos` decide el mensaje: si no salió nada, el error de la impresora; si falló uno solo, cuál ("No se pudo imprimir la comanda de cocina." / "…el ticket del cliente."), con el error de la impresora como ayuda. La comanda usa sus propias copias; el ticket, las de la impresora. "Imprimir automáticamente al cobrar" (de la impresora de la tablet) controla los dos.
+`trabajosDePedido(datos, config, columnas, opciones)` arma el trabajo de la comanda de un pedido (`{ tipo: 'ticket' | 'comanda' | 'corte', doc, copias? }`), `trabajosDeCobro(ticket)` el del ticket final y `trabajosDeVentaRapida(datos, config, ticket, columnas)` ambos en el orden de `config.ticket.comanda` (la venta rápida es el único caso en que salen juntos). `useImpresora().imprimirTrabajos(trabajos)` los manda uno por uno al driver de la tablet con `PAUSA_ENTRE_TRABAJOS_MS` (1 s) entre ellos; si uno falla sigue con el siguiente. `falloDeTrabajos` decide el mensaje: si no salió nada, el error de la impresora; si falló uno solo, cuál ("No se pudo imprimir la comanda de cocina." / "…el ticket del cliente."), con el error de la impresora como ayuda. La comanda usa sus propias copias; el ticket, las de la impresora. "Imprimir automáticamente" (campo `imprimirAlCobrar` de la impresora de la tablet, nombre conservado por compatibilidad) controla las comandas al enviar a cocina y los tickets al cobrar. El pedido se guarda antes de imprimir: un fallo de la impresora nunca pierde ni duplica un pedido.
 
 ### ESC/POS
 
@@ -374,7 +408,7 @@ Web Bluetooth y el service worker exigen HTTPS (o localhost). Los drivers no se 
 
 - El navegador nunca recibe `DATABASE_URL`. Todo acceso a datos pasa por la API.
 - Todas las rutas salvo `salud` y `acceso` exigen token válido de una cuenta activa.
-- Nada se borra en ventas, movimientos, devoluciones ni turnos; las ventas solo cambian estado, cancelación y devuelto (§6, "Reglas del servidor").
+- Nada se borra en ventas, movimientos, devoluciones, turnos, cuentas ni pedidos; las ventas solo cambian estado, cancelación y devuelto (§6, "Reglas del servidor").
 - Consultas siempre con Drizzle (parámetros), nunca SQL armado con texto del cliente.
 - Límite de tamaño del cuerpo en `push` (por ejemplo 2 MB) y de operaciones por lote (100).
 - Pruebas de la API (Vitest + PGlite en memoria + `app.request()` de Hono): sin token → 401; token de cuenta desactivada → 401; `crear` venta dos veces → una sola fila; actualizar un campo prohibido de una venta → rechazada; borrar una venta → rechazada; turno cerrado no se modifica; pull devuelve solo lo posterior al cursor.
@@ -398,7 +432,7 @@ Web Bluetooth y el service worker exigen HTTPS (o localhost). Los drivers no se 
 - **Unitarias (Vitest)** en `src/dominio/`: dinero, fechas (incluye cruce de medianoche UTC), modificadores, personalización (tamaños e ingredientes), carrito, cobro, caja, devoluciones, folios, permisos, PIN, reportes, CSV, reglas del servidor y constructores de ticket (snapshot). Los casos A–M de `01-especificacion.md` §6 son obligatorios.
 - **Datos locales:** `src/datos/` con `fake-indexeddb`: escritura + outbox en una transacción, motor de sync contra un servidor simulado (red caída, 5xx, 401, rechazo, duplicado, orden de operaciones, pull que no pisa cambios pendientes).
 - **API:** Vitest con PGlite en memoria y migraciones aplicadas (casos de §11).
-- **E2E (Playwright, Chromium, viewport 1280×800):** `webServer` levanta la API local con una base PGlite nueva (seed incluido) y Vite. Flujos mínimos: acceso con PIN y cambio de usuario; cajero sin acceso a Reportes; abrir caja; venta con modificadores y descuento; presupuesto de toques (`01-especificacion.md` §7); efectivo con cambio; pago combinado; cancelar; devolución; corte con faltante; crear producto y venderlo; crear ingredientes y una crepa con dos tamaños y venderla con 4 ingredientes; bebida con tamaños y un extra; comanda de cocina (crepa + agua embotellada: dos trabajos en el orden configurado, la comanda solo con la crepa, reimpresión y aviso de cancelación); impresora Bluetooth simulada; autorización con PIN; **offline** (`context.setOffline(true)` → vender → volver en línea → verificar que la venta llegó a la base); **dos dispositivos** (dos contextos del navegador: lo que vende uno aparece en el otro tras el pull); **PWA** (build + preview → cargar → sin red → recargar → la app abre y deja vender).
+- **E2E (Playwright, Chromium, viewport 1280×800):** `webServer` levanta la API local con una base PGlite nueva (seed incluido) y Vite. Flujos mínimos: acceso con PIN y cambio de usuario; cajero sin acceso a Reportes; abrir caja; venta con modificadores y descuento; presupuesto de toques (`01-especificacion.md` §7); efectivo con cambio; pago combinado; cancelar; devolución; corte con faltante; crear producto y venderlo; crear ingredientes y una crepa con dos tamaños y venderla con 4 ingredientes; bebida con tamaños y un extra; cuentas abiertas (enviar, agregar, anular una línea y cobrar; venta rápida con su presupuesto de toques; cobrar desde otra tablet; cerrar caja con cuentas abiertas); comanda de cocina (crepa + agua embotellada: dos trabajos en el orden configurado, la comanda solo con la crepa, reimpresión y aviso de cancelación); impresora Bluetooth simulada; autorización con PIN; **offline** (`context.setOffline(true)` → vender → volver en línea → verificar que la venta llegó a la base); **dos dispositivos** (dos contextos del navegador: lo que vende uno aparece en el otro tras el pull); **PWA** (build + preview → cargar → sin red → recargar → la app abre y deja vender).
 - Datos demo (seed): cuenta `caja@demo.test` / `demo1234`; usuarios Dueño (PIN 1234, admin), Encargada (2222, encargado) y Cajero (1111, cajero); menú y configuración de `seed/menu-demo.json`.
 
 ## 14. Qué no se prueba en la noche

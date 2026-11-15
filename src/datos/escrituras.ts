@@ -1,18 +1,34 @@
 import { resumirTurno } from '@/dominio/caja';
-import type { VentaNueva } from '@/dominio/cobro';
+import type { DescuentoCarrito } from '@/dominio/carrito';
+import { armarVenta, type VentaNueva } from '@/dominio/cobro';
+import {
+  consolidarLineas,
+  estaAbierta,
+  lineaDeAnulacion,
+  ordenarPedidos,
+  siguienteComanda,
+  siguienteNumeroCuenta,
+} from '@/dominio/cuentas';
 import { ahoraISO, diaLocal } from '@/dominio/fechas';
 import { contadorInicial, siguienteFolio } from '@/dominio/folios';
 import { configNueva, menuDeEjemplo, type MenuEjemplo } from '@/dominio/menuEjemplo';
 import { crearPin } from '@/dominio/pin';
 import { TABLAS_ULTIMO_GANA } from '@/dominio/reglasServidor';
 import type {
+  ConfigGeneral,
+  Cuenta,
   Devolucion,
+  Dispositivo,
+  LineaVenta,
   MetodoPago,
   Movimiento,
   Operacion,
+  Pago,
+  Pedido,
   RefUsuario,
   RegistrosPorTabla,
   TablaSync,
+  TipoPedido,
   Turno,
   Usuario,
   Venta,
@@ -130,25 +146,280 @@ export async function borrar(tabla: TablaCatalogo, id: string) {
 }
 
 /**
- * Registra una venta: asigna el folio del dispositivo, guarda la venta, sube el contador y
- * encola ambas operaciones, todo en la misma transacción.
+ * Asigna el folio del dispositivo, guarda la venta, sube el contador y encola ambas operaciones.
+ * Llamar dentro de una transacción con `ventas`, `dispositivos` y `outbox`.
  */
+async function guardarVenta(venta: VentaNueva): Promise<Venta> {
+  const dispositivo = await bd.dispositivos.get(venta.dispositivoId);
+  if (!dispositivo) throw new Error('Este dispositivo no está configurado.');
+  const { folio, numero } = siguienteFolio(dispositivo);
+  const ahora = ahoraISO();
+  const guardada: Venta = { ...venta, folio, folioNumero: numero, actualizadoEn: ahora };
+  const conContador = { ...dispositivo, ultimoFolio: numero, actualizadoEn: ahora };
+  await bd.ventas.add(guardada);
+  await bd.dispositivos.put(conContador);
+  await bd.outbox.add(operacion('ventas', 'crear', guardada.id, guardada));
+  await bd.outbox.add(operacion('dispositivos', 'actualizar', conContador.id, conContador));
+  return guardada;
+}
+
+/** Registra una venta directa (sin cuenta): folio, venta y contador en la misma transacción. */
 export async function registrarVenta(venta: VentaNueva): Promise<Venta> {
-  let guardada: Venta | undefined;
-  await bd.transaction('rw', bd.ventas, bd.dispositivos, bd.outbox, async () => {
-    const dispositivo = await bd.dispositivos.get(venta.dispositivoId);
-    if (!dispositivo) throw new Error('Este dispositivo no está configurado.');
-    const { folio, numero } = siguienteFolio(dispositivo);
-    const ahora = ahoraISO();
-    guardada = { ...venta, folio, folioNumero: numero, actualizadoEn: ahora };
-    const conContador = { ...dispositivo, ultimoFolio: numero, actualizadoEn: ahora };
-    await bd.ventas.add(guardada);
-    await bd.dispositivos.put(conContador);
-    await bd.outbox.add(operacion('ventas', 'crear', guardada.id, guardada));
-    await bd.outbox.add(operacion('dispositivos', 'actualizar', conContador.id, conContador));
+  const guardada = await bd.transaction('rw', bd.ventas, bd.dispositivos, bd.outbox, () =>
+    guardarVenta(venta),
+  );
+  avisar();
+  return guardada;
+}
+
+// Cuentas abiertas (docs/01-especificacion.md §5.2b). Las funciones `guardar…` y `cambiarCuenta`
+// se llaman dentro de una transacción con `cuentasVenta`, `pedidos` y `outbox` (más `ventas` y
+// `dispositivos` al cobrar): cada operación pública es UNA transacción.
+
+export interface DatosApertura {
+  nombre: string | null;
+  turno: Pick<Turno, 'id'>;
+  dispositivo: Pick<Dispositivo, 'id' | 'nombre'>;
+  usuario: RefUsuario;
+}
+
+async function guardarCuenta(datos: DatosApertura): Promise<Cuenta> {
+  const fecha = ahoraISO();
+  const dia = diaLocal(fecha);
+  const delDia = await bd.cuentasVenta
+    .where('[dispositivoId+dia]')
+    .equals([datos.dispositivo.id, dia])
+    .toArray();
+  const cuenta: Cuenta = {
+    id: crypto.randomUUID(),
+    dispositivoId: datos.dispositivo.id,
+    dispositivoNombre: datos.dispositivo.nombre,
+    turnoId: datos.turno.id,
+    dia,
+    numero: siguienteNumeroCuenta(delDia),
+    nombre: datos.nombre?.trim() || null,
+    estado: 'abierta',
+    ventaId: null,
+    cancelacion: null,
+    abiertaPor: datos.usuario,
+    fecha,
+    actualizadoEn: fecha,
+  };
+  await bd.cuentasVenta.add(cuenta);
+  await bd.outbox.add(operacion('cuentasVenta', 'crear', cuenta.id, cuenta));
+  return cuenta;
+}
+
+async function guardarPedido(
+  cuenta: Pick<Cuenta, 'id'>,
+  datos: { tipo: TipoPedido; lineas: LineaVenta[]; usuario: RefUsuario; autorizadoPor: RefUsuario | null },
+): Promise<Pedido> {
+  const previos = await bd.pedidos.where('cuentaId').equals(cuenta.id).toArray();
+  const fecha = ahoraISO();
+  const pedido: Pedido = {
+    id: crypto.randomUUID(),
+    cuentaId: cuenta.id,
+    numero: siguienteComanda(previos),
+    tipo: datos.tipo,
+    lineas: datos.lineas,
+    enviadoPor: datos.usuario,
+    autorizadoPor: datos.autorizadoPor,
+    fecha,
+    dia: diaLocal(fecha),
+    actualizadoEn: fecha,
+  };
+  await bd.pedidos.add(pedido);
+  await bd.outbox.add(operacion('pedidos', 'crear', pedido.id, pedido));
+  return pedido;
+}
+
+async function cuentaAbierta(id: string): Promise<Cuenta> {
+  const cuenta = await bd.cuentasVenta.get(id);
+  if (!cuenta) throw new Error('La cuenta no existe.');
+  if (!estaAbierta(cuenta)) throw new Error('Esta cuenta ya no está abierta.');
+  return cuenta;
+}
+
+async function cambiarCuenta(
+  cuenta: Cuenta,
+  cambios: Partial<Pick<Cuenta, 'estado' | 'nombre' | 'ventaId' | 'cancelacion'>>,
+): Promise<Cuenta> {
+  const conFecha = { ...cambios, actualizadoEn: ahoraISO() };
+  await bd.cuentasVenta.update(cuenta.id, conFecha);
+  await bd.outbox.add(operacion('cuentasVenta', 'actualizar', cuenta.id, conFecha));
+  return { ...cuenta, ...conFecha };
+}
+
+const pedidosDe = async (cuentaId: string) =>
+  ordenarPedidos(await bd.pedidos.where('cuentaId').equals(cuentaId).toArray());
+
+/** Abre una cuenta vacía (el número reinicia cada día en cada dispositivo). */
+export async function abrirCuenta(datos: DatosApertura): Promise<Cuenta> {
+  const cuenta = await bd.transaction('rw', bd.cuentasVenta, bd.outbox, () => guardarCuenta(datos));
+  avisar();
+  return cuenta;
+}
+
+/**
+ * "Enviar a cocina": guarda el borrador como un pedido nuevo de la cuenta (o abre la cuenta y lo
+ * guarda). Si la cuenta aún no tiene nombre y se da uno ("Para:"), se lo pone.
+ */
+export async function enviarPedido(datos: {
+  destino: { cuentaId: string } | { abrir: DatosApertura };
+  lineas: LineaVenta[];
+  usuario: RefUsuario;
+  nombre?: string | null;
+}): Promise<{ cuenta: Cuenta; pedido: Pedido }> {
+  if (datos.lineas.length === 0) throw new Error('No hay nada que enviar.');
+  const resultado = await bd.transaction('rw', bd.cuentasVenta, bd.pedidos, bd.outbox, async () => {
+    const nombre = datos.nombre?.trim() || null;
+    let cuenta =
+      'cuentaId' in datos.destino
+        ? await cuentaAbierta(datos.destino.cuentaId)
+        : await guardarCuenta({ ...datos.destino.abrir, nombre: datos.destino.abrir.nombre ?? nombre });
+    if (nombre && !cuenta.nombre) cuenta = await cambiarCuenta(cuenta, { nombre });
+    const pedido = await guardarPedido(cuenta, {
+      tipo: 'normal',
+      lineas: datos.lineas,
+      usuario: datos.usuario,
+      autorizadoPor: null,
+    });
+    return { cuenta, pedido };
   });
   avisar();
-  return guardada!;
+  return resultado;
+}
+
+/** Anula piezas de una línea ya enviada: se guarda como un pedido nuevo de tipo anulación. */
+export async function anularLinea(datos: {
+  cuentaId: string;
+  lineaId: string;
+  cantidad: number;
+  usuario: RefUsuario;
+  autorizadoPor: RefUsuario | null;
+}): Promise<{ cuenta: Cuenta; pedido: Pedido }> {
+  const resultado = await bd.transaction('rw', bd.cuentasVenta, bd.pedidos, bd.outbox, async () => {
+    const cuenta = await cuentaAbierta(datos.cuentaId);
+    const anulacion = lineaDeAnulacion(
+      consolidarLineas(await pedidosDe(cuenta.id)),
+      datos.lineaId,
+      datos.cantidad,
+    );
+    if (!anulacion.ok) throw new Error(anulacion.error);
+    const pedido = await guardarPedido(cuenta, {
+      tipo: 'anulacion',
+      lineas: [anulacion.linea],
+      usuario: datos.usuario,
+      autorizadoPor: datos.autorizadoPor,
+    });
+    return { cuenta, pedido };
+  });
+  avisar();
+  return resultado;
+}
+
+interface DatosCobro {
+  descuento: DescuentoCarrito | null;
+  /** "Para:" del borrador; solo se usa si la cuenta no tiene nombre. */
+  cliente: string | null;
+  config: ConfigGeneral['ventas'];
+  pagos: Pago[];
+  turno: Pick<Turno, 'id'>;
+  dispositivo: Pick<Dispositivo, 'id' | 'nombre'>;
+  cajero: RefUsuario;
+}
+
+export interface ResultadoCobro {
+  venta: Venta;
+  cuenta: Cuenta;
+  pedidos: Pedido[];
+}
+
+/** La venta junta las líneas vigentes de todos los pedidos; la cuenta queda cobrada. */
+async function cobrarEnTx(cuenta: Cuenta, pedidos: Pedido[], datos: DatosCobro): Promise<ResultadoCobro> {
+  const lineas = consolidarLineas(pedidos);
+  if (lineas.length === 0) throw new Error('La cuenta no tiene productos que cobrar.');
+  const fecha = ahoraISO();
+  const nueva = armarVenta({
+    id: crypto.randomUUID(),
+    fecha,
+    dia: diaLocal(fecha),
+    lineas,
+    descuento: datos.descuento,
+    cliente: cuenta.nombre ?? datos.cliente,
+    config: datos.config,
+    pagos: datos.pagos,
+    turno: datos.turno,
+    dispositivo: datos.dispositivo,
+    cajero: datos.cajero,
+  });
+  const venta = await guardarVenta({
+    ...nueva,
+    cuentaId: cuenta.id,
+    cuentaNumero: cuenta.numero,
+    cuentaComandas: pedidos.length,
+  });
+  const cobrada = await cambiarCuenta(cuenta, { estado: 'cobrada', ventaId: venta.id });
+  return { venta, cuenta: cobrada, pedidos };
+}
+
+const TABLAS_COBRO = () => [bd.cuentasVenta, bd.pedidos, bd.ventas, bd.dispositivos, bd.outbox];
+
+/** Cobra una cuenta abierta: folio, venta y cuenta cobrada en una sola transacción. */
+export async function cobrarCuenta(datos: DatosCobro & { cuentaId: string }): Promise<ResultadoCobro> {
+  const resultado = await bd.transaction('rw', TABLAS_COBRO(), async () => {
+    const cuenta = await cuentaAbierta(datos.cuentaId);
+    return cobrarEnTx(cuenta, await pedidosDe(cuenta.id), datos);
+  });
+  avisar();
+  return resultado;
+}
+
+/**
+ * Venta rápida de mostrador: al confirmar el pago abre la cuenta, guarda su único pedido, crea la
+ * venta y deja la cuenta cobrada, todo en una transacción.
+ */
+export async function cobrarVentaRapida(
+  datos: DatosCobro & { lineas: LineaVenta[] },
+): Promise<ResultadoCobro> {
+  const resultado = await bd.transaction('rw', TABLAS_COBRO(), async () => {
+    const cuenta = await guardarCuenta({
+      nombre: datos.cliente,
+      turno: datos.turno,
+      dispositivo: datos.dispositivo,
+      usuario: datos.cajero,
+    });
+    const pedido = await guardarPedido(cuenta, {
+      tipo: 'normal',
+      lineas: datos.lineas,
+      usuario: datos.cajero,
+      autorizadoPor: null,
+    });
+    return cobrarEnTx(cuenta, [pedido], datos);
+  });
+  avisar();
+  return resultado;
+}
+
+/** Cancela una cuenta abierta. Sin pedidos se descarta sin pedir motivo. */
+export async function cancelarCuenta(datos: {
+  cuentaId: string;
+  motivo: string;
+  usuario: RefUsuario;
+  autorizadoPor: RefUsuario | null;
+}): Promise<Cuenta> {
+  const cuenta = await bd.transaction('rw', bd.cuentasVenta, bd.pedidos, bd.outbox, async () => {
+    const abierta = await cuentaAbierta(datos.cuentaId);
+    const sinPedidos = (await bd.pedidos.where('cuentaId').equals(abierta.id).count()) === 0;
+    const motivo = datos.motivo.trim() || (sinPedidos ? 'Sin pedidos' : '');
+    if (!motivo) throw new Error('Escribe el motivo.');
+    return cambiarCuenta(abierta, {
+      estado: 'cancelada',
+      cancelacion: { motivo, usuario: datos.usuario, autorizadoPor: datos.autorizadoPor, fecha: ahoraISO() },
+    });
+  });
+  avisar();
+  return cuenta;
 }
 
 /**

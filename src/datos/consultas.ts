@@ -1,6 +1,7 @@
 import { useLiveQuery } from 'dexie-react-hooks';
+import { consolidarLineas, ordenarPedidos } from '@/dominio/cuentas';
 import type { RangoDias } from '@/dominio/fechas';
-import type { TablaSync } from '@/dominio/tipos';
+import type { Cuenta, LineaVenta, TablaSync } from '@/dominio/tipos';
 import { bd, type ClaveMeta, type Meta } from './bd';
 
 // Lecturas de pantalla: siempre de Dexie con useLiveQuery (nunca esperan a la red).
@@ -63,6 +64,63 @@ export function useTurno(id: string | undefined) {
 
 export function useVenta(id: string | undefined) {
   return useLiveQuery(async () => (id ? ((await bd.ventas.get(id)) ?? null) : null), [id]);
+}
+
+/** Cuentas abiertas de todos los dispositivos, de la más antigua a la más reciente. */
+export function useCuentasAbiertas() {
+  return useLiveQuery(async () =>
+    (await bd.cuentasVenta.where('estado').equals('abierta').toArray()).sort((a, b) =>
+      a.fecha.localeCompare(b.fecha),
+    ),
+  );
+}
+
+export interface CuentaConLineas {
+  cuenta: Cuenta;
+  /** Líneas vigentes de la cuenta (pedidos menos anulaciones). */
+  lineas: LineaVenta[];
+  comandas: number;
+}
+
+/** Cuentas abiertas con lo que llevan pedido (para las tarjetas, Inicio y el cierre de caja). */
+export function useCuentasAbiertasConLineas() {
+  return useLiveQuery(async (): Promise<CuentaConLineas[]> => {
+    const abiertas = (await bd.cuentasVenta.where('estado').equals('abierta').toArray()).sort((a, b) =>
+      a.fecha.localeCompare(b.fecha),
+    );
+    const pedidos = await bd.pedidos
+      .where('cuentaId')
+      .anyOf(abiertas.map((c) => c.id))
+      .toArray();
+    return abiertas.map((cuenta) => {
+      const suyos = pedidos.filter((p) => p.cuentaId === cuenta.id);
+      return { cuenta, lineas: consolidarLineas(suyos), comandas: suyos.length };
+    });
+  });
+}
+
+/**
+ * `undefined` mientras carga. Al cambiar de cuenta no se queda con el resultado de la anterior:
+ * `useLiveQuery` conserva el último valor hasta que llega el nuevo.
+ */
+export function useCuenta(id: string | null | undefined) {
+  const r = useLiveQuery(
+    async () => ({ id, cuenta: id ? ((await bd.cuentasVenta.get(id)) ?? null) : null }),
+    [id],
+  );
+  return r && r.id === id ? r.cuenta : undefined;
+}
+
+/** Pedidos de una cuenta en el orden en que se enviaron (`undefined` mientras carga). */
+export function usePedidosDeCuenta(cuentaId: string | null | undefined) {
+  const r = useLiveQuery(
+    async () => ({
+      cuentaId,
+      pedidos: cuentaId ? ordenarPedidos(await bd.pedidos.where('cuentaId').equals(cuentaId).toArray()) : [],
+    }),
+    [cuentaId],
+  );
+  return r && r.cuentaId === cuentaId ? r.pedidos : undefined;
 }
 
 /** Ventas, movimientos y devoluciones de un rango de días (datos locales). */

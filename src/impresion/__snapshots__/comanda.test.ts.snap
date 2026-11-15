@@ -18,3 +18,84 @@ Ana · Caja 1
   Mediano 16 oz, Almendra
 --------------------------------"
 `;
+
+exports[`comanda por pedido > anulación: avisa que no se prepare y de qué comanda sale 1`] = `
+"   ANULACIÓN
+   Cuenta 12
+   Comanda 3
+             09:02
+          NO PREPARAR
+Para: Luis
+Ana · Caja 1
+--------------------------------
+1x Crepa dulce
+  Grande
+  Nutella, Plátano, Fresa, Nuez
+  (2 extra)
+  Helado
+>> NOTA: sin azúcar glass
+  (de la comanda 1)
+--------------------------------"
+`;
+
+exports[`comanda por pedido > cuenta cancelada: aviso con la cuenta y lo que se había enviado 1`] = `
+"    COMANDA
+   CANCELADA
+   Cuenta 12
+             09:10
+          NO PREPARAR
+Para: Luis
+Encargada · Caja 1
+--------------------------------
+2x Crepa dulce
+  Grande
+  Nutella, Plátano, Fresa, Nuez
+  (2 extra)
+  Helado
+>> NOTA: sin azúcar glass
+--------------------------------"
+`;
+
+exports[`comanda por pedido > pedido 1: cuenta y comanda, solo sus productos de cocina 1`] = `
+"     COCINA
+   Cuenta 12
+   Comanda 1
+             08:30
+Para: Luis
+Ana · Caja 1
+--------------------------------
+2x Crepa dulce
+  Grande
+  Nutella, Plátano, Fresa, Nuez
+  (2 extra)
+  Helado
+>> NOTA: sin azúcar glass
+--------------------------------"
+`;
+
+exports[`comanda por pedido > pedido 2: solo lo nuevo, con su hora 1`] = `
+"     COCINA
+   Cuenta 12
+   Comanda 2
+             08:55
+Para: Luis
+Ana · Caja 1
+--------------------------------
+1x Latte
+  Mediano 16 oz, Almendra
+--------------------------------"
+`;
+
+exports[`comanda por pedido > reimpresión: "Comanda 2 de 3" y la marca 1`] = `
+"     COCINA
+   Cuenta 12
+ Comanda 2 de 3
+             08:55
+      *** REIMPRESIÓN ***
+Para: Luis
+Ana · Caja 1
+--------------------------------
+1x Latte
+  Mediano 16 oz, Almendra
+--------------------------------"
+`;

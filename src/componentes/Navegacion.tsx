@@ -1,6 +1,7 @@
 import { Ellipsis } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink } from 'react-router';
+import { useCuentasAbiertas } from '@/datos/consultas';
 import { useSeccionesPermitidas } from '@/estado/secciones';
 import { SECCIONES_BARRA_INFERIOR, type Seccion } from '@/secciones';
 import { Hoja } from './Hoja';
@@ -12,9 +13,21 @@ const claseEnlace = ({ isActive }: { isActive: boolean }) =>
 
 function Enlace({ s, alTocar }: { s: Seccion; alTocar?: () => void }) {
   const Icono = s.icono;
+  const abiertas = useCuentasAbiertas()?.length ?? 0;
+  const insignia = s.id === 'cuentas' ? abiertas : 0;
   return (
     <NavLink to={s.ruta.split('/').slice(0, 2).join('/')} className={claseEnlace} onClick={alTocar}>
-      <Icono aria-hidden size={24} />
+      <span className="relative">
+        <Icono aria-hidden size={24} />
+        {insignia > 0 && (
+          <span
+            aria-label={insignia === 1 ? '1 cuenta abierta' : `${insignia} cuentas abiertas`}
+            className="absolute -top-1.5 -right-3 min-w-5 rounded-full bg-cafeto px-1 text-center text-[11px] leading-5 font-bold text-papel"
+          >
+            {insignia}
+          </span>
+        )}
+      </span>
       <span>{s.nombre}</span>
     </NavLink>
   );

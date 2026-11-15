@@ -32,9 +32,9 @@ test('impresora del sistema: se configura, persiste al recargar e imprime al cob
   await irAImpresora(page);
   await elegido(page, 'Ancho de papel', '58 mm (32 columnas)');
   await page.getByRole('button', { name: '80 mm (48 columnas)' }).click();
-  await page.getByRole('switch', { name: 'Imprimir automáticamente al cobrar' }).click();
+  await page.getByRole('switch', { name: 'Imprimir automáticamente' }).click();
   // Se guarda al instante en la base local: se espera a verlo antes de recargar.
-  await expect(page.getByRole('switch', { name: 'Imprimir automáticamente al cobrar' })).toHaveAttribute(
+  await expect(page.getByRole('switch', { name: 'Imprimir automáticamente' })).toHaveAttribute(
     'aria-checked',
     'true',
   );
@@ -44,7 +44,7 @@ test('impresora del sistema: se configura, persiste al recargar e imprime al cob
   await entrarCon(page, PIN.dueno);
   await irAImpresora(page);
   await elegido(page, 'Ancho de papel', '80 mm (48 columnas)');
-  await expect(page.getByRole('switch', { name: 'Imprimir automáticamente al cobrar' })).toHaveAttribute(
+  await expect(page.getByRole('switch', { name: 'Imprimir automáticamente' })).toHaveAttribute(
     'aria-checked',
     'true',
   );

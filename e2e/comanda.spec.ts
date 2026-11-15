@@ -46,7 +46,7 @@ test('al cobrar salen comanda y ticket como dos trabajos, en el orden configurad
   await prepararDispositivo(page, 'C', 'Caja cocina');
   await entrarCon(page, PIN.dueno);
   await irA(page, 'Configuración', 'Impresora');
-  const alCobrar = page.getByRole('switch', { name: 'Imprimir automáticamente al cobrar' });
+  const alCobrar = page.getByRole('switch', { name: 'Imprimir automáticamente' });
   await alCobrar.click();
   await expect(alCobrar).toHaveAttribute('aria-checked', 'true');
 

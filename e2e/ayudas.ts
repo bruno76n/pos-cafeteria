@@ -131,3 +131,36 @@ export async function capturarTrabajos(page: Page) {
   });
   return () => page.evaluate(() => (window as unknown as { impresos?: string[] }).impresos ?? []);
 }
+
+/** Cancela en el servidor las cuentas que una prueba dejó abiertas (si no, las ven las demás pruebas). */
+export async function cancelarCuentasAbiertas(request: APIRequestContext) {
+  const abiertas = (await leerServidor(request))('cuentasVenta').filter((c) => c.estado === 'abierta');
+  if (abiertas.length === 0) return;
+  const acceso = await request.post('/api/acceso', {
+    data: { correo: 'caja@demo.test', contrasena: 'demo1234' },
+  });
+  const { token } = (await acceso.json()) as { token: string };
+  const ahora = new Date().toISOString();
+  await request.post('/api/sync/push', {
+    headers: { Authorization: `Bearer ${token}` },
+    data: {
+      operaciones: abiertas.map((c) => ({
+        id: crypto.randomUUID(),
+        tabla: 'cuentasVenta',
+        tipo: 'actualizar',
+        registroId: c.id,
+        datos: {
+          estado: 'cancelada',
+          cancelacion: {
+            motivo: 'Limpieza de la prueba',
+            usuario: { id: 'prueba', nombre: 'Prueba' },
+            autorizadoPor: null,
+            fecha: ahora,
+          },
+          actualizadoEn: ahora,
+        },
+        creadaEn: ahora,
+      })),
+    },
+  });
+}

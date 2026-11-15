@@ -10,7 +10,9 @@ import { Pantalla } from '@/componentes/Pantalla';
 import { Segmentos } from '@/componentes/Segmentos';
 import {
   useConfig,
+  useCuenta,
   useDevolucionesDeVenta,
+  usePedidosDeCuenta,
   usePendientes,
   useTurno,
   useTurnoAbierto,
@@ -33,7 +35,13 @@ import { nombreLinea } from '@/dominio/personalizacion';
 import type { Devolucion, MetodoPago, Venta } from '@/dominio/tipos';
 import { useAutorizar } from '@/estado/autorizacion';
 import { useDispositivoActual } from '@/estado/dispositivo';
-import { construirComanda, opcionesComanda } from '@/impresion/comanda';
+import {
+  construirComanda,
+  datosDePedido,
+  datosDeVenta,
+  opcionesComanda,
+  trabajosDePedido,
+} from '@/impresion/comanda';
 import { VistaTicket } from '@/impresion/html';
 import { ticketATexto } from '@/impresion/ticket';
 import { ticketDeVenta } from '@/impresion/ticketVenta';
@@ -227,6 +235,8 @@ export function DetalleVenta() {
   const config = useConfig();
   const turno = useTurno(venta?.turnoId);
   const devoluciones = useDevolucionesDeVenta(venta?.id);
+  const cuenta = useCuenta(venta?.cuentaId);
+  const pedidos = usePedidosDeCuenta(venta?.cuentaId);
   const pendientes = usePendientes('ventas');
   const { imprimirTrabajos, error, fallo, imprimiendo, columnas } = useImpresora();
   const [cancelando, setCancelando] = useState(false);
@@ -244,10 +254,28 @@ export function DetalleVenta() {
   const doc = ticketDeVenta(venta, config, { columnas });
   const cancelada = venta.estado === 'cancelada';
   // Solo si hay algo que se preparó (líneas que van a cocina).
-  const comanda = construirComanda(venta, config, { columnas, cancelada, reimpresion: !cancelada });
+  const comanda = construirComanda(datosDeVenta(venta), config, {
+    columnas,
+    cancelada,
+    reimpresion: !cancelada,
+  });
   const copiasComanda = opcionesComanda(config.ticket).copias;
   const imprimirComanda = () =>
     comanda && imprimirTrabajos([{ tipo: 'comanda', doc: comanda, copias: copiasComanda }]);
+  // Una venta que viene de una cuenta reimprime la comanda de cada pedido; la anterior a las cuentas, la suya.
+  const comandasDeCuenta = (pedidos ?? [])
+    .filter((p) => p.tipo === 'normal')
+    .flatMap((pedido) => {
+      const trabajos = cuenta
+        ? trabajosDePedido(
+            datosDePedido(cuenta, pedido, { totalPedidos: pedidos?.length }),
+            config,
+            columnas,
+            { reimpresion: true },
+          )
+        : [];
+      return trabajos.length > 0 ? [{ pedido, trabajos }] : [];
+    });
 
   return (
     <Pantalla
@@ -266,6 +294,7 @@ export function DetalleVenta() {
             {pendientes?.has(venta.id) && <InsigniaPorSubir />}
             <span className="text-grafito-suave">
               {formatearFechaHora(venta.fecha)} · {venta.dispositivoNombre} · {venta.cajero.nombre}
+              {venta.cuentaNumero && ` · Cuenta ${venta.cuentaNumero}`}
             </span>
           </div>
           <div className="grid gap-2 sm:grid-cols-2">
@@ -281,11 +310,25 @@ export function DetalleVenta() {
               <Printer aria-hidden />{' '}
               {fallo?.fallidos.includes('ticket') ? 'Reintentar' : 'Reimprimir ticket'}
             </Boton>
-            {comanda && (
+            {comanda && (cancelada || !venta.cuentaId) && (
               <Boton tamano="grande" disabled={imprimiendo} onClick={imprimirComanda}>
                 <ChefHat aria-hidden /> {cancelada ? 'Imprimir comanda cancelada' : 'Reimprimir comanda'}
               </Boton>
             )}
+            {!cancelada &&
+              comandasDeCuenta.map(({ pedido, trabajos }) => (
+                <Boton
+                  key={pedido.id}
+                  tamano="grande"
+                  disabled={imprimiendo}
+                  onClick={() => imprimirTrabajos(trabajos)}
+                >
+                  <ChefHat aria-hidden />{' '}
+                  {comandasDeCuenta.length === 1 && pedidos?.length === 1
+                    ? 'Reimprimir comanda'
+                    : `Reimprimir comanda ${pedido.numero} de ${pedidos?.length}`}
+                </Boton>
+              ))}
             <BotonCompartir titulo={`Ticket ${venta.folio}`} texto={ticketATexto(doc)} />
             {puedeCancelar(venta, turno ?? undefined) && (
               <Boton variante="peligro" tamano="grande" onClick={() => setCancelando(true)}>

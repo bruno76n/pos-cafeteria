@@ -20,12 +20,14 @@ test('la migración crea todas las tablas desde cero', async () => {
     'categorias',
     'config',
     'cuentas',
+    'cuentas_venta',
     'devoluciones',
     'dispositivos',
     'grupos_modificadores',
     'ingredientes',
     'movimientos',
     'operaciones_aplicadas',
+    'pedidos',
     'productos',
     'turnos',
     'usuarios',
@@ -72,6 +74,43 @@ test('el folio es único', async () => {
   };
   await conexion.db.insert(ventas).values({ id: 'v1', ...venta });
   await expect(conexion.db.insert(ventas).values({ id: 'v2', ...venta })).rejects.toThrow();
+});
+
+test('una cuenta solo puede tener una venta; las ventas directas no chocan', async () => {
+  const venta = {
+    dispositivoId: 'd',
+    dispositivoNombre: 'Caja 1',
+    turnoId: 't',
+    fecha: new Date(),
+    dia: '2026-09-19',
+    cajero: { id: 'u', nombre: 'Ana' },
+    lineas: [],
+    subtotal: 0,
+    iva: { tasa: 0.16, incluido: true, base: 0, monto: 0 },
+    total: 0,
+    pagos: [],
+    cambio: 0,
+    estado: 'pagada' as const,
+    devuelto: 0,
+    actualizadoEn: new Date(),
+  };
+  await conexion.db.insert(ventas).values([
+    { id: 'd1', folio: 'B-000001', folioNumero: 1, ...venta },
+    { id: 'd2', folio: 'B-000002', folioNumero: 2, ...venta },
+  ]);
+  await conexion.db
+    .insert(ventas)
+    .values({ id: 'c1', folio: 'B-000003', folioNumero: 3, cuentaId: 'cuenta-1', cuentaNumero: 1, ...venta });
+  await expect(
+    conexion.db.insert(ventas).values({
+      id: 'c2',
+      folio: 'B-000004',
+      folioNumero: 4,
+      cuentaId: 'cuenta-1',
+      cuentaNumero: 1,
+      ...venta,
+    }),
+  ).rejects.toThrow();
 });
 
 test('el grupo global "Tamaño" pasa a tamaños de cada producto y se elimina', async () => {
